@@ -54,4 +54,5 @@ with open(sys.argv[1] + "manifest.json", "w+") as manifest:
 
 # Remove unwanted files
 for f in files:
-    os.remove(sys.argv[1] + f)
+    if "stats.json" not in f:
+        os.remove(sys.argv[1] + f)
