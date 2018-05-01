@@ -1,7 +1,9 @@
+/*global chrome*/
 import React, { Component } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import {Tabs, Tab} from 'material-ui/Tabs';
 import SwipeableViews from 'react-swipeable-views';
+import TopBar from './TopBar';
 import Tab1 from './Tab1';
 import Tab2 from './Tab2';
 import Tab3 from './Tab3';
@@ -10,8 +12,19 @@ export default class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      url: "",
       slideIndex: 0,
     };
+  }
+
+  componentDidUpdate() {
+    // Update URL asynchronously after component renders
+    if (this.state.url === "") {
+      thisClass = this;
+      chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+        thisClass.setState({ url: tabs[0].url });
+      });
+    }
   }
 
   handleChange = (value) => {
@@ -24,6 +37,7 @@ export default class App extends Component {
     return (
       <MuiThemeProvider>
         <div>
+          <TopBar url={this.state.url} />
           <Tabs
             onChange={this.handleChange}
             value={this.state.slideIndex}
@@ -40,7 +54,7 @@ export default class App extends Component {
               <Tab1 />
             </div>
             <div className="tab">
-              <Tab2 />
+              <Tab2 url={this.state.url}/>
             </div>
             <div className="tab">
               <Tab3 />

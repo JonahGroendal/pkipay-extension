@@ -9,6 +9,7 @@
     "get-ssl-certificate": "^2.0.1",
     "material-ui": "^0.20.0",
     "meteor-node-stubs": "^0.3.2",
+    "net-socket": "^1.1.0",
     "node-forge": "^0.7.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",

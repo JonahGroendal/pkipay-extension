@@ -4,7 +4,7 @@ import sys
 # Get filenames
 files = os.listdir(sys.argv[1])
 for i, f in enumerate(files):
-    if ".js" in f:
+    if ".js" in f and ".json" not in f:
         jsFileIndex = i
 
 # Open files to copy from
