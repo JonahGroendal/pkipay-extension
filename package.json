@@ -5,14 +5,15 @@
     "start": "meteor run"
   },
   "dependencies": {
+    "@babel/runtime": "^7.0.0-beta.46",
     "babel-runtime": "^6.26.0",
-    "get-ssl-certificate": "^2.0.1",
+    "eth-ens-namehash": "^2.0.8",
     "material-ui": "^0.20.0",
     "meteor-node-stubs": "^0.3.2",
-    "net-socket": "^1.1.0",
-    "node-forge": "^0.7.1",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
-    "react-swipeable-views": "^0.12.12"
-  }
+    "react-swipeable-views": "^0.12.12",
+    "web3": "^1.0.0-beta.34"
+  },
+  "devDependencies": {}
 }
