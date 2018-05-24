@@ -1,18 +1,4 @@
-let abi; export default abi =  [
-  {
-    "constant": true,
-    "inputs": [],
-    "name": "authenticator",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
+let abi; export default abi = [
   {
     "constant": true,
     "inputs": [],
@@ -21,63 +7,6 @@ let abi; export default abi =  [
       {
         "name": "",
         "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "nameHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "accountOwner",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "donationHappened",
-    "outputs": [
-      {
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "deposits",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
       }
     ],
     "payable": false,
@@ -94,42 +23,35 @@ let abi; export default abi =  [
       {
         "name": "owner",
         "type": "address"
+      },
+      {
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "name": "weiPerToken",
+        "type": "uint256"
       }
     ],
-    "name": "setAccountOwner",
+    "name": "setAccount",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "name": "accountOwners",
-    "outputs": [
-      {
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "constant": false,
     "inputs": [
       {
-        "name": "_authenticator",
+        "name": "nameHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "newOwner",
         "type": "address"
       }
     ],
-    "name": "setAuthenticator",
+    "name": "transferAccountOwnership",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -150,6 +72,33 @@ let abi; export default abi =  [
     "type": "function"
   },
   {
+    "constant": true,
+    "inputs": [
+      {
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "name": "accounts",
+    "outputs": [
+      {
+        "name": "owner",
+        "type": "address"
+      },
+      {
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "name": "weiPerToken",
+        "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "constant": false,
     "inputs": [],
     "name": "relinquishOwnership",
@@ -163,14 +112,64 @@ let abi; export default abi =  [
     "inputs": [
       {
         "name": "",
+        "type": "address"
+      },
+      {
+        "name": "",
         "type": "bytes32"
       }
     ],
-    "name": "withdrawals",
+    "name": "pendingDonations",
     "outputs": [
       {
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "payable": false,
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "_accountCreator",
+        "type": "address"
+      }
+    ],
+    "name": "setAccountCreator",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": false,
+    "inputs": [
+      {
+        "name": "nameHash",
+        "type": "bytes32"
+      },
+      {
+        "name": "weiPerToken",
+        "type": "uint256"
+      }
+    ],
+    "name": "setAccountWeiPerToken",
+    "outputs": [],
+    "payable": false,
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "constant": true,
+    "inputs": [],
+    "name": "accountCreator",
+    "outputs": [
+      {
+        "name": "",
+        "type": "address"
       }
     ],
     "payable": false,
@@ -201,22 +200,12 @@ let abi; export default abi =  [
       },
       {
         "indexed": false,
-        "name": "value",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
         "name": "nameHash",
         "type": "bytes32"
       },
       {
         "indexed": false,
-        "name": "totalDeposits",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "name": "time",
+        "name": "value",
         "type": "uint256"
       }
     ],
@@ -228,6 +217,11 @@ let abi; export default abi =  [
     "inputs": [
       {
         "indexed": false,
+        "name": "donor",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "name": "nameHash",
         "type": "bytes32"
       },
@@ -237,17 +231,12 @@ let abi; export default abi =  [
         "type": "uint256"
       }
     ],
-    "name": "Withdrawal",
+    "name": "PendingDonation",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
-      {
-        "indexed": false,
-        "name": "nameHash",
-        "type": "bytes32"
-      },
       {
         "indexed": false,
         "name": "donor",
@@ -255,11 +244,16 @@ let abi; export default abi =  [
       },
       {
         "indexed": false,
+        "name": "nameHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
         "name": "value",
         "type": "uint256"
       }
     ],
-    "name": "DonationReclaimed",
+    "name": "PendingDonationCompleted",
     "type": "event"
   },
   {
@@ -267,16 +261,33 @@ let abi; export default abi =  [
     "inputs": [
       {
         "indexed": false,
-        "name": "oldAuthenticator",
+        "name": "donor",
         "type": "address"
       },
       {
         "indexed": false,
-        "name": "newAuthenticator",
-        "type": "address"
+        "name": "nameHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "value",
+        "type": "uint256"
       }
     ],
-    "name": "AuthenticatorChanged",
+    "name": "PendingDonationRefunded",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "nameHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "AccountSet",
     "type": "event"
   },
   {
@@ -289,11 +300,50 @@ let abi; export default abi =  [
       },
       {
         "indexed": false,
-        "name": "owner",
+        "name": "oldOwner",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "newOwner",
         "type": "address"
       }
     ],
-    "name": "AccountOwnerSet",
+    "name": "AccountOwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "nameHash",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "name": "weiPerToken",
+        "type": "uint256"
+      }
+    ],
+    "name": "AccountWeiPerTokenSet",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "name": "oldCreator",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "name": "newCreator",
+        "type": "address"
+      }
+    ],
+    "name": "AccountCreatorChanged",
     "type": "event"
   },
   {
@@ -345,7 +395,7 @@ let abi; export default abi =  [
         "type": "uint256[]"
       }
     ],
-    "name": "donateMany",
+    "name": "donateToMany",
     "outputs": [],
     "payable": true,
     "stateMutability": "payable",
@@ -359,11 +409,11 @@ let abi; export default abi =  [
         "type": "bytes32"
       },
       {
-        "name": "value",
-        "type": "uint256"
+        "name": "donors",
+        "type": "address[]"
       }
     ],
-    "name": "withdraw",
+    "name": "withdrawPendingDonations",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
@@ -379,39 +429,12 @@ let abi; export default abi =  [
       {
         "name": "value",
         "type": "uint256"
-      },
-      {
-        "name": "thenTime",
-        "type": "uint256"
-      },
-      {
-        "name": "thenTotalDeposits",
-        "type": "uint256"
       }
     ],
-    "name": "reclaimDonation",
+    "name": "refundPendingDonation",
     "outputs": [],
     "payable": false,
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "constant": true,
-    "inputs": [
-      {
-        "name": "nameHash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "balance",
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "payable": false,
-    "stateMutability": "view",
     "type": "function"
   }
 ]
