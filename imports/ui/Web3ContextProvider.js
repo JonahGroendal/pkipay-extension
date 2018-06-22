@@ -27,6 +27,7 @@ export default class Web3ContextProvider extends Component {
     this.handleLog = this.handleLog.bind(this)
   }
 
+  // make this async and use await instead of .then
   componentDidMount() {
     let web3js = this.initializeWeb3()
 

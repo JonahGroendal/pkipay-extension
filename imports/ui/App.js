@@ -1,4 +1,4 @@
-/*global chrome*/
+/*global browser*/
 import React, { Component } from 'react';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import {Tabs, Tab} from 'material-ui/Tabs';
@@ -36,7 +36,7 @@ export default class App extends Component {
   //   // Update URL asynchronously after component renders
   //   if (this.state.url === "") {
   //     thisClass = this;
-  //     chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+  //     browser.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
   //       thisClass.setState({
   //         url: tabs[0].url,
   //         shortUrl: thisClass.shorten(tabs[0].url)

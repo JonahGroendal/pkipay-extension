@@ -17,17 +17,17 @@ export default class FormDonate extends Component {
   }
 
   // Donate
-  handleSubmit(event, value) {
+  handleSubmit(event, web3js, contractGratis) {
     event.preventDefault()
 
     console.log(value)
 
     let recipient = namehash.hash(this.props.shortUrl)
-    let amount = value.web3js.utils.toWei(this.state.value, 'ether')
+    let amount = web3js.utils.toWei(this.state.value, 'ether')
 
-    value.contractGratis.methods.donate(recipient).send({
+    contractGratis.methods.donate(recipient).send({
       value: amount,
-      from: value.web3js.eth.accounts.wallet[0].address,
+      from: web3js.eth.accounts.wallet[0].address,
       gas: 100000
     })
     .then(success => {
@@ -43,8 +43,8 @@ export default class FormDonate extends Component {
   render() {
     return (
       <Web3Context.Consumer>
-        {val => { return (
-          <form onSubmit={event => this.handleSubmit(event, val)}>
+        {value => { return (
+          <form onSubmit={event => this.handleSubmit(event, value.web3js, value.contractGratis)}>
             Donate ETH:
             <input
               type="number"

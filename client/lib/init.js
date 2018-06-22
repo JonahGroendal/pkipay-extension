@@ -1,7 +1,9 @@
 import mockChrome from '../../imports/test/mockChrome.js';
 
-// For testing:
-if (typeof chrome === 'undefined') {
-  console.log('Using mock chrome object')
-  chrome = mockChrome
+if (typeof browser === 'undefined' && typeof chrome === 'undefined') {
+  console.log('Using mock browser object')
+  browser = mockChrome
+}
+else if (typeof browser === 'undefined') {
+  browser = chrome
 }

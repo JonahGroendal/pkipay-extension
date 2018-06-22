@@ -42,18 +42,32 @@ manifestjson = '''{
   "browser_action": {
     "default_popup": "popup.html"
   },
+  "background": {
+    "scripts": [
+        "storagedb.js",
+        "background.js"
+    ]
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"],
+    "all_frames": false
+  }],
   "permissions": [
-    "<all_urls>",
-    "activeTab",
-    "storage"
+    "tabs",
+    "webNavigation",
+    "notifications",
+    "downloads",
+    "storage",
+    "unlimitedStorage"
   ],
-  "content_security_policy": "script-src 'unsafe-eval'; object-src 'self'"
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }'''
 with open(sys.argv[1] + "manifest.json", "w+") as manifest:
     manifest.write(manifestjson)
 
 # Remove unwanted files
 for f in files:
-    if "." in f and "stats.json" not in f:
+    if "." in f and "stats.json" not in f and ".css" not in f:
         print(sys.argv[1] + f)
         os.remove(sys.argv[1] + f)
