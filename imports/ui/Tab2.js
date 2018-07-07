@@ -34,7 +34,7 @@ export default class Tab2 extends Component {
     //console.log(this.contracts)
     return (
 
-      <div>
+      <div className="tab">
         <h1>Tab2</h1>
         <p>{this.props.shortUrl}</p>
         <Web3Context.Consumer>

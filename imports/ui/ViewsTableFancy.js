@@ -1,7 +1,8 @@
+/*global browser*/
 import React, { Component } from 'react'
 import EnhancedViewsTable from './EnhancedViewsTable'
 
-export default class Tab3 extends Component {
+export default class ViewsTableFancy extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -47,25 +48,23 @@ export default class Tab3 extends Component {
 
   formatHostname(hostname)
   {
-     var parts = hostname.split(".");
-     return parts[parts.length - 2] + "." + parts[parts.length - 1];
+     var parts = hostname.split(".")
+     return parts[parts.length - 2] + "." + parts[parts.length - 1]
   }
 
   formatDuration(duration)
   {
-     var hours = Math.floor(duration/3600);
-     duration %= 3600;
-     var minutes = Math.floor(duration/60);
-     var seconds = Math.floor(duration % 60);
+     var hours = Math.floor(duration/3600)
+     duration %= 3600
+     var minutes = Math.floor(duration/60)
+     var seconds = Math.floor(duration % 60)
 
-     return hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0") + ":" + seconds.toString().padStart(2, "0");
+     return hours.toString().padStart(2, "0") + ":" + minutes.toString().padStart(2, "0") + ":" + seconds.toString().padStart(2, "0")
   }
 
   render() {
     return (
-      <div className="tab">
-        <EnhancedViewsTable views={this.state.views}/>
-      </div>
-    );
+      <EnhancedViewsTable views={this.state.views}/>
+    )
   }
 }
