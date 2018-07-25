@@ -9,18 +9,24 @@ import TableSortLabel from '@material-ui/core/TableSortLabel';
 import Tooltip from '@material-ui/core/Tooltip';
 import Checkbox from '@material-ui/core/Checkbox';
 
-const tableHeadStyles = theme => ({
+const styles = theme => ({
+  checkboxColumn: {
+    width: '15%'
+  },
   nameColumn: {
-    width: '34%'
+    width: '41%'
   },
   shareColumn: {
-    width: '17%',
+    width: '30%'
   },
-  durationColumn: {
-    width: '25%'
+  profileColumn: {
+    width: '14%'
   },
-  viewsColumn: {
-    width: '24%'
+  tableRow: {
+    height: theme.spacing.unit * 4
+  },
+  checkbox: {
+    height: theme.spacing.unit * 3
   }
 })
 
@@ -29,48 +35,46 @@ class EnhancedViewsTableHead extends React.Component {
     this.props.onRequestSort(event, property);
   };
 
-  columnData = [
-    { id: 'name', numeric: false, padding: 'dense', label: 'Site', className: this.props.classes.nameColumn },
-    { id: 'share', numeric: false, padding: 'dense', label: '%', className: this.props.classes.shareColumn },
-    { id: 'duration', numeric: false, padding: 'dense', label: 'Time Spent', className: this.props.classes.durationColumn },
-    { id: 'views', numeric: false, padding: 'dense', label: 'Views', className: this.props.classes.viewsColumn },
+  columnsAttributes = [
+    { key: 'name', numeric: false, padding: 'none', label: 'Site', className: this.props.classes.nameColumn },
+    { key: 'share', numeric: false, padding: 'none', label: 'Payout', className: this.props.classes.shareColumn },
+    { key: 'toProfile', numeric: false, padding: 'none', label: '', className: this.props.classes.profileColumn },
   ];
 
   render() {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
+    const { classes, onSelectAllClick, order, orderBy, numSelected, rowCount } = this.props;
 
     return (
       <TableHead>
-        <TableRow>
-          {/* <TableCell padding="checkbox">
+        <TableRow className={classes.tableRow}>
+          <TableCell className={classes.checkboxColumn} padding="none">
             <Checkbox
+              className={classes.checkbox}
               indeterminate={numSelected > 0 && numSelected < rowCount}
-              checked={numSelected === rowCount}
+              checked={numSelected ? numSelected === rowCount : false}
               onChange={onSelectAllClick}
             />
-          </TableCell> */}
-          {this.columnData.map(column => {
+          </TableCell>
+          {this.columnsAttributes.map(colAttrs => {
+            let {label, ...attributes} = colAttrs
             return (
               <TableCell
-              className={column.className}
-                key={column.id}
-                numeric={column.numeric}
-                padding={column.padding}
-                sortDirection={orderBy === column.id ? order : false}
+                {...attributes}
+                sortDirection={orderBy === colAttrs.key ? order : false}
               >
-                <Tooltip
+                {attributes.key !== 'toProfile' && <Tooltip
                   title="Sort"
                   placement="top-start"
                   enterDelay={300}
                 >
                   <TableSortLabel
-                    active={orderBy === column.id}
+                    active={orderBy === colAttrs.key}
                     direction={order}
-                    onClick={this.createSortHandler(column.id)}
+                    onClick={this.createSortHandler(colAttrs.key)}
                   >
-                    {column.label}
+                    {label}
                   </TableSortLabel>
-                </Tooltip>
+                </Tooltip>}
               </TableCell>
             );
           }, this)}
@@ -89,4 +93,4 @@ EnhancedViewsTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
-export default withStyles(tableHeadStyles)(EnhancedViewsTableHead)
+export default withStyles(styles)(EnhancedViewsTableHead)

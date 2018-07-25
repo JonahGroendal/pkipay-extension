@@ -8,11 +8,14 @@ import Typography from '@material-ui/core/Typography'
 import Tabs from '@material-ui/core/Tabs'
 import Button from '@material-ui/core/Button'
 import IconButton from '@material-ui/core/IconButton'
-import MenuIcon from '@material-ui/icons/Menu'
+import SettingsIcon from '@material-ui/icons/Settings'
 
 const styles = theme => ({
   root: {
     flexGrow: 1,
+  },
+  toolbar: {
+    minHeight: theme.spacing.unit * 6
   },
   flex: {
     flex: 1,
@@ -29,15 +32,14 @@ class Nav extends Component {
     const { classes, tabIndex, children, onChangeTab } = this.props;
     return (
       <div className={classes.root}>
-        <AppBar position="static">
-          <Toolbar>
-            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
-              <MenuIcon />
-            </IconButton>
+        <AppBar position="static" className={classes.appBar}>
+          <Toolbar className={classes.toolbar}>
             <Typography variant="title" color="inherit" className={classes.flex}>
-              Gratis
+              Gratiis
             </Typography>
-            <Button color="inherit">Login</Button>
+            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
+              <SettingsIcon />
+            </IconButton>
           </Toolbar>
           <Tabs
             value={tabIndex}
@@ -46,7 +48,7 @@ class Nav extends Component {
           >
 
             {children}
-            
+
           </Tabs>
         </AppBar>
       </div>

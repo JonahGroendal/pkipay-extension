@@ -1,6 +1,6 @@
 import React from 'react';
-import EnhancedTableToolbar from './EnhancedTableToolbar'
-import EnhancedViewsTableHead from './EnhancedViewsTableHead'
+import EnhancedTableToolbar from './EnhancedTableToolbar';
+import EnhancedViewsTableHead from './EnhancedViewsTableHead';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
@@ -11,7 +11,11 @@ import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import Checkbox from '@material-ui/core/Checkbox';
+import Button from '@material-ui/core/Button';
 import { lighten } from '@material-ui/core/styles/colorManipulator';
+import IconButton from '@material-ui/core/IconButton';
+import LaunchIcon from '@material-ui/icons/Launch';
+import Tooltip from '@material-ui/core/Tooltip';
 
 function getSorting(order, orderBy) {
   return order === 'desc'
@@ -21,14 +25,29 @@ function getSorting(order, orderBy) {
 
 const styles = theme => ({
   root: {
-    width: '98%',
-    marginTop: theme.spacing.unit * 3,
-    marginLeft: '1%',
-    marginRight: '1%',
+    width: '100%',
+    marginTop: theme.spacing.unit * 2,
   },
   table: {
     width: '100%',
-    tableLayout: 'fixed'
+    tableLayout: 'fixed',
+  },
+  tableRow: {
+    height: theme.spacing.unit * 4,
+  },
+  tableCell: {
+    borderBottom: 0,
+  },
+  checkbox: {
+    height: theme.spacing.unit * 3,
+  },
+  profileButton: {
+    width: '100%',
+    minWidth: 0,
+  },
+  pagination: {
+    height: theme.spacing.unit * 6,
+    minHeight: 0,
   },
 });
 
@@ -41,7 +60,7 @@ class EnhancedViewsTable extends React.Component {
       orderBy: 'share',
       selected: [],
       page: 0,
-      rowsPerPage: 5,
+      rowsPerPage: 4,
     };
   }
 
@@ -81,7 +100,7 @@ class EnhancedViewsTable extends React.Component {
         selected.slice(selectedIndex + 1),
       );
     }
-
+    console.log(newSelected)
     this.setState({ selected: newSelected });
   };
 
@@ -96,10 +115,9 @@ class EnhancedViewsTable extends React.Component {
   isSelected = id => this.state.selected.indexOf(id) !== -1;
 
   render() {
-    const { classes, views } = this.props;
+    const { classes, views, budget } = this.props;
     const { order, orderBy, selected, rowsPerPage, page } = this.state;
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, views.length - page * rowsPerPage);
-
     return (
       <Paper className={classes.root}>
         <EnhancedTableToolbar numSelected={selected.length} />
@@ -113,51 +131,85 @@ class EnhancedViewsTable extends React.Component {
               rowCount={views.length}
             />
             <TableBody>
-              {views
-                .sort(getSorting(order, orderBy))
+              {
+                views.slice().sort(getSorting(order, orderBy))
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map(n => {
-                  const isSelected = this.isSelected(n.id);
+                  const share = '$'+(n.share*budget/100).toFixed(2)+' ('+n.share+'%)'
+                  const isSelected = this.isSelected(n.id)
+                  const parts = n.hostname.split('.')
+                  const siteUrl = parts[parts.length-2]+'.'+parts[parts.length-1]
+                  const faviconUrl = 'https://' + siteUrl + '/apple-touch-icon.png'
+                  const faviconUrlSmall = 'https://www.google.com/s2/favicons?domain=' + n.hostname
                   return (
                     <TableRow
+                      className={classes.tableRow}
                       hover
-                      onClick={event => this.handleClick(event, n.id)}
                       role="checkbox"
                       aria-checked={isSelected}
                       tabIndex={-1}
                       key={n.id}
                       selected={isSelected}
                     >
-                      {/* <TableCell padding="checkbox">
-                        <Checkbox checked={isSelected} />
-                      </TableCell> */}
-                      <TableCell component="th" scope="row" padding="dense">
-                        {n.name}
+                      <TableCell
+                        padding="none"
+                        className={classes.tableCell}
+                        onClick={event => this.handleClick(event, n.id)}
+                      >
+                        <Checkbox checked={isSelected} className={classes.checkbox} />
                       </TableCell>
-                      <TableCell numeric padding="dense">{n.share}</TableCell>
-                      <TableCell numeric padding="dense">{n.duration}</TableCell>
-                      <TableCell numeric padding="dense">{n.views}</TableCell>
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        padding="none"
+                        className={classes.tableCell}
+                        onClick={event => this.handleClick(event, n.id)}
+                      >
+                        <Tooltip title={n.hostname}>
+                          <div>
+                            <img src={faviconUrlSmall} height="16px" width="16px" style={{marginRight: '8px'}}/>
+                            {n.name}
+                          </div>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell
+                        padding="none"
+                        className={classes.tableCell}
+                        onClick={event => this.handleClick(event, n.id)}
+                      >
+                        {share}
+                      </TableCell>
+                      <TableCell padding="none" className={classes.tableCell}>
+                        <Button className={classes.profileButton} size="small" aria-label="Launch">
+                          <LaunchIcon />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
-              {emptyRows > 0 && (
-                <TableRow style={{ height: 49 * emptyRows }}>
-                  <TableCell colSpan={6} />
-                </TableRow>
-              )}
+              {[...Array(emptyRows)].map(row => {
+                return(
+                  <TableRow className={classes.tableRow}>
+                    <TableCell colSpan={4} className={classes.tableCell}/>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         <TablePagination
+          classes={{toolbar: classes.pagination}}
           component="div"
           count={views.length}
           rowsPerPage={rowsPerPage}
           page={page}
-          rowsPerPageOptions={[5,]}
+          rowsPerPageOptions={[4,]}
           backIconButtonProps={{
             'aria-label': 'Previous Page',
+            style: {height: '32px'},
           }}
           nextIconButtonProps={{
             'aria-label': 'Next Page',
+            style: {height: '32px'},
           }}
           onChangePage={this.handleChangePage}
           onChangeRowsPerPage={this.handleChangeRowsPerPage}

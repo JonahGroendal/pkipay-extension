@@ -35,7 +35,7 @@ with open(sys.argv[1] + "popup.html", "w+") as popupjs:
 manifestjson = '''{
   "manifest_version": 2,
 
-  "name": "PKIPay",
+  "name": "Gratiis",
   "description": "",
   "version": "1.0",
 
@@ -69,5 +69,5 @@ with open(sys.argv[1] + "manifest.json", "w+") as manifest:
 # Remove unwanted files
 for f in files:
     if "." in f and "stats.json" not in f and ".css" not in f:
-        print(sys.argv[1] + f)
+        #print(sys.argv[1] + f)
         os.remove(sys.argv[1] + f)

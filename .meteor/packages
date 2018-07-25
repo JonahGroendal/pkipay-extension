@@ -18,7 +18,7 @@ shell-server@0.3.1            # Server-side component of the `meteor shell` comm
 
 autopublish@1.0.7             # Publish all data to the clients (for prototyping)
 insecure@1.0.7                # Allow all DB writes from clients (for prototyping)
-react-meteor-data
 http@1.4.1
 frozeman:persistent-minimongo2
 ecmascript@0.11.1
+react-meteor-data

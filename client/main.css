@@ -7,3 +7,9 @@ body {
   height: 400px;
 }
 */
+/* Remove clear button from date pickers */
+::-webkit-clear-button
+{
+    display: none; /* Hide the button */
+    -webkit-appearance: none; /* turn off default browser styling */
+}

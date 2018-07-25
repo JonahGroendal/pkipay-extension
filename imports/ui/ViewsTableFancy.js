@@ -1,8 +1,18 @@
 /*global browser*/
 import React, { Component } from 'react'
 import EnhancedViewsTable from './EnhancedViewsTable'
+import Settings from '../api/Settings.js'
+import Subscriptions from '../api/Subscriptions.js'
+import { withTracker } from 'meteor/react-meteor-data'
 
-export default class ViewsTableFancy extends Component {
+const tracker = () => {
+  return {
+    settings: Settings.findOne(),
+    subs: Subscriptions.find().fetch(),
+  }
+}
+
+class ViewsTableFancy extends Component {
   constructor(props) {
     super(props)
     this.state = {
@@ -16,12 +26,13 @@ export default class ViewsTableFancy extends Component {
     let views = []
     rawViews.forEach(rawView => {
       let name = rawView.name
-      if (rawView.name === rawView.hostname) {
+      if (name === rawView.hostname) {
         name = this.formatHostname(name)
       }
       views.push({
         id: rawView.siteId,
         name: name,
+        hostname: rawView.hostname,
         duration: this.formatDuration(rawView.duration),
         views: rawView.views,
         share: rawView.share
@@ -48,8 +59,8 @@ export default class ViewsTableFancy extends Component {
 
   formatHostname(hostname)
   {
-     var parts = hostname.split(".")
-     return parts[parts.length - 2] + "." + parts[parts.length - 1]
+    let parts = hostname.split(".")
+    return parts[parts.length-2].slice(0, 1).toUpperCase() + parts[parts.length-2].slice(1)
   }
 
   formatDuration(duration)
@@ -63,8 +74,12 @@ export default class ViewsTableFancy extends Component {
   }
 
   render() {
+    if (!this.props.settings || !this.props.subs) return ''
+    const budget = this.props.settings.budget
     return (
-      <EnhancedViewsTable views={this.state.views}/>
+      <EnhancedViewsTable views={this.state.views} subs={this.state.subs} budget={budget}/>
     )
   }
 }
+
+export default withTracker(tracker)(ViewsTableFancy)

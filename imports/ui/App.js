@@ -65,14 +65,12 @@ export default class App extends Component {
               tabIndex={this.state.tabIndex}
               onChangeTab={this.handleChangeTab}
             >
-              <Tab label="This Month" />
+              <Tab label="Manage" />
               <Tab label="Tab Two" />
-              <Tab label="Tab Three" />
             </Nav>
             <SwipeableViews index={this.state.tabIndex}>
               <Tab1 />
               <Tab2 shortUrl={this.state.shortUrl}/>
-              <Tab3 />
             </SwipeableViews>
           </React.Fragment>
         </MuiThemeProvider>

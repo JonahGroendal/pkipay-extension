@@ -33,7 +33,7 @@ var bkg =
          minViewDuration: ledger.default_min_view_duration,
          minViews: ledger.default_min_views,
          budgetCurrency: ledger.default_budget_currency,
-         logLevel: utils.log_level_err
+         logLevel: utils.log_level_error
       }}).then(function(config)
       {
          bkg.config = config.config;
