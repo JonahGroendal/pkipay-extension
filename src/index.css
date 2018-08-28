@@ -1,0 +1,24 @@
+/* CSS declarations go here */
+/* doesnt work for some reason
+body {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  height: 400px;
+}
+*/
+/* Remove clear button from date pickers */
+::-webkit-clear-button
+{
+    display: none; /* Hide the button */
+    -webkit-appearance: none; /* turn off default browser styling */
+}
+
+#testingThis {
+  width: 200px;
+  background-color: red;
+  transition-property: width;
+}
+#testingThis:hover {
+  width: 155px;
+}

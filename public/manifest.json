@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+
+  "name": "Gratiis",
+  "description": "",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_popup": "index.html"
+  },
+  "background": {
+    "scripts": [
+        "storagedb.js",
+        "background.js"
+    ]
+  },
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["content.js"],
+    "all_frames": false
+  }],
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "notifications",
+    "downloads",
+    "storage",
+    "unlimitedStorage"
+  ],
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
+}
