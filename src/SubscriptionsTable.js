@@ -159,7 +159,7 @@ class SubscriptionsTable extends React.Component {
                             <Typography variant="subheading">
                               {n.amount}
                             </Typography>
-                             &nbsp;$/Mo
+                             &nbsp;{strings.currency[state.settings.currency]}
                           </div>
                         </Tooltip>
                       </TableCell>

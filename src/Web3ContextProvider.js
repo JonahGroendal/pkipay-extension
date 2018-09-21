@@ -16,11 +16,11 @@ export default class Web3ContextProvider extends Component {
           },
         },
         fiatPerEth: {
-          USD: "",
-          EUR: "",
-          GBP: "",
-          JPY: "",
-          CAD: "",
+          USD: '',
+          EUR: '',
+          GBP: '',
+          JPY: '',
+          CAD: '',
         },
         entity: {
           accountExists: false,
@@ -129,7 +129,13 @@ export default class Web3ContextProvider extends Component {
 
     //let prices = await cryptoCompare.price('ETH', ['USD', 'EUR', 'GBP', 'JPY', 'CAD'])
     //cache.fiatPerEth = prices
-    cache.fiatPerEth = [1,1,1,1,1] // temporary hack!
+    cache.fiatPerEth = {
+      USD: 1,
+      EUR: 1,
+      GBP: 1,
+      JPY: 1,
+      CAD: 1,
+    } // temporary hack!
 
     let address = await web3js.eth.getBalance(web3js.eth.accounts.wallet[0].address)
     let ethValue = await web3js.utils.fromWei(address)

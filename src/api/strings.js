@@ -12,8 +12,8 @@ let strings = {
   },
   web3: {
     addresses: {
-      wallet: "0x47088d1c54d1d232db25ce31f669c873c21ecf5c5a3d0790a2b7856e52655798", //0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009
-      gratiis: "0xcbb589435491983194b084f12c3c1523a2c0cc21",
+      wallet: "0x14dc006e80635fa3d4f81231850bd624d73a435649ec5f19d02c68f78e04c045", //0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009
+      gratiis: "0x4bfb253aa6dc799312b0e8876a7361d1e1e25ee1",
     }
   }
 

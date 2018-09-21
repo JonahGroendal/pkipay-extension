@@ -185,7 +185,7 @@ class TabManage extends Component {
                     { ({ cache  }) => { return (
                       <div className={classes.balance}>
                         <Typography className={classes.balance} variant="title">
-                          {strings.currency[settings.budgetCurrency] + (cache.fiatPerEth[settings.budgetCurrency] * cache.account.balances.ETH).toFixed(2)}
+                          {strings.currency[settings.currency] + (cache.fiatPerEth[settings.currency] * cache.account.balances.ETH).toFixed(2)}
                         </Typography>
                         <Typography className={classes.balance} variant="body1">
                           {' (' + (cache.account.balances.ETH*100).toFixed(0) + 'mETH)'}
