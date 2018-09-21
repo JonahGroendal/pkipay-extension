@@ -1,3 +1,4 @@
+import strings from './api/strings'
 import React, { Component } from 'react'
 import Web3Context from './Web3Context'
 import SubscriptionsTable from './SubscriptionsTable'
@@ -78,14 +79,6 @@ const styles = theme => ({
 //     settings: Settings.findOne(),
 //   }
 // }
-
-const currencySymbols = {
-  "USD": "$",
-  "EUR": "€",
-  "GBP": "£",
-  "JPY": "¥",
-  "CAD": "$",
-}
 
 class TabManage extends Component {
   constructor(props) {
@@ -192,7 +185,7 @@ class TabManage extends Component {
                     { ({ cache  }) => { return (
                       <div className={classes.balance}>
                         <Typography className={classes.balance} variant="title">
-                          {"$" + (cache.fiatPerEth[settings.budgetCurrency] * cache.account.balances.ETH).toFixed(2)}
+                          {strings.currency[settings.budgetCurrency] + (cache.fiatPerEth[settings.budgetCurrency] * cache.account.balances.ETH).toFixed(2)}
                         </Typography>
                         <Typography className={classes.balance} variant="body1">
                           {' (' + (cache.account.balances.ETH*100).toFixed(0) + 'mETH)'}

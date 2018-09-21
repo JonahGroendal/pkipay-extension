@@ -1,17 +1,18 @@
+import browser from './api/browser'
 import React, { Component } from 'react'
 import Nav from './Nav'
 import TabManage from './TabManage'
 import Tab2 from './Tab2'
 import Tab3 from './Tab3'
+import FullScreenDialog from './FullScreenDialog'
 import Web3ContextProvider from './Web3ContextProvider'
-import BrowserContext from './BrowserContext'
 import BrowserStorageContextProvider from './BrowserStorageContextProvider'
 import StorageDbContextProvider from './StorageDbContextProvider'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { withStyles } from '@material-ui/core/styles'
 import Tab from '@material-ui/core/Tab'
-import SwipeableViews from 'react-swipeable-views';
+import SwipeableViews from 'react-swipeable-views'
 
 const theme = createMuiTheme()
 export default class App extends Component {
@@ -26,7 +27,7 @@ export default class App extends Component {
   }
 
   componentWillMount() {
-    this.props.browser.tabs.query({
+    browser.tabs.query({
       'active': true,
       'lastFocusedWindow': true
     }, (tabs) => {
@@ -73,34 +74,32 @@ export default class App extends Component {
   render() {
     const { objectHostname } = this.state
     return (
-      <Web3ContextProvider web3js={this.props.web3js}>
-        <BrowserContext.Provider value={this.props.browser}>
-          <BrowserStorageContextProvider browser={this.props.browser}>
-            <StorageDbContextProvider browser={this.props.browser}>
-              <MuiThemeProvider theme={theme}>
-                <React.Fragment>
-                  <CssBaseline />
-                  <Nav
-                    tabIndex={this.state.tabIndex}
-                    onChangeTab={this.handleChangeTab}
-                  >
-                    <Tab label="Profile" />
-                    <Tab label="Manage" />
-                  </Nav>
-                  <SwipeableViews index={this.state.tabIndex}>
-                    <Tab2 hostname={objectHostname}/>
-                    <TabManage
-                      onViewProfile={hostname => {
-                        this.handleChangeObject(hostname)
-                        this.handleChangeTab({}, 0)
-                      }}
-                    />
-                  </SwipeableViews>
-                </React.Fragment>
-              </MuiThemeProvider>
-            </StorageDbContextProvider>
-          </BrowserStorageContextProvider>
-        </BrowserContext.Provider>
+      <Web3ContextProvider>
+        <BrowserStorageContextProvider browser={browser}>
+          <StorageDbContextProvider browser={browser}>
+            <MuiThemeProvider theme={theme}>
+              <React.Fragment>
+                <CssBaseline />
+                <Nav
+                  tabIndex={this.state.tabIndex}
+                  onChangeTab={this.handleChangeTab}
+                >
+                  <Tab label="Profile" />
+                  <Tab label="Manage" />
+                </Nav>
+                <SwipeableViews index={this.state.tabIndex}>
+                  <Tab2 hostname={objectHostname}/>
+                  <TabManage
+                    onViewProfile={hostname => {
+                      this.handleChangeObject(hostname)
+                      this.handleChangeTab({}, 0)
+                    }}
+                  />
+                </SwipeableViews>
+              </React.Fragment>
+            </MuiThemeProvider>
+          </StorageDbContextProvider>
+        </BrowserStorageContextProvider>
       </Web3ContextProvider>
     );
   }

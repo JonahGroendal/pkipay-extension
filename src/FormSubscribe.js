@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import symbols from './api/currencySymbols'
+import strings from './api/strings'
 import Web3Context from './Web3Context'
 import BrowserStorageContext from './BrowserStorageContext'
 import namehash from 'eth-ens-namehash'
@@ -151,7 +151,7 @@ class FormSubscribe extends Component {
     const { hostname, browserStorage, classes } = this.props
 
     if (!browserStorage.state) return ''
-    const currencySymbol = symbols[browserStorage.state.settings.currency]
+    const currencySymbol = strings.currency[browserStorage.state.settings.currency]
     const alreadySubscribed = browserStorage.state.subs.findIndex(e => e.hostname == hostname) != -1
 
     return (

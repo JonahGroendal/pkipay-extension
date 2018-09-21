@@ -1,5 +1,5 @@
+import web3js from './api/web3js'
 import React, { Component } from 'react'
-import Web3Context from './Web3Context'
 import Typography from '@material-ui/core/Typography'
 import { withStyles } from '@material-ui/core/styles'
 
@@ -13,18 +13,14 @@ class AddFunds extends Component {
   render() {
     const { classes } = this.props
     return (
-      <Web3Context.Consumer>
-        {value => { return (
-          <div>
-            <Typography variant="title">
-              Send ETH to:
-            </Typography>
-            <Typography variant="subheading" className={classes.publicKey}>
-               {value.web3js.eth.accounts.wallet[0].address}
-            </Typography>
-          </div>
-        )}}
-      </Web3Context.Consumer>
+      <div>
+        <Typography variant="title">
+          Send ETH to:
+        </Typography>
+        <Typography variant="subheading" className={classes.publicKey}>
+           {web3js.eth.accounts.wallet[0].address}
+        </Typography>
+      </div>
     )
   }
 }

@@ -4,10 +4,8 @@ import set from 'lodash/set'
 
 const defaultState = {
   settings: {
-    budget: 0,
     currency: "USD",
-    nextPayout: Date.now() + 30 * 24 * 60 * 60 * 1000, // one month from now
-    autoContributeEnabled: false
+    paymentSchedule: 'firstOfTheMonth'
   },
   subs: [
     // Permanent subscription
@@ -95,7 +93,7 @@ export default class BrowserStorageContextProvider extends Component {
     })
   }
 
-  render(){
+  render() {
     const state = this.state
     const handleChange = this.handleChange
     const appendToSubs = this.appendToSubs

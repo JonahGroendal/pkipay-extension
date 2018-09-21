@@ -1,5 +1,6 @@
+import web3js from './api/web3js'
+import { donate } from './api/contractGratis'
 import React, { Component } from 'react'
-import Web3Context from './Web3Context'
 import namehash from 'eth-ens-namehash'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
@@ -21,7 +22,7 @@ export default class FormDonate extends Component {
   }
 
   // Donate
-  handleSubmit(event, web3js, contractGratis) {
+  handleSubmit(event) {
     event.preventDefault()
 
     //console.log(value)
@@ -29,11 +30,7 @@ export default class FormDonate extends Component {
     let recipient = namehash.hash(this.props.shortUrl)
     let amount = web3js.utils.toWei(this.state.value, 'ether')
 
-    contractGratis.methods.donate(recipient).send({
-      value: amount,
-      from: web3js.eth.accounts.wallet[0].address,
-      gas: 100000
-    })
+    donate(recipient, amount)
     .then(success => {
       console.log("Success: " + JSON.stringify(success))
     })
@@ -44,35 +41,31 @@ export default class FormDonate extends Component {
 
   render() {
     return (
-      <Web3Context.Consumer>
-        {value => { return (
-          <div>
-            {/*<form onSubmit={event => this.handleSubmit(event, value.web3js, value.contractGratis)}>
-              Donate ETH:
-              <input
-                type="number"
-                step=".000000000000000001"
-                value={this.state.value}
-                onChange={this.handleChange}
-              />
-              <input type="submit" />
-            </form>*/}
+      <div>
+        {/*<form onSubmit={event => this.handleSubmit(event, value.web3js, value.contractGratis)}>
+          Donate ETH:
+          <input
+            type="number"
+            step=".000000000000000001"
+            value={this.state.value}
+            onChange={this.handleChange}
+          />
+          <input type="submit" />
+        </form>*/}
 
-            <TextField
-              label="monthly amount"
-              onChange={this.handleChange}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">Kg</InputAdornment>,
-                type: "number",
-                step: ".000000000000000001"
-              }}
-            />
-            <Button variant="outlined" onClick={event => this.handleSubmit(event, value.web3js, value.contractGratis)}>
-              Submit
-            </Button>
-          </div>
-        )}}
-      </Web3Context.Consumer>
+        <TextField
+          label="monthly amount"
+          onChange={this.handleChange}
+          InputProps={{
+            startAdornment: <InputAdornment position="start">Kg</InputAdornment>,
+            type: "number",
+            step: ".000000000000000001"
+          }}
+        />
+        <Button variant="outlined" onClick={this.handleSubmit}>
+          Submit
+        </Button>
+      </div>
     )
   }
 }

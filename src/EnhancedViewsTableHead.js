@@ -38,7 +38,7 @@ class EnhancedViewsTableHead extends React.Component {
 
   columnsAttributes = [
     { key: 'name', numeric: false, padding: 'none', label: 'Site', className: this.props.classes.nameColumn },
-    { key: 'share', numeric: false, padding: 'none', label: 'Amount', className: this.props.classes.shareColumn },
+    { key: 'share', numeric: true, padding: 'none', label: 'Amount', className: this.props.classes.shareColumn },
     { key: 'toProfile', numeric: false, padding: 'none', label: '', className: this.props.classes.unsubscribeColumn },
   ];
 

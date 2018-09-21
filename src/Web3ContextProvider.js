@@ -1,15 +1,14 @@
+import web3js from './api/web3js'
+import { contractGratis } from './api/contractGratis'
 import React, { Component } from 'react'
 import namehash from 'eth-ens-namehash'
 //import cryptoCompare from 'cryptocompare'
 import Web3Context from './Web3Context'
-// import Web3 from 'web3';
-import gratisABI from './gratisABI.js';
 
 export default class Web3ContextProvider extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      contractGratis: '',
       cache: {
         account: {
           balances: {
@@ -32,7 +31,6 @@ export default class Web3ContextProvider extends Component {
     }
     this.entityNameHash = namehash.hash(this.props.shortUrl)
 
-    this.initializeContractGratis = this.initializeContractGratis.bind(this)
     this.initializeTotalDonations = this.initializeTotalDonations.bind(this)
     this.addListenerPendingDonation = this.addListenerPendingDonation.bind(this)
     this.initializeCache = this.initializeCache.bind(this)
@@ -41,20 +39,15 @@ export default class Web3ContextProvider extends Component {
 
   // make this async and use await instead of .then
   componentDidMount() {
-    //web3js.eth.accounts.wallet.add("0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009")
-    this.props.web3js.eth.accounts.wallet.add("0x47088d1c54d1d232db25ce31f669c873c21ecf5c5a3d0790a2b7856e52655798")
-
-    let contractGratis = this.initializeContractGratis(this.props.web3js)
-
-    this.initializeEntityAccount(contractGratis)
+    this.initializeEntityAccount()
     .then(accountExists => {
-        return this.initializeTotalDonations(contractGratis, accountExists)
+        return this.initializeTotalDonations(accountExists)
     })
     .then(nextBlockNumber => {
-      this.addListenerPendingDonation(contractGratis, nextBlockNumber)
+      this.addListenerPendingDonation(nextBlockNumber)
     })
     .then(() => {
-      this.initializeCache(this.props.web3js)
+      this.initializeCache()
     })
   }
 
@@ -81,7 +74,7 @@ export default class Web3ContextProvider extends Component {
     )
   }
 
-  addListenerPendingDonation(contractGratis, fromBlock) {
+  addListenerPendingDonation(fromBlock) {
     let thisClass = this
     contractGratis.events.PendingDonation({
       filter: {nameHash: this.entityNameHash},
@@ -92,18 +85,7 @@ export default class Web3ContextProvider extends Component {
     })
   }
 
-  initializeContractGratis(web3js) {
-    let gratisAddr = "0xcbb589435491983194b084f12c3c1523a2c0cc21"
-    let contractGratis = new web3js.eth.Contract(gratisABI, gratisAddr)
-
-    this.setState({
-      contractGratis: contractGratis
-    })
-
-    return contractGratis
-  }
-
-  async initializeEntityAccount(contractGratis) {
+  async initializeEntityAccount() {
     let account = await contractGratis.methods.accounts(this.entityNameHash).call()
 
     const cache = JSON.parse(JSON.stringify(this.state.cache))
@@ -116,7 +98,7 @@ export default class Web3ContextProvider extends Component {
     return accountExists
   }
 
-  async initializeTotalDonations(contractGratis, accountExists) {
+  async initializeTotalDonations(accountExists) {
     let eventName
     accountExists ? eventName='Donation' : eventName='PendingDonation'
     let nameHash = this.entityNameHash
@@ -142,7 +124,7 @@ export default class Web3ContextProvider extends Component {
     return pastDonations[pastDonations.length - 1].blockNumber + 1
   }
 
-  async initializeCache(web3js) {
+  async initializeCache() {
     const cache = JSON.parse(JSON.stringify(this.state.cache))
 
     //let prices = await cryptoCompare.price('ETH', ['USD', 'EUR', 'GBP', 'JPY', 'CAD'])

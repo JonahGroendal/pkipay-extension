@@ -1,5 +1,5 @@
-import React from 'react'
-import { Component } from 'react'
+import React, { Component } from 'react'
+import FullScreenDialogButtonSettings from './FullScreenDialogButtonSettings'
 import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles'
 import AppBar from '@material-ui/core/AppBar'
@@ -7,8 +7,6 @@ import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import Tabs from '@material-ui/core/Tabs'
 import Button from '@material-ui/core/Button'
-import IconButton from '@material-ui/core/IconButton'
-import SettingsIcon from '@material-ui/icons/SettingsApplications'
 
 const styles = theme => ({
   root: {
@@ -27,9 +25,21 @@ const styles = theme => ({
 })
 
 class Nav extends Component {
+  state = {
+    open: false,
+  };
+
+  handleClickOpen = () => {
+    this.setState({ open: true });
+  };
+
+  handleClose = () => {
+    this.setState({ open: false });
+  };
 
   render() {
     const { classes, tabIndex, children, onChangeTab } = this.props;
+    const { open } = this.state;
     return (
       <div className={classes.root}>
         <AppBar position="static" className={classes.appBar}>
@@ -37,9 +47,7 @@ class Nav extends Component {
             <Typography variant="title" color="inherit" className={classes.flex}>
               Gratiis
             </Typography>
-            <IconButton className={classes.menuButton} color="inherit" aria-label="Menu">
-              <SettingsIcon />
-            </IconButton>
+            <FullScreenDialogButtonSettings />
           </Toolbar>
           <Tabs
             value={tabIndex}

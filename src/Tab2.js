@@ -1,9 +1,8 @@
-import React, { Component } from 'react'
+import Web3Context from './Web3Context'
 import FormSubscribe from './FormSubscribe'
 import FormDonate from './FormDonate.js'
 import namehash from 'eth-ens-namehash'
-import Web3Context from './Web3Context'
-import BrowserContext from './BrowserContext'
+import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import Avatar from '@material-ui/core/Avatar'
@@ -65,7 +64,7 @@ class Tab2 extends Component {
   }
 
   render() {
-    const { browser, hostname, classes } = this.props
+    const { hostname, classes } = this.props
     const parts = hostname.split('.')
     const siteUrl = parts[parts.length-2]+'.'+parts[parts.length-1]
     // const faviconUrl = 'https://' + siteUrl + '/apple-touch-icon.png'
@@ -104,12 +103,7 @@ class Tab2 extends Component {
 
 }
 
-Tab2 = withStyles(styles)(Tab2)
-export default props => (
-  <BrowserContext.Consumer>
-    {browser => <Tab2 {...props} browser={browser} />}
-  </BrowserContext.Consumer>
-)
+export default withStyles(styles)(Tab2)
 
 // componentDidUpdate(prevProps, prevState, snapshot) {
 //   if (this.props.shortUrl !== prevProps.shortUrl) {

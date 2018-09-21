@@ -11,7 +11,8 @@
   "background": {
     "scripts": [
         "storagedb.js",
-        "background.js"
+        "background.js",
+        "alarms.js"
     ]
   },
   "content_scripts": [{
@@ -20,6 +21,7 @@
     "all_frames": false
   }],
   "permissions": [
+    "alarms",
     "tabs",
     "webNavigation",
     "notifications",

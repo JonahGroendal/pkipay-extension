@@ -1,3 +1,4 @@
+import strings from './api/strings'
 import React from 'react';
 import EnhancedTableToolbar from './EnhancedTableToolbar';
 import EnhancedViewsTableHead from './EnhancedViewsTableHead';
@@ -95,7 +96,7 @@ class SubscriptionsTable extends React.Component {
     return (
       <BrowserStorageContext.Consumer>
         {({ state, removeFromSubs }) => <Paper className={classes.root}>
-          <EnhancedTableToolbar numSelected={0} title="Monthly Subscriptions" />
+          <EnhancedTableToolbar numSelected={0} title="Monthly Subscriptions" subTitle={"next payment on " + Date(strings.paymentSchedule[state.settings.paymentSchedule](Date.now())).toString()}/>
           <Table className={classes.table} aria-labelledby="tableTitle">
             <EnhancedViewsTableHead
               order={order}
