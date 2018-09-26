@@ -95,119 +95,125 @@ class SubscriptionsTable extends React.Component {
     const { order, orderBy, rowsPerPage, page } = this.state;
     return (
       <BrowserStorageContext.Consumer>
-        {({ state, removeFromSubs }) => <Paper className={classes.root}>
-          <EnhancedTableToolbar numSelected={0} title="Monthly Subscriptions" subTitle={"next payment on " + Date(strings.paymentSchedule[state.settings.paymentSchedule](Date.now())).toString()}/>
-          <Table className={classes.table} aria-labelledby="tableTitle">
-            <EnhancedViewsTableHead
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={this.handleRequestSort}
-              rowCount={state.subs.length}
-            />
-            <TableBody>
-              {
-                // slice() is required to deep copy state.subs before sorting
-                state.subs.slice(0,1).concat( state.subs.slice(1).sort(getSorting(order, orderBy)) )
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map(n => {
-                  const parts = n.hostname.split('.')
-                  const siteUrl = parts[parts.length-2]+'.'+parts[parts.length-1]
-                  const faviconUrl = 'https://' + siteUrl + '/apple-touch-icon.png'
-                  const faviconUrlSmall = 'https://www.google.com/s2/favicons?domain=' + n.hostname
-                  return (
-                    <TableRow
-                      className={classes.tableRow}
-                      hover
-                      tabIndex={-1}
-                      key={n.id}
-                    >
-                      <TableCell
-                        padding="none"
-                        className={classes.tableCell}
-                        onClick={event => onViewProfile(n.hostname)}
-                      >
-                        <Tooltip title="go to profile">
-                          <Button className={classes.buttonUnsubscribe} size="small" aria-label="Launch">
-                            <KeyboardArrowLeftIcon />
-                            {
-                              n.hostname.includes("#")
-                              ? <AccountCircleIcon />
-                              : <img src={faviconUrlSmall} height="16px" width="16px" style={{marginRight: '8px'}}/>
-                            }
-                          </Button>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell
-                        component="th"
-                        scope="row"
-                        padding="none"
-                        className={classes.tableCell}
-                        onClick={event => onViewProfile(n.hostname)}
-                      >
-                        <Tooltip title={n.hostname}>
-                          <Typography variant="subheading">
-                            {n.name}
-                          </Typography>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell
-                        padding="none"
-                        className={classes.tableCell}
-                      >
-                        <Tooltip title={n.amount+' '+state.settings.currency+' per month'}>
-                          <div className={classes.amount}>
-                            <Typography variant="subheading">
-                              {n.amount}
-                            </Typography>
-                             &nbsp;{strings.currency[state.settings.currency]}
-                          </div>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell padding="none" className={classes.tableCell}>
-                        {(n.hostname !== "gratiis#mostViewedSites") && <Tooltip title="unsubscribe">
-                          <Button
-                            className={classes.buttonUnsubscribe}
-                            onClick={e => removeFromSubs(n.hostname)}
-                            size="small"
-                            aria-label="Launch"
+        {storage => {
+          if (!storage.state) return ''
+          const { state, removeFromSubs } = storage
+          return (
+            <Paper className={classes.root}>
+              <EnhancedTableToolbar numSelected={0} title="Monthly Subscriptions" subTitle={"next payment on " + Date(strings.paymentSchedule[state.settings.paymentSchedule](Date.now())).toString()}/>
+              <Table className={classes.table} aria-labelledby="tableTitle">
+                <EnhancedViewsTableHead
+                  order={order}
+                  orderBy={orderBy}
+                  onRequestSort={this.handleRequestSort}
+                  rowCount={state.subs.length}
+                />
+                <TableBody>
+                  {
+                    // slice() is required to deep copy state.subs before sorting
+                    state.subs.slice(0,1).concat( state.subs.slice(1).sort(getSorting(order, orderBy)) )
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((n, index) => {
+                      const parts = n.hostname.split('.')
+                      const siteUrl = parts[parts.length-2]+'.'+parts[parts.length-1]
+                      const faviconUrl = 'https://' + siteUrl + '/apple-touch-icon.png'
+                      const faviconUrlSmall = 'https://www.google.com/s2/favicons?domain=' + n.hostname
+                      return (
+                        <TableRow
+                          className={classes.tableRow}
+                          hover
+                          tabIndex={-1}
+                          key={index}
+                        >
+                          <TableCell
+                            padding="none"
+                            className={classes.tableCell}
+                            onClick={event => onViewProfile(n.hostname)}
                           >
-                            <DeleteOutlinedIcon />
-                          </Button>
-                        </Tooltip>}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              {// Now fill in rest of page with blank rows
-              [...Array(rowsPerPage - Math.min(rowsPerPage, state.subs.length - page * rowsPerPage))]
-              .map((row, index) => {
-                return(
-                  <TableRow key={2147483647-index} className={classes.tableRow}>
-                    <TableCell colSpan={4} className={classes.tableCell}/>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-          <TablePagination
-            classes={{toolbar: classes.pagination}}
-            component="div"
-            count={state.subs.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            rowsPerPageOptions={[4,]}
-            backIconButtonProps={{
-              'aria-label': 'Previous Page',
-              style: {height: '32px'},
-            }}
-            nextIconButtonProps={{
-              'aria-label': 'Next Page',
-              style: {height: '32px'},
-            }}
-            onChangePage={this.handleChangePage}
-            onChangeRowsPerPage={this.handleChangeRowsPerPage}
-          />
-        </Paper>}
+                            <Tooltip title="go to profile">
+                              <Button className={classes.buttonUnsubscribe} size="small" aria-label="Launch">
+                                <KeyboardArrowLeftIcon />
+                                {
+                                  n.hostname.includes("#")
+                                  ? <AccountCircleIcon />
+                                  : <img src={faviconUrlSmall} height="16px" width="16px" style={{marginRight: '8px'}}/>
+                                }
+                              </Button>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell
+                            component="th"
+                            scope="row"
+                            padding="none"
+                            className={classes.tableCell}
+                            onClick={event => onViewProfile(n.hostname)}
+                          >
+                            <Tooltip title={n.hostname}>
+                              <Typography variant="subheading">
+                                {n.hostname}
+                              </Typography>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell
+                            padding="none"
+                            className={classes.tableCell}
+                          >
+                            <Tooltip title={n.amount+' '+state.settings.currency+' per month'}>
+                              <div className={classes.amount}>
+                                <Typography variant="subheading">
+                                  {n.amount}
+                                </Typography>
+                                 &nbsp;{strings.currency[state.settings.currency]}
+                              </div>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell padding="none" className={classes.tableCell}>
+                            {(n.hostname !== "gratiis#mostViewedSites") && <Tooltip title="unsubscribe">
+                              <Button
+                                className={classes.buttonUnsubscribe}
+                                onClick={e => removeFromSubs(n.hostname)}
+                                size="small"
+                                aria-label="Launch"
+                              >
+                                <DeleteOutlinedIcon />
+                              </Button>
+                            </Tooltip>}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  {// Now fill in rest of page with blank rows
+                  [...Array(rowsPerPage - Math.min(rowsPerPage, state.subs.length - page * rowsPerPage))]
+                  .map((row, index) => {
+                    return(
+                      <TableRow key={2147483647-index} className={classes.tableRow}>
+                        <TableCell colSpan={4} className={classes.tableCell}/>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              <TablePagination
+                classes={{toolbar: classes.pagination}}
+                component="div"
+                count={state.subs.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                rowsPerPageOptions={[4,]}
+                backIconButtonProps={{
+                  'aria-label': 'Previous Page',
+                  style: {height: '32px'},
+                }}
+                nextIconButtonProps={{
+                  'aria-label': 'Next Page',
+                  style: {height: '32px'},
+                }}
+                onChangePage={this.handleChangePage}
+                onChangeRowsPerPage={this.handleChangeRowsPerPage}
+              />
+            </Paper>
+          )
+        }}
       </BrowserStorageContext.Consumer>
     );
   }

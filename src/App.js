@@ -1,20 +1,21 @@
 import browser from './api/browser'
 import React, { Component } from 'react'
 import Nav from './Nav'
-import TabManage from './TabManage'
-import Tab2 from './Tab2'
-import Tab3 from './Tab3'
-import FullScreenDialog from './FullScreenDialog'
+import Page from './Page'
+import Balance from './Balance'
+import SubscriptionsTable from './SubscriptionsTable'
+import Profile from './Profile'
 import Web3ContextProvider from './Web3ContextProvider'
 import BrowserStorageContextProvider from './BrowserStorageContextProvider'
 import StorageDbContextProvider from './StorageDbContextProvider'
+import FullScreenDialogPayment from './FullScreenDialogPayment'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import { withStyles } from '@material-ui/core/styles'
 import Tab from '@material-ui/core/Tab'
 import SwipeableViews from 'react-swipeable-views'
 
 const theme = createMuiTheme()
+console.log(theme)
 export default class App extends Component {
   constructor(props) {
     super(props)
@@ -80,6 +81,7 @@ export default class App extends Component {
             <MuiThemeProvider theme={theme}>
               <React.Fragment>
                 <CssBaseline />
+                <FullScreenDialogPayment />
                 <Nav
                   tabIndex={this.state.tabIndex}
                   onChangeTab={this.handleChangeTab}
@@ -88,13 +90,16 @@ export default class App extends Component {
                   <Tab label="Manage" />
                 </Nav>
                 <SwipeableViews index={this.state.tabIndex}>
-                  <Tab2 hostname={objectHostname}/>
-                  <TabManage
-                    onViewProfile={hostname => {
+                  <Page>
+                    <Profile hostname={objectHostname}/>
+                  </Page>
+                  <Page>
+                    <Balance />
+                    <SubscriptionsTable onViewProfile={hostname => {
                       this.handleChangeObject(hostname)
                       this.handleChangeTab({}, 0)
-                    }}
-                  />
+                    }}/>
+                  </Page>
                 </SwipeableViews>
               </React.Fragment>
             </MuiThemeProvider>

@@ -10,9 +10,9 @@ import { withStyles } from '@material-ui/core/styles'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
-import Tooltip from '@material-ui/core/Tooltip';
-import Switch from '@material-ui/core/Switch';
-import BrowserStorageContext from './BrowserStorageContext';
+import Tooltip from '@material-ui/core/Tooltip'
+import Switch from '@material-ui/core/Switch'
+import BrowserStorageContext from './BrowserStorageContext'
 
 const styles = theme => ({
   root: {

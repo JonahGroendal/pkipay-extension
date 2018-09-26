@@ -72,6 +72,15 @@ var bkg =
 
          return true;
       }
+      else if(request.action == "getSites")
+      {
+         db.getSites({}).then(function(sites)
+         {
+            sendResponse(sites);
+         });
+
+         return true;
+      }
       else if(request.action == "getLastContribution")
       {
          db.getLastContribution().then(function(contribution)
