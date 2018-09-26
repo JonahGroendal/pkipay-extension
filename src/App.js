@@ -7,7 +7,6 @@ import SubscriptionsTable from './SubscriptionsTable'
 import Profile from './Profile'
 import Web3ContextProvider from './Web3ContextProvider'
 import BrowserStorageContextProvider from './BrowserStorageContextProvider'
-import StorageDbContextProvider from './StorageDbContextProvider'
 import FullScreenDialogPayment from './FullScreenDialogPayment'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
@@ -67,6 +66,10 @@ export default class App extends Component {
     this.setState({ tabIndex: value })
   }
 
+  handleChangeIndex = index => {
+    this.setState({ tabIndex: index });
+  };
+
   handleChangeObject = (objectHostname) => {
     this.setState({ objectHostname: objectHostname })
 
@@ -77,33 +80,34 @@ export default class App extends Component {
     return (
       <Web3ContextProvider>
         <BrowserStorageContextProvider browser={browser}>
-          <StorageDbContextProvider browser={browser}>
-            <MuiThemeProvider theme={theme}>
-              <React.Fragment>
-                <CssBaseline />
-                <FullScreenDialogPayment />
-                <Nav
-                  tabIndex={this.state.tabIndex}
-                  onChangeTab={this.handleChangeTab}
-                >
-                  <Tab label="Profile" />
-                  <Tab label="Manage" />
-                </Nav>
-                <SwipeableViews index={this.state.tabIndex}>
-                  <Page>
-                    <Profile hostname={objectHostname}/>
-                  </Page>
-                  <Page>
-                    <Balance />
-                    <SubscriptionsTable onViewProfile={hostname => {
-                      this.handleChangeObject(hostname)
-                      this.handleChangeTab({}, 0)
-                    }}/>
-                  </Page>
-                </SwipeableViews>
-              </React.Fragment>
-            </MuiThemeProvider>
-          </StorageDbContextProvider>
+          <MuiThemeProvider theme={theme}>
+            <React.Fragment>
+              <CssBaseline />
+              <FullScreenDialogPayment />
+              <Nav
+                tabIndex={this.state.tabIndex}
+                onChangeTab={this.handleChangeTab}
+              >
+                <Tab label="Profile" />
+                <Tab label="Manage" />
+              </Nav>
+              <SwipeableViews
+                index={this.state.tabIndex}
+                onChangeIndex={this.handleChangeIndex}
+              >
+                <Page>
+                  <Profile hostname={objectHostname}/>
+                </Page>
+                <Page>
+                  <Balance />
+                  <SubscriptionsTable onViewProfile={hostname => {
+                    this.handleChangeObject(hostname)
+                    this.handleChangeTab({}, 0)
+                  }}/>
+                </Page>
+              </SwipeableViews>
+            </React.Fragment>
+          </MuiThemeProvider>
         </BrowserStorageContextProvider>
       </Web3ContextProvider>
     );

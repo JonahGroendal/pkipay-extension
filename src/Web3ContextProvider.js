@@ -2,7 +2,7 @@ import web3js from './api/web3js'
 import { contractGratis } from './api/contractGratis'
 import React, { Component } from 'react'
 import namehash from 'eth-ens-namehash'
-//import cryptoCompare from 'cryptocompare'
+import cryptoCompare from 'cryptocompare'
 import Web3Context from './Web3Context'
 
 export default class Web3ContextProvider extends Component {
@@ -127,15 +127,8 @@ export default class Web3ContextProvider extends Component {
   async initializeCache() {
     const cache = JSON.parse(JSON.stringify(this.state.cache))
 
-    //let prices = await cryptoCompare.price('ETH', ['USD', 'EUR', 'GBP', 'JPY', 'CAD'])
-    //cache.fiatPerEth = prices
-    cache.fiatPerEth = {
-      USD: 1,
-      EUR: 1,
-      GBP: 1,
-      JPY: 1,
-      CAD: 1,
-    } // temporary hack!
+    let prices = await cryptoCompare.price('ETH', ['USD', 'EUR', 'GBP', 'JPY', 'CAD'])
+    cache.fiatPerEth = prices
 
     let address = await web3js.eth.getBalance(web3js.eth.accounts.wallet[0].address)
     let ethValue = await web3js.utils.fromWei(address)

@@ -1,6 +1,5 @@
 import Web3Context from './Web3Context'
 import FormSubscribe from './FormSubscribe'
-import FormDonate from './FormDonate.js'
 import namehash from 'eth-ens-namehash'
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
@@ -11,7 +10,7 @@ import getPixels from 'get-pixels'
 
 const styles = theme => ({
   paper: {
-    marginTop: theme.spacing.unit * 3,
+    marginTop: theme.spacing.unit * 1,
     padding: theme.spacing.unit * 2,
     display: 'flex',
     flexDirection: 'column',

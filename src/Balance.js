@@ -15,7 +15,6 @@ const styles = theme => ({
     flexDirection: 'column',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: theme.spacing.unit * 2,
     padding: theme.spacing.unit * 2,
   },
   row: {

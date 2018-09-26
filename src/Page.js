@@ -6,13 +6,21 @@ const styles = theme => ({
     paddingLeft: theme.spacing.unit,
     paddingRight: theme.spacing.unit,
     paddingBottom: theme.spacing.unit,
+  },
+  card: {
+    marginTop: theme.spacing.unit * 2
   }
 })
 
 function Page(props) {
+  const { classes, children } = props
   return (
-    <div className={props.classes.root}>
-      { props.children }
+    <div className={classes.root}>
+      {React.Children.map(children, child => { return (
+        <div className={classes.card}>
+          { child }
+        </div>
+      )})}
     </div>
   )
 }
