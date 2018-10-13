@@ -11,6 +11,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 
 const styles = theme => ({
   root: {
+    paddingTop: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
     paddingLeft: theme.spacing.unit * 2,
     minHeight:  theme.spacing.unit * 6
@@ -37,41 +38,24 @@ const styles = theme => ({
 });
 
 function EnhancedTableToolbar(props) {
-  const { numSelected, title, classes } = props;
+  const { title, subtitle, classes } = props;
   return (
-    <Toolbar
-      className={classNames(classes.root, {
-        [classes.highlight]: numSelected > 0,
-      })}
-    >
+    <Toolbar className={classes.root}>
       <div className={classes.title}>
-        {numSelected > 0 ? (
-          <Typography color="inherit" variant="subheading">
-            {numSelected} selected
-          </Typography>
-        ) : (
-          <Typography variant="title" id="tableTitle">
-            {title}
-          </Typography>
-        )}
+        <Typography variant="title" id="tabletitle">
+          {title}
+        </Typography>
+        <Typography variant="body1">
+          {subtitle}
+        </Typography>
       </div>
       <div className={classes.spacer} />
-      <div className={classes.actions}>
-        {numSelected > 0 ? (
-          <Tooltip title="Delete">
-            <IconButton aria-label="Delete">
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        ) : ''}
-      </div>
     </Toolbar>
   );
 }
 
 EnhancedTableToolbar.propTypes = {
   classes: PropTypes.object.isRequired,
-  numSelected: PropTypes.number.isRequired,
 };
 
 export default withStyles(styles)(EnhancedTableToolbar)

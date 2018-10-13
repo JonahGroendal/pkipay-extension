@@ -1,109 +1,87 @@
-import browser from './api/browser'
 import React, { Component } from 'react'
 import Nav from './Nav'
 import Page from './Page'
 import Balance from './Balance'
-import SubscriptionsTable from './SubscriptionsTable'
+import Subscriptions from './Subscriptions'
+import Hodlings from './Hodlings'
 import Profile from './Profile'
+import Token from './Token'
+import MostViewedSites from './MostViewedSites'
 import Web3ContextProvider from './Web3ContextProvider'
 import BrowserStorageContextProvider from './BrowserStorageContextProvider'
 import FullScreenDialogPayment from './FullScreenDialogPayment'
+import browser, { getFromStorage } from './api/browser'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import Tab from '@material-ui/core/Tab'
 import SwipeableViews from 'react-swipeable-views'
 
-const theme = createMuiTheme()
-console.log(theme)
+const theme = {
+  light: createMuiTheme(),
+  dark: createMuiTheme({
+    palette: {
+      type: 'dark',
+    },
+  }),
+}
+console.log(theme.light)
+
 export default class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
       tabIndex: 0,
       objectHostname: '',
+      themeType: 'light',
     }
-
-    this.handleChangeTab = this.handleChangeTab.bind(this)
   }
 
-  componentWillMount() {
+  componentDidMount() {
     browser.tabs.query({
       'active': true,
       'lastFocusedWindow': true
     }, (tabs) => {
       const hostname = this.getDomain(tabs[0].url)
-      this.setState({objectHostname: hostname})
+      this.setState({ objectHostname: hostname })
     })
   }
-
-  // componentDidUpdate(prevProps, prevState, snapshot) {
-  //   // Update URL asynchronously after component renders
-  //   if (this.state.url === "") {
-  //     thisClass = this;
-  //     browser.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
-  //       thisClass.setState({
-  //         url: tabs[0].url,
-  //         shortUrl: thisClass.shorten(tabs[0].url)
-  //       });
-  //     });
-  //   }
-  // }
-
-  // shorten(url) {
-  //   if (url.substring(0, 5) !== 'https') {
-  //     return "";
-  //   }
-  //   console.log("url being split:")
-  //   console.log(url)
-  //   let parts = url.split(".", 3);
-  //   if (parts.length === 2) {
-  //     return parts[0].split("//")[1] + '.' + parts[1].split("/", 1)
-  //   }
-  //   return parts[1] + '.' + parts[2].split("/", 1)
-  // }
 
   handleChangeTab = (event, value) => {
     this.setState({ tabIndex: value })
   }
 
-  handleChangeIndex = index => {
-    this.setState({ tabIndex: index });
-  };
-
-  handleChangeObject = (objectHostname) => {
-    this.setState({ objectHostname: objectHostname })
-
+  handleChange = key => value => {
+    this.setState({ [key]: value })
   }
 
   render() {
-    const { objectHostname } = this.state
+    const { objectHostname, themeType } = this.state
+    const isMostViewedSites = (objectHostname === 'gratiis#mostViewedSites')
     return (
       <Web3ContextProvider>
-        <BrowserStorageContextProvider browser={browser}>
-          <MuiThemeProvider theme={theme}>
+        <BrowserStorageContextProvider browser={browser}
+          onChangeThemeType={this.handleChange('themeType')}>
+          <MuiThemeProvider theme={theme[themeType]}>
             <React.Fragment>
               <CssBaseline />
               <FullScreenDialogPayment />
-              <Nav
-                tabIndex={this.state.tabIndex}
-                onChangeTab={this.handleChangeTab}
-              >
+              <Nav tabIndex={this.state.tabIndex} onChangeTab={this.handleChangeTab}>
                 <Tab label="Profile" />
                 <Tab label="Manage" />
               </Nav>
-              <SwipeableViews
-                index={this.state.tabIndex}
-                onChangeIndex={this.handleChangeIndex}
-              >
+              <SwipeableViews index={this.state.tabIndex}
+                onChangeIndex={this.handleChange('tabIndex')}>
                 <Page>
                   <Profile hostname={objectHostname}/>
+                  {isMostViewedSites && <MostViewedSites />}
+                  {!isMostViewedSites && <Token hostname={objectHostname} />}
                 </Page>
                 <Page>
                   <Balance />
-                  <SubscriptionsTable onViewProfile={hostname => {
-                    this.handleChangeObject(hostname)
-                    this.handleChangeTab({}, 0)
-                  }}/>
+                  <Subscriptions onViewProfile={hostname => {
+                    this.handleChange('objectHostname')(hostname)
+                    this.handleChangeTab({}, 0) }}/>
+                  <Hodlings />
                 </Page>
               </SwipeableViews>
             </React.Fragment>
@@ -116,6 +94,7 @@ export default class App extends Component {
   // Same as tabHandler.getDomain() in background.js
   getDomain(url)
   {
+    console.log(url)
      if (url.match(/(http|https):\/\/[^0-9.]+/)) {
         var a = document.createElement("a");
         a.href = url;

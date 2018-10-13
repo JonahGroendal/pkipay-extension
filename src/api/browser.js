@@ -12,4 +12,16 @@ else if (typeof browser === 'undefined' || typeof browser.tabs === 'undefined') 
   var browser = chrome
 }
 
+
 export default browser
+
+export function getFromStorage(keys) {
+  return new Promise(function(resolve, reject) {
+    browser.storage.local.get(keys, function(result) {
+      if (!browser.lastError)
+        resolve(result)
+      else
+        reject(browser.lastError)
+    })
+  })
+}

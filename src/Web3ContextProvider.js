@@ -9,27 +9,27 @@ export default class Web3ContextProvider extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      cache: {
-        account: {
-          balances: {
-            ETH: '',
-          },
+      subject: {
+        balances: {
+          ETH: '',
         },
-        fiatPerEth: {
-          USD: '',
-          EUR: '',
-          GBP: '',
-          JPY: '',
-          CAD: '',
-        },
-        entity: {
-          accountExists: false,
-          account: '',
-          totalDonations: ''
-        }
+      },
+      fiatPerEth: {
+        USD: '',
+        EUR: '',
+        GBP: '',
+        JPY: '',
+        CAD: '',
+      },
+      object: {
+        accountExists: false,
+        account: '',
+        donationsTotal: 0,
+        donationsLastMonth: 0,
+        tokenSupply: 0,
       }
     }
-    this.entityNameHash = namehash.hash(this.props.shortUrl)
+    this.objectNameHash = namehash.hash(this.props.shortUrl)
 
     this.initializeTotalDonations = this.initializeTotalDonations.bind(this)
     this.addListenerPendingDonation = this.addListenerPendingDonation.bind(this)
@@ -39,7 +39,7 @@ export default class Web3ContextProvider extends Component {
 
   // make this async and use await instead of .then
   componentDidMount() {
-    this.initializeEntityAccount()
+    this.initializeObjectAccount()
     .then(accountExists => {
         return this.initializeTotalDonations(accountExists)
     })
@@ -54,12 +54,11 @@ export default class Web3ContextProvider extends Component {
   handleLog(event) {
     switch (event.event) {
       case 'PendingDonation':
-        let newTotalDonations = this.state.cache.entity.totalDonations + parseInt(event.returnValues[2], 10)
-        const cache = JSON.parse(JSON.stringify(this.state.cache))
-        cache.entity.totalDonations = newTotalDonations
-        this.setState({
-          cache: cache
-        })
+        let newTotalDonations = this.state.object.totalDonations + parseInt(event.returnValues[2], 10)
+        const object = JSON.parse(JSON.stringify(this.state.object))
+        object.totalDonations = newTotalDonations
+        this.setState({ object: object })
+        break
 
     }
   }
@@ -77,7 +76,7 @@ export default class Web3ContextProvider extends Component {
   addListenerPendingDonation(fromBlock) {
     let thisClass = this
     contractGratis.events.PendingDonation({
-      filter: {nameHash: this.entityNameHash},
+      filter: {nameHash: this.objectNameHash},
       fromBlock: fromBlock
     })
     .on('data', function(event) {
@@ -85,23 +84,21 @@ export default class Web3ContextProvider extends Component {
     })
   }
 
-  async initializeEntityAccount() {
-    let account = await contractGratis.methods.accounts(this.entityNameHash).call()
+  async initializeObjectAccount() {
+    let account = await contractGratis.methods.accounts(this.objectNameHash).call()
 
-    const cache = JSON.parse(JSON.stringify(this.state.cache))
-    cache.entity.account = account
-    this.setState({
-      cache: cache
-    })
+    const object = JSON.parse(JSON.stringify(this.state.object))
+    object.account = account
+    this.setState({ object: object })
 
-    let accountExists = (account[0] !== '0x0000000000000000000000000000000000000000')
+    const accountExists = (account[0] !== '0x0000000000000000000000000000000000000000')
     return accountExists
   }
 
   async initializeTotalDonations(accountExists) {
     let eventName
     accountExists ? eventName='Donation' : eventName='PendingDonation'
-    let nameHash = this.entityNameHash
+    let nameHash = this.objectNameHash
 
     let pastDonations = await contractGratis.getPastEvents(eventName, {
       filter: {nameHash: nameHash},
@@ -113,10 +110,10 @@ export default class Web3ContextProvider extends Component {
       donationsThusFar += parseInt(donation.returnValues[2], 10)
     })
 
-    const cache = JSON.parse(JSON.stringify(this.state.cache))
-    cache.entity.totalDonations = donationsThusFar
+    let object = JSON.parse(JSON.stringify(this.state.object))
+    object.totalDonations = donationsThusFar
     this.setState({
-      cache: cache
+      object: object
     })
 
     if (pastDonations.length === 0) return 0
@@ -125,17 +122,17 @@ export default class Web3ContextProvider extends Component {
   }
 
   async initializeCache() {
-    const cache = JSON.parse(JSON.stringify(this.state.cache))
+    let subject = JSON.parse(JSON.stringify(this.state.subject))
 
-    let prices = await cryptoCompare.price('ETH', ['USD', 'EUR', 'GBP', 'JPY', 'CAD'])
-    cache.fiatPerEth = prices
+    const fiatPerEth = await cryptoCompare.price('ETH', ['USD', 'EUR', 'GBP', 'JPY', 'CAD'])
 
-    let address = await web3js.eth.getBalance(web3js.eth.accounts.wallet[0].address)
-    let ethValue = await web3js.utils.fromWei(address)
-    cache.account.balances.ETH = Number(ethValue)
+    let weiValue = await web3js.eth.getBalance(web3js.eth.accounts.wallet[0].address)
+    let ethValue = await web3js.utils.fromWei(weiValue)
+    subject.balances.ETH = Number(ethValue)
 
     this.setState({
-      cache: cache
+      fiatPerEth: fiatPerEth,
+      subject: subject,
     })
   }
 

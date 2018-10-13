@@ -12,6 +12,10 @@ import CloseIcon from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 
 const styles = {
+  root: {
+    maxWidth: '350px',
+    maxHeight: '600px',
+  },
   appBar: {
     position: 'relative',
   },
@@ -28,6 +32,7 @@ const FullScreenDialog = props => {
   const { classes, title, children, open, onClose } = props;
   return (
     <Dialog
+      className={classes.root}
       fullScreen
       open={open}
       onClose={onClose}
@@ -43,7 +48,9 @@ const FullScreenDialog = props => {
           </Typography>
         </Toolbar>
       </AppBar>
+
       {children}
+
     </Dialog>
   );
 }

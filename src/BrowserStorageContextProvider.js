@@ -7,24 +7,27 @@ const nextMonth = new Date((new Date(Date.now())).getFullYear(), (new Date(Date.
 const defaultState = {
   settings: {
     currency: "USD",
-    paymentSchedule: 'firstOfTheMonth'
+    paymentSchedule: 'firstOfTheMonth',
+    themeType: 'light',
   },
-  nextPayment: Date.now(), //strings.paymentSchedule.firstOfTheMonth(nextMonth),
+  nextPayment: strings.paymentSchedule.firstOfTheMonth(nextMonth),
   subs: [
     // Permanent subscription
     // `amount` is denominated in settings.currency
+    // gratiis#mostViewedSites must be at index 0
     {hostname: "gratiis#mostViewedSites", amount: 0 },
-    {hostname: "open.spotify.com", amount: 5 }
-  ]
+    {hostname: "open.spotify.com", amount: 5 },
+  ],
 }
 
 export default class BrowserStorageContextProvider extends Component {
 
-  componentWillMount() {
+  componentDidMount() {
     this.get({ reactApp: defaultState })
     .then(storageData => {
       this.setState(storageData.reactApp)
-
+      if (storageData.reactApp.settings.themeType === 'dark')
+        this.props.onChangeThemeType('dark')
     })
     .catch(error => {
       console.log(error)
@@ -35,6 +38,8 @@ export default class BrowserStorageContextProvider extends Component {
     const state = JSON.parse(JSON.stringify(this.state))
     set(state, path, value)
     this.setState(state, this.saveStateToBrowserStorage)
+    if (path === 'settings.themeType')
+      this.props.onChangeThemeType(value)
   }
 
   appendToSubs = (hostname, amount) => {

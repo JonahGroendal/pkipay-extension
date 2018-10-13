@@ -1,5 +1,6 @@
 import Web3Context from './Web3Context'
 import FormSubscribe from './FormSubscribe'
+import browser from './api/browser'
 import namehash from 'eth-ens-namehash'
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
@@ -28,12 +29,14 @@ const styles = theme => ({
     height: theme.spacing.unit * 8,
     justifyContent: 'center'
   },
+  infoText: {
+    //marginTop: '2px',
+  },
   buttonSubscribe: {
     alignSelf: 'flex-end'
   },
   subscribeContainer: {
-    display: 'flex',
-    justifyContent: 'flex-end',
+    marginTop: theme.spacing.unit * 2,
   },
   subscribePaper: {
     display: 'flex',
@@ -77,15 +80,44 @@ class Profile extends Component {
   constructor(props) {
     super(props)
     this.state = {
+      displayName: '',
+      subscribable: false,
       largeFaviconExists: false,
       avatarColor: ''
     }
+    this.updateState()
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.hostname !== this.props.hostname) {
+    if (prevProps.hostname !== this.props.hostname)
+      this.updateState()
+  }
+
+  updateState = () => {
+    const { hostname } = this.props
+    if (hostname === '') {
+      browser.tabs.query({'active': true, 'lastFocusedWindow': true}, (tabs) => {
+        this.setState({
+          displayName: tabs[0].url,
+          subscribable: false,
+          largeFaviconExists: false,
+          avatarColor: '#bdbdbd'
+        })
+      })
+    } else {
+      console.log(hostname)
+      const parts = hostname.split('.')
+      let displayName
+      let subscribable
+      if (hostname.includes("#") || parts.length < 2) {
+        displayName = hostname
+        subscribable = false
+      } else {
+        displayName = parts[parts.length-2]+'.'+parts[parts.length-1]
+        subscribable = true
+      }
       // Check if large favicon exists
-      const faviconUrlLarge = 'https://' + this.props.hostname + '/apple-touch-icon.png'
+      const faviconUrlLarge = 'https://' + hostname + '/apple-touch-icon.png'
       let xhr = new XMLHttpRequest()
       xhr.open("GET", faviconUrlLarge, true)
       xhr.onloadend = () => {
@@ -93,22 +125,21 @@ class Profile extends Component {
         console.log("xhr.status: ", xhr.status)
         if (largeFaviconExists) {
           // If so, set state
-          this.setState({ largeFaviconExists: largeFaviconExists })
+          this.setState({ displayName: displayName, subscribable: subscribable, largeFaviconExists: true })
         } else {
           // Else get mode of small favicon colors array and set state
-          const faviconUrlSmall = 'https://www.google.com/s2/favicons?domain=' + this.props.hostname
+          const faviconUrlSmall = 'https://www.google.com/s2/favicons?domain=' + hostname
           getPixels(faviconUrlSmall, (err, pixels) => {
             if (err) {
-              this.setState({ largeFaviconExists: largeFaviconExists, avatarColor: '#bdbdbd' })
+              this.setState({ displayName: displayName, subscribable: subscribable, largeFaviconExists: false, avatarColor: '#bdbdbd' })
             } else {
               let colors = []
               for (let i=0; i<pixels.data.length/4; i++) {
                 colors.push(pixels.data[i*4].toString(16) + pixels.data[i*4+1].toString(16) + pixels.data[i*4+2].toString(16))
               }
               let avatarColor = '#' + mode(colors.filter(color => color !== "000"))
-              if (avatarColor === '#ffffff')
-                avatarColor = '#bdbdbd'
-              this.setState({ largeFaviconExists: largeFaviconExists, avatarColor: avatarColor })
+              if (avatarColor === '#ffffff') avatarColor = '#bdbdbd'
+              this.setState({ displayName: displayName, subscribable: subscribable, largeFaviconExists: false, avatarColor: avatarColor })
             }
           })
         }
@@ -119,11 +150,14 @@ class Profile extends Component {
 
   render() {
     const { hostname, classes } = this.props
-    const { largeFaviconExists, avatarColor } = this.state
-    const parts = hostname.split('.')
-    const siteUrl = hostname.includes("#") ? hostname : parts[parts.length-2]+'.'+parts[parts.length-1]
+    const { displayName, subscribable, largeFaviconExists, avatarColor } = this.state
+    // const parts = hostname.split('.')
+    // let siteUrl = ''
+    // if (parts.length >= 2)
+    //   siteUrl = hostname.includes("#") ? hostname : parts[parts.length-2]+'.'+parts[parts.length-1]
+
     const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
-    const avatarLetter = hostname.includes("#") ? hostname.split('#')[1].charAt(0).toUpperCase() : hostname.split('.').slice(-2)[0].charAt(0).toUpperCase()
+    const avatarLetter = displayName.charAt(0)
 
     return (
       <Paper className={classes.paper}>
@@ -150,17 +184,26 @@ class Profile extends Component {
           </Paper>
         </div>
         <Typography variant="headline">
-          {siteUrl}
+          { displayName }
         </Typography>
-        <Web3Context.Consumer>
-          {({ cache }) => { return (
+        {subscribable && <Web3Context.Consumer>
+          {cache => { return (
             <div>
-              <p>total donations: {cache.entity.totalDonations}</p>
-              <p>account exists: {cache.entity.accountExists ? 'true' : 'false'}</p>
+              <Typography variant="body1" className={classes.infoText}>
+                {'$' + cache.object.donationsLastMonth + ' per month'}
+              </Typography>
+              <Typography variant="body1" className={classes.infoText}>
+                {'$' + cache.object.donationsTotal + ' in total contributions'}
+              </Typography>
+              <Typography variant="body1" className={classes.infoText}>
+                {cache.object.tokenSupply + 'THX in return'}
+              </Typography>
             </div>
           )}}
-        </Web3Context.Consumer>
-        <FormSubscribe hostname={hostname}/>
+        </Web3Context.Consumer>}
+        {subscribable && <div className={classes.subscribeContainer}>
+          <FormSubscribe hostname={hostname} />
+        </div>}
       </Paper>
     );
   }

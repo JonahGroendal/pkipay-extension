@@ -90,16 +90,17 @@ class SubscriptionsTable extends React.Component {
   };
 
   render() {
-    const { classes, budget, onViewProfile } = this.props;
-    const { order, orderBy, rowsPerPage, page } = this.state;
+    const { classes, budget, onViewProfile } = this.props
+    const { order, orderBy, rowsPerPage, page } = this.state
     return (
       <BrowserStorageContext.Consumer>
         {storage => {
           if (!storage.state) return ''
           const { state, removeFromSubs } = storage
+          const nextPayment = strings.paymentSchedule[state.settings.paymentSchedule](Date.now())
           return (
             <Paper className={classes.root}>
-              <EnhancedTableToolbar numSelected={0} title="Monthly Subscriptions" subTitle={"next payment on " + Date(strings.paymentSchedule[state.settings.paymentSchedule](Date.now())).toString()}/>
+              <EnhancedTableToolbar numSelected={0} title="Monthly Subscriptions" subtitle={"next payment on " + nextPayment.toLocaleDateString()}/>
               <Table className={classes.table} aria-labelledby="tableTitle">
                 <EnhancedViewsTableHead
                   order={order}
