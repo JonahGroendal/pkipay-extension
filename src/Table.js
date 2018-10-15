@@ -28,6 +28,9 @@ const styles = theme => ({
     width: '100%',
     tableLayout: 'fixed',
   },
+  tableRowHead: {
+    height: theme.spacing.unit * 4,
+  },
   tableRow: {
     height: theme.spacing.unit * 5,
   },
@@ -56,7 +59,7 @@ class Table extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      rowsData: sort(props.rowsData, props.initOrder, props.initOrderBy, props.fixedIndices),
+      //rowsData: sort(props.rowsData, props.initOrder, props.initOrderBy, props.fixedIndices),
       order: props.initOrder,
       orderBy: props.initOrderBy,
       page: 0,
@@ -69,8 +72,7 @@ class Table extends Component {
     if (this.state.orderBy === property && this.state.order === 'desc') {
       order = 'asc';
     }
-    let rowsData = sort(this.state.rowsData, order, orderBy, this.props.fixedIndices)
-    this.setState({ rowsData, order, orderBy });
+    this.setState({ order, orderBy });
   };
 
   handleChangePage = (event, page) => {
@@ -78,9 +80,10 @@ class Table extends Component {
   };
 
   render() {
-    const { classes, children, title, subtitle, headerCells, rowsPerPage } = this.props
-    const { rowsData, order, orderBy, page } = this.state
-    const rows = rowsData.map(children) //`children` is a render prop
+    const { classes, children, title, subtitle, headerCells, rowsData, fixedIndices, rowsPerPage } = this.props
+    const { order, orderBy, page } = this.state
+    const rowsDataSorted = sort(this.props.rowsData, order, orderBy, fixedIndices)
+    const rows = rowsDataSorted.map(children) //`children` is a render prop
     return (
       <Paper className={classes.root}>
         {(title !== '' || subtitle !== '') && <Toolbar className={classes.toolbar}>
@@ -96,7 +99,7 @@ class Table extends Component {
         </Toolbar>}
         <MuiTable className={classes.table} aria-labelledby="tableTitle">
           <TableHead>
-            <TableRow className={classes.tableRow}>
+            <TableRow className={classes.tableRowHead}>
               {headerCells.map(headerCell => {
                 const {label, width, sortable, cellProps} = headerCell
                 const { key, padding, numeric } = cellProps

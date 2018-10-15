@@ -81,6 +81,18 @@ var bkg =
 
          return true;
       }
+      else if(request.action == "setIncluded")
+      {
+         ledger.setSiteIncluded(request.siteId, request.status).then(function()
+         {
+            sendResponse(true);
+         }).catch(function(e)
+         {
+            sendResponse(false);
+         });
+
+         return true;
+      }
       else if(request.action == "getLastContribution")
       {
          db.getLastContribution().then(function(contribution)
@@ -661,6 +673,22 @@ var db = {
      });
   },
 
+  storeSite: function(site)
+   {
+      return new Promise(function(resolve, reject)
+      {
+         storageDb.update("site", site.updates, {id: site.siteId}).then(function()
+         {
+            utils.log("db.storeSite: site successfully changed", utils.log_level_debug);
+            resolve();
+         }).catch(function(e)
+         {
+            utils.log("db.storeSite: ERROR: storeSite failed: " + JSON.stringify(e), utils.log_level_error);
+            reject();
+         });
+      });
+   },
+
   addUnstoredView: function(view)
   {
      return new Promise(function(resolve, reject)
@@ -1030,6 +1058,20 @@ var ledger = {
   credentials: null,
   exchangeRate: null,
   exchangeRateLastChecked: null,
+
+  setSiteIncluded: function(siteId, status)
+   {
+      return new Promise(function(resolve, reject)
+      {
+         db.storeSite({siteId: siteId, updates: {included: status}}).then(function()
+         {
+            resolve();
+         }).catch(function(e)
+         {
+            reject();
+         });
+      });
+   },
 }
 
 // initialize

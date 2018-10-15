@@ -37,7 +37,7 @@ function Balance(props) {
   return (
     <BrowserStorageContext.Consumer>
       {storage => {
-        if (!storage.state) return ''
+        if (!storage.state) return
         const settings = storage.state.settings
         return (
           <Paper className={classes.paper}>

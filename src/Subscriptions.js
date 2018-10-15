@@ -66,6 +66,7 @@ class Subscriptions extends Component {
           if (!storage.state) return
           const { state, removeFromSubs } = storage
           const nextPayment = strings.paymentSchedule[state.settings.paymentSchedule](Date.now())
+          console.log()
           return <Table
             className={classes.table} title="Monthly Subscriptions"
             subtitle={"next payment on " + nextPayment.toLocaleDateString()}

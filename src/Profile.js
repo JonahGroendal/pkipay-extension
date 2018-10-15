@@ -104,8 +104,15 @@ class Profile extends Component {
           avatarColor: '#bdbdbd'
         })
       })
+    } else if (hostname.includes('#')){
+      this.setState({
+        displayName: hostname,
+        subscribable: false,
+        largeFaviconExists: false,
+        avatarColor: '#bdbdbd'
+      })
     } else {
-      console.log(hostname)
+      //console.log(hostname)
       const parts = hostname.split('.')
       let displayName
       let subscribable
@@ -190,10 +197,10 @@ class Profile extends Component {
           {cache => { return (
             <div>
               <Typography variant="body1" className={classes.infoText}>
-                {'$' + cache.object.donationsLastMonth + ' per month'}
+                {'$' + cache.object.donationsTotal + ' in total contributions'}
               </Typography>
               <Typography variant="body1" className={classes.infoText}>
-                {'$' + cache.object.donationsTotal + ' in total contributions'}
+                {'$' + cache.object.donationsLastMonth + ' per month'}
               </Typography>
               <Typography variant="body1" className={classes.infoText}>
                 {cache.object.tokenSupply + 'THX in return'}

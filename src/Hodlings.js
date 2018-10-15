@@ -41,7 +41,7 @@ class Hodlings extends Component {
     return (
       <Table className={classes.table} title="THX Holdings"
         headerCells={headerCells} rowsData={mockData}>
-        {rowData => <TableRow className={classes.tableRow} hover key={0}>
+        {(rowData, index) => <TableRow className={classes.tableRow} hover key={index}>
           <TableCell className={classes.tableCell}>
             <Typography variant="subheading">
               {rowData.name}
