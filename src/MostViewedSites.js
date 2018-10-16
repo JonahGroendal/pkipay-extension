@@ -63,7 +63,7 @@ class MostViewedSites extends Component {
       <Table
         headerCells={headerCells}
         rowsData={views}
-        initOrderBy="hostname"
+        initOrderBy="share"
         classes={{ tableRowHead: classes.tableRowHead }}
       >
         {(rowData, index) => <TableRow className={classes.tableRow} hover key={rowData.id}>

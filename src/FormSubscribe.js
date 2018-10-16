@@ -58,7 +58,7 @@ class FormSubscribe extends Component {
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     // Reset if target changed
-    if (prevProps.hostname !== this.props.hostname)
+    if (prevProps.subscription.hostname !== this.props.subscription.hostname)
       this.setState(this.initialState(this.props))
 
     // check if subscription status changed
@@ -107,7 +107,7 @@ class FormSubscribe extends Component {
   donate = () => {
     // From Web3Context.Consumer
     const { web3js, contractGratis } = this.props.web3
-    const parts = this.props.hostname.split('.')
+    const parts = this.props.subscription.hostname.split('.')
     const shortUrl = parts[parts.length-2]+'.'+parts[parts.length-1]
 
     let recipient = namehash.hash(shortUrl)
@@ -127,32 +127,34 @@ class FormSubscribe extends Component {
   }
 
   subscribe = () => {
-    const { hostname, browserStorage } = this.props
+    const { subscription, browserStorage } = this.props
     const { amount } = this.state
 
     if (browserStorage.state && !this.checkSubscribed())
-      browserStorage.appendToSubs(hostname, amount)
+      browserStorage.upsertToSubs(subscription.hostname, amount)
   }
 
   unsubscribe = () => {
-    const { hostname, browserStorage } = this.props
+    const { subscription, browserStorage } = this.props
 
-    browserStorage.removeFromSubs(hostname)
+    browserStorage.removeFromSubs(subscription.hostname)
   }
 
   checkSubscribed = () => {
-    const { hostname, browserStorage } = this.props
+    const { subscription, browserStorage } = this.props
+    const subs = browserStorage.state.subs
 
-    return (browserStorage.state.subs.findIndex(e => e.hostname == hostname) != -1)
+    const index = subs.findIndex(e => e.hostname === subscription.hostname)
+    return (index !== -1 && (subs[index].permanent && subs[index].amount !== 0))
   }
 
   render() {
     const { subscribed, amount, expanded, subscribeButtonShown, donateButtonShown, inputError } = this.state
-    const { hostname, browserStorage, classes } = this.props
+    const { subscription, browserStorage, classes } = this.props
 
     if (!browserStorage.state) return ''
     const currencySymbol = strings.currency[browserStorage.state.settings.currency]
-    const alreadySubscribed = browserStorage.state.subs.findIndex(e => e.hostname == hostname) != -1
+    const alreadySubscribed = browserStorage.state.subs.findIndex(e => e.hostname == subscription.hostname) != -1
 
     return (
       <div className={classes.container} >

@@ -75,7 +75,7 @@ class Subscriptions extends Component {
             {(subscription, index) => <TableRow
               className={classes.tableRow} hover tabIndex={-1} key={index}>
               <TableCell padding="none" className={classes.tableCell}
-                onClick={event => onViewProfile(subscription.hostname)}>
+                onClick={event => onViewProfile(subscription)}>
                 <Tooltip title="go to profile">
                   <Button className={classes.buttonUnsubscribe} size="small" aria-label="Launch">
                     <KeyboardArrowLeftIcon />
@@ -89,10 +89,10 @@ class Subscriptions extends Component {
                 </Tooltip>
               </TableCell>
               <TableCell component="th" scope="row" padding="none" className={classes.tableCell}
-                onClick={event => onViewProfile(subscription.hostname)}>
+                onClick={event => onViewProfile(subscription)}>
                 <Tooltip title={subscription.hostname}>
                   <Typography variant="subheading">
-                    {subscription.hostname}
+                    {subscription.name ? subscription.name : subscription.hostname}
                   </Typography>
                 </Tooltip>
               </TableCell>

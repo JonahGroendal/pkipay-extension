@@ -15,7 +15,7 @@ const defaultState = {
     // Permanent subscription
     // `amount` is denominated in settings.currency
     // gratiis#mostViewedSites must be at index 0
-    {hostname: "gratiis#mostViewedSites", amount: 0 },
+    {hostname: "gratiis#mostViewedSites", amount: 0, name: "Most Viewed Sites", permanent: true },
     {hostname: "open.spotify.com", amount: 5 },
   ],
 }
@@ -42,17 +42,25 @@ export default class BrowserStorageContextProvider extends Component {
       this.props.onChangeThemeType(value)
   }
 
-  appendToSubs = (hostname, amount) => {
-    const sub = { hostname: hostname, amount: Number(amount) }
+  upsertToSubs = (hostname, amount) => {
     let subs = JSON.parse(JSON.stringify(this.state.subs))
-    subs.push(sub)
+    const index = subs.findIndex(s => s.hostname === hostname)
+    if (index !== -1) {
+      subs[index].hostname = hostname
+      subs[index].amount = Number(amount)
+    } else {
+      subs.push({ hostname: hostname, amount: Number(amount) })
+    }
     this.handleChange('subs', subs)
   }
 
   removeFromSubs = (hostname) => {
-    if (hostname === "gratiis#mostViewedSites") return;
     let subs = JSON.parse(JSON.stringify(this.state.subs))
-    subs = subs.filter(element => element.hostname !== hostname)
+    const index = subs.findIndex(s => s.hostname === hostname)
+    if (index === -1) return
+    if (subs[index].permanent) subs[index].amount = 0
+    else delete subs[index]
+
     this.handleChange('subs', subs)
   }
 
@@ -75,11 +83,11 @@ export default class BrowserStorageContextProvider extends Component {
   render() {
     const state = this.state
     const handleChange = this.handleChange
-    const appendToSubs = this.appendToSubs
+    const upsertToSubs = this.upsertToSubs
     const removeFromSubs = this.removeFromSubs
 
     return (
-      <BrowserStorageContext.Provider value={{ state, handleChange, appendToSubs, removeFromSubs }}>
+      <BrowserStorageContext.Provider value={{ state, handleChange, upsertToSubs, removeFromSubs }}>
         {this.props.children}
       </BrowserStorageContext.Provider>
     )

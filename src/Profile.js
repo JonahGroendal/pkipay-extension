@@ -82,6 +82,7 @@ class Profile extends Component {
     this.state = {
       displayName: '',
       subscribable: false,
+      globalEntity: false,
       largeFaviconExists: false,
       avatarColor: ''
     }
@@ -89,25 +90,28 @@ class Profile extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.hostname !== this.props.hostname)
+    if (prevProps.subscription.hostname !== this.props.subscription.hostname)
       this.updateState()
   }
 
   updateState = () => {
-    const { hostname } = this.props
+    const { hostname, name } = this.props.subscription
     if (hostname === '') {
       browser.tabs.query({'active': true, 'lastFocusedWindow': true}, (tabs) => {
         this.setState({
           displayName: tabs[0].url,
           subscribable: false,
+          globalEntity: true,
           largeFaviconExists: false,
           avatarColor: '#bdbdbd'
         })
       })
     } else if (hostname.includes('#')){
+      const displayName = name ? name : hostname
       this.setState({
-        displayName: hostname,
-        subscribable: false,
+        displayName: displayName,
+        subscribable: true,
+        globalEntity: false,
         largeFaviconExists: false,
         avatarColor: '#bdbdbd'
       })
@@ -132,13 +136,24 @@ class Profile extends Component {
         console.log("xhr.status: ", xhr.status)
         if (largeFaviconExists) {
           // If so, set state
-          this.setState({ displayName: displayName, subscribable: subscribable, largeFaviconExists: true })
+          this.setState({
+            displayName: displayName,
+            subscribable: subscribable,
+            globalEntity: true,
+            largeFaviconExists: true
+          })
         } else {
           // Else get mode of small favicon colors array and set state
           const faviconUrlSmall = 'https://www.google.com/s2/favicons?domain=' + hostname
           getPixels(faviconUrlSmall, (err, pixels) => {
             if (err) {
-              this.setState({ displayName: displayName, subscribable: subscribable, largeFaviconExists: false, avatarColor: '#bdbdbd' })
+              this.setState({
+                displayName: displayName,
+                subscribable: subscribable,
+                globalEntity: true,
+                largeFaviconExists: false,
+                avatarColor: '#bdbdbd'
+              })
             } else {
               let colors = []
               for (let i=0; i<pixels.data.length/4; i++) {
@@ -146,7 +161,12 @@ class Profile extends Component {
               }
               let avatarColor = '#' + mode(colors.filter(color => color !== "000"))
               if (avatarColor === '#ffffff') avatarColor = '#bdbdbd'
-              this.setState({ displayName: displayName, subscribable: subscribable, largeFaviconExists: false, avatarColor: avatarColor })
+              this.setState({
+                displayName: displayName,
+                subscribable: subscribable,
+                globalEntity: true,
+                largeFaviconExists: false,
+                avatarColor: avatarColor })
             }
           })
         }
@@ -156,14 +176,14 @@ class Profile extends Component {
   }
 
   render() {
-    const { hostname, classes } = this.props
-    const { displayName, subscribable, largeFaviconExists, avatarColor } = this.state
+    const { classes, subscription } = this.props
+    const { displayName, subscribable, globalEntity, largeFaviconExists, avatarColor } = this.state
     // const parts = hostname.split('.')
     // let siteUrl = ''
     // if (parts.length >= 2)
     //   siteUrl = hostname.includes("#") ? hostname : parts[parts.length-2]+'.'+parts[parts.length-1]
 
-    const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
+    const faviconUrl = 'https://' + subscription.hostname + '/apple-touch-icon.png'
     const avatarLetter = displayName.charAt(0)
 
     return (
@@ -193,7 +213,7 @@ class Profile extends Component {
         <Typography variant="headline">
           { displayName }
         </Typography>
-        {subscribable && <Web3Context.Consumer>
+        {subscribable && globalEntity && <Web3Context.Consumer>
           {cache => { return (
             <div>
               <Typography variant="body1" className={classes.infoText}>
@@ -209,7 +229,7 @@ class Profile extends Component {
           )}}
         </Web3Context.Consumer>}
         {subscribable && <div className={classes.subscribeContainer}>
-          <FormSubscribe hostname={hostname} />
+          <FormSubscribe subscription={subscription} />
         </div>}
       </Paper>
     );
