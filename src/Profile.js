@@ -86,6 +86,8 @@ class Profile extends Component {
       largeFaviconExists: false,
       avatarColor: ''
     }
+  }
+  componentDidMount() {
     this.updateState()
   }
 

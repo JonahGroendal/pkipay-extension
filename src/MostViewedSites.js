@@ -65,22 +65,24 @@ class MostViewedSites extends Component {
         initOrderBy="share"
         classes={{ tableRowHead: classes.tableRowHead }}
       >
-        {(rowData, index) => <TableRow className={classes.tableRow} hover key={rowData.id}>
+        {(view, index) => <TableRow className={classes.tableRow} hover key={view.id}>
           <TableCell className={classes.tableCell}>
-            <Typography variant="subheading" noWrap>
-              {rowData.hostname}
-            </Typography>
+            <Tooltip title={view.hostname}>
+              <Typography variant="subheading" noWrap>
+                {view.hostname}
+              </Typography>
+            </Tooltip>
           </TableCell>
           <TableCell className={classes.tableCell} numeric={true}>
             <Typography variant="subheading" noWrap>
-              {rowData.share + '%'}
+              {view.share + '%'}
             </Typography>
           </TableCell>
           <TableCell className={classes.tableCell}>
-            <Tooltip title="remove">
+            <Tooltip title="Remove view">
               <Button className={classes.button} size="small"
                 aria-label="Remove" fullWidth
-                onClick={e => setIncluded(rowData.id, false).then(this.updateViews())}>
+                onClick={e => setIncluded(view.id, false).then(this.updateViews())}>
                 <DeleteOutlinedIcon />
               </Button>
             </Tooltip>

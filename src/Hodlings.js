@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
+import Tooltip from '@material-ui/core/Tooltip'
 
 const styles = theme => ({
   paper: {
@@ -41,21 +42,27 @@ class Hodlings extends Component {
     return (
       <Table className={classes.table} title="THX Holdings"
         headerCells={headerCells} rowsData={mockData}>
-        {(rowData, index) => <TableRow className={classes.tableRow} hover key={index}>
+        {(holding, index) => <TableRow className={classes.tableRow} hover key={index}>
           <TableCell className={classes.tableCell}>
-            <Typography variant="subheading">
-              {rowData.name}
-            </Typography>
+            <Tooltip title={holding.name}>
+              <Typography variant="subheading">
+                {holding.name}
+              </Typography>
+            </Tooltip>
           </TableCell>
           <TableCell className={classes.tableCell} numeric={true} padding="none">
-            <Typography variant="subheading">
-              {rowData.balance}
-            </Typography>
+            <Tooltip title={holding.balance + " THX"}>
+              <Typography variant="subheading">
+                {holding.balance}
+              </Typography>
+            </Tooltip>
           </TableCell>
           <TableCell className={classes.tableCell} numeric={true}>
-            <Typography variant="subheading">
-              {rowData.totalSupply}
-            </Typography>
+            <Tooltip title={holding.totalSupply + " THX"}>
+              <Typography variant="subheading">
+                {holding.totalSupply}
+              </Typography>
+            </Tooltip>
           </TableCell>
         </TableRow>}
       </Table>

@@ -40,6 +40,9 @@ const styles = theme => ({
   buttonToProfile: {
     padding: 0,
   },
+  profileImage: {
+    marginRight: '0 !important',
+  },
   pagination: {
     height: theme.spacing.unit * 6,
     minHeight: 0,
@@ -57,9 +60,9 @@ class Subscriptions extends Component {
   render() {
     const { classes, onViewProfile } = this.props
     const headerCells = [
-      {label: '', width: '17%', sortable: false, cellProps: {key: 'toProfile', numeric: false}},
-      {label: 'Site', width: '48%', sortable: true, cellProps: {key: 'name', numeric: false}},
-      {label: 'Amount', width: '20%', sortable: true, cellProps: {key: 'amount', numeric: true}},
+      {label: '', width: '16%', sortable: false, cellProps: {key: 'toProfile', numeric: false}},
+      {label: 'Site', width: '47%', sortable: true, cellProps: {key: 'name', numeric: false}},
+      {label: 'Amount', width: '22%', sortable: true, cellProps: {key: 'amount', numeric: true}},
       {label: '', width: '15%', sortable: false, cellProps: {key: 'unsubscribe', numeric: false}},
     ]
     return (
@@ -78,15 +81,15 @@ class Subscriptions extends Component {
               className={classes.tableRow} hover tabIndex={-1} key={index}>
               <TableCell className={classes.tableCell}
                 onClick={event => onViewProfile(subscription)}>
-                <Tooltip title="go to profile">
+                <Tooltip title="Go to profile">
                   <Button className={classNames(classes.button, classes.buttonToProfile)} size="small"
                     aria-label="Launch" fullWidth>
                     <KeyboardArrowLeftIcon />
                     {
                       subscription.hostname.includes("#")
-                      ? <AccountCircleIcon />
+                      ? <AccountCircleIcon style={{width: "19.5px", height: "19.5px", marginLeft: "-1.75px", marginRight: "-1.75px"}}/>
                       : <img src={'https://www.google.com/s2/favicons?domain=' + subscription.hostname}
-                        height="16px" width="16px" style={{marginRight: '8px'}}/>
+                        height="16px" width="16px" style={{ borderRadius: "50%" }}/>
                     }
                   </Button>
                 </Tooltip>
@@ -103,13 +106,13 @@ class Subscriptions extends Component {
                 <Tooltip title={subscription.amount+' '+state.settings.currency+' per month'}>
                   <div className={classes.amount}>
                     <Typography variant="subheading">
-                      {subscription.amount+' '+strings.currency[state.settings.currency]}
+                      {strings.currency[state.settings.currency] + subscription.amount}
                     </Typography>
                   </div>
                 </Tooltip>
               </TableCell>
               <TableCell className={classes.tableCell}>
-                {(subscription.hostname !== "gratiis#mostViewedSites") && <Tooltip title="unsubscribe">
+                {!subscription.permanent && <Tooltip title="Unsubscribe">
                   <Button className={classes.button}
                     onClick={e => removeFromSubs(subscription.hostname)}
                     size="small" aria-label="Launch">

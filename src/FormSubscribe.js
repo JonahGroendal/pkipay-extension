@@ -145,7 +145,7 @@ class FormSubscribe extends Component {
     const subs = browserStorage.state.subs
 
     const index = subs.findIndex(e => e.hostname === subscription.hostname)
-    return (index !== -1 && (subs[index].permanent && subs[index].amount !== 0))
+    return (index !== -1 && (!subs[index].permanent || (subs[index].permanent && subs[index].amount !== 0)))
   }
 
   render() {
