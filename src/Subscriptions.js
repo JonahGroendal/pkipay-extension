@@ -12,6 +12,7 @@ import DeleteOutlinedIcon from '@material-ui/icons/DeleteForeverOutlined'
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft'
 import AccountCircleIcon from '@material-ui/icons/AccountCircle'
 import Tooltip from '@material-ui/core/Tooltip'
+import classNames from 'classnames'
 
 const styles = theme => ({
   root: {
@@ -31,12 +32,13 @@ const styles = theme => ({
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'baseline',
-    //overflow: 'hidden'
   },
-  buttonUnsubscribe: {
-    padding: 0,
-    width: '100%',
+  button: {
     minWidth: 0,
+    padding: 0,
+  },
+  buttonToProfile: {
+    padding: 0,
   },
   pagination: {
     height: theme.spacing.unit * 6,
@@ -55,10 +57,10 @@ class Subscriptions extends Component {
   render() {
     const { classes, onViewProfile } = this.props
     const headerCells = [
-      {label: '', width: '20%', sortable: false, cellProps: {key: 'toProfile', padding: 'none', numeric: false}},
-      {label: 'Site', width: '46%', sortable: true, cellProps: {key: 'name', padding: 'none', numeric: false}},
-      {label: 'Amount', width: '20%', sortable: true, cellProps: {key: 'share', padding: 'none', numeric: true}},
-      {label: '', width: '14%', sortable: false, cellProps: {key: 'unsubscribe', padding: 'none', numeric: false}},
+      {label: '', width: '17%', sortable: false, cellProps: {key: 'toProfile', numeric: false}},
+      {label: 'Site', width: '48%', sortable: true, cellProps: {key: 'name', numeric: false}},
+      {label: 'Amount', width: '20%', sortable: true, cellProps: {key: 'amount', numeric: true}},
+      {label: '', width: '15%', sortable: false, cellProps: {key: 'unsubscribe', numeric: false}},
     ]
     return (
       <BrowserStorageContext.Consumer>
@@ -74,10 +76,11 @@ class Subscriptions extends Component {
           >
             {(subscription, index) => <TableRow
               className={classes.tableRow} hover tabIndex={-1} key={index}>
-              <TableCell padding="none" className={classes.tableCell}
+              <TableCell className={classes.tableCell}
                 onClick={event => onViewProfile(subscription)}>
                 <Tooltip title="go to profile">
-                  <Button className={classes.buttonUnsubscribe} size="small" aria-label="Launch">
+                  <Button className={classNames(classes.button, classes.buttonToProfile)} size="small"
+                    aria-label="Launch" fullWidth>
                     <KeyboardArrowLeftIcon />
                     {
                       subscription.hostname.includes("#")
@@ -88,7 +91,7 @@ class Subscriptions extends Component {
                   </Button>
                 </Tooltip>
               </TableCell>
-              <TableCell component="th" scope="row" padding="none" className={classes.tableCell}
+              <TableCell component="th" scope="row" className={classes.tableCell}
                 onClick={event => onViewProfile(subscription)}>
                 <Tooltip title={subscription.hostname}>
                   <Typography variant="subheading">
@@ -96,7 +99,7 @@ class Subscriptions extends Component {
                   </Typography>
                 </Tooltip>
               </TableCell>
-              <TableCell padding="none" className={classes.tableCell} numeric={true}>
+              <TableCell className={classes.tableCell} numeric={true}>
                 <Tooltip title={subscription.amount+' '+state.settings.currency+' per month'}>
                   <div className={classes.amount}>
                     <Typography variant="subheading">
@@ -105,9 +108,9 @@ class Subscriptions extends Component {
                   </div>
                 </Tooltip>
               </TableCell>
-              <TableCell padding="none" className={classes.tableCell}>
+              <TableCell className={classes.tableCell}>
                 {(subscription.hostname !== "gratiis#mostViewedSites") && <Tooltip title="unsubscribe">
-                  <Button className={classes.buttonUnsubscribe}
+                  <Button className={classes.button}
                     onClick={e => removeFromSubs(subscription.hostname)}
                     size="small" aria-label="Launch">
                     <DeleteOutlinedIcon />

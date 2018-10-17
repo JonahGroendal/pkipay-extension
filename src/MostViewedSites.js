@@ -23,10 +23,9 @@ const styles = theme => ({
   tableRow: {
     cursor: 'pointer',
   },
-  buttonRemove: {
-    padding: 0,
-    width: '100%',
+  button: {
     minWidth: 0,
+    padding: 0,
   },
 })
 
@@ -55,9 +54,9 @@ class MostViewedSites extends Component {
     const { views } = this.state
     console.log(views)
     const headerCells = [
-      {label: 'Site', width: '70%', sortable: true, cellProps: {key: 'hostname', padding: 'default', numeric: false}},
-      {label: 'Share', width: '30%', sortable: true, cellProps: {key: 'share', padding: 'dense', numeric: true}},
-      {label: '', width: '14%', sortable: false, cellProps: {key: 'delete', padding: 'none', numeric: false}},
+      {label: 'Site', width: '55%', sortable: true, cellProps: {key: 'hostname', numeric: false}},
+      {label: 'Share', width: '30%', sortable: true, cellProps: {key: 'share', numeric: true}},
+      {label: '', width: '15%', sortable: false, cellProps: {key: 'delete', numeric: false}},
     ]
     return (
       <Table
@@ -68,18 +67,19 @@ class MostViewedSites extends Component {
       >
         {(rowData, index) => <TableRow className={classes.tableRow} hover key={rowData.id}>
           <TableCell className={classes.tableCell}>
-            <Typography variant="subheading">
+            <Typography variant="subheading" noWrap>
               {rowData.hostname}
             </Typography>
           </TableCell>
-          <TableCell className={classes.tableCell} numeric={true} padding="none">
-            <Typography variant="subheading">
+          <TableCell className={classes.tableCell} numeric={true}>
+            <Typography variant="subheading" noWrap>
               {rowData.share + '%'}
             </Typography>
           </TableCell>
-          <TableCell padding="none" className={classes.tableCell}>
+          <TableCell className={classes.tableCell}>
             <Tooltip title="remove">
-              <Button className={classes.buttonRemove} size="small" aria-label="Remove"
+              <Button className={classes.button} size="small"
+                aria-label="Remove" fullWidth
                 onClick={e => setIncluded(rowData.id, false).then(this.updateViews())}>
                 <DeleteOutlinedIcon />
               </Button>

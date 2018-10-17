@@ -15,9 +15,6 @@ import Tooltip from '@material-ui/core/Tooltip'
 import classNames from 'classnames'
 
 const styles = theme => ({
-  root: {
-    width: '100%'
-  },
   toolbar: {
     paddingTop: theme.spacing.unit * 2,
     paddingRight: theme.spacing.unit * 2,
@@ -35,6 +32,15 @@ const styles = theme => ({
     height: theme.spacing.unit * 5,
   },
   tableCell: {
+    paddingLeft: theme.spacing.unit * 2 + ' !important',
+  },
+  tableCellNumeric: {
+    paddingLeft: '0 !important',
+  },
+  tableCellLast: {
+    paddingRight: theme.spacing.unit * 2 + ' !important',
+  },
+  tableCellBody: {
     borderBottom: 0,
   },
   pagination: {
@@ -59,7 +65,6 @@ class Table extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      //rowsData: sort(props.rowsData, props.initOrder, props.initOrderBy, props.fixedIndices),
       order: props.initOrder,
       orderBy: props.initOrderBy,
       page: 0,
@@ -84,8 +89,13 @@ class Table extends Component {
     const { order, orderBy, page } = this.state
     const rowsDataSorted = sort(this.props.rowsData, order, orderBy, fixedIndices)
     const rows = rowsDataSorted.map(children) //`children` is a render prop
+    const classCellDefault = classes.tableCell
+    const classCellLast = classNames(classes.tableCell, classes.tableCellLast)
+    const classCellNumeric = classNames(classes.tableCell, classes.tableCellNumeric)
+    const classCellNumericLast = classNames(classes.tableCell, classes.tableCellNumeric, classes.tableCellLast)
+
     return (
-      <Paper className={classes.root}>
+      <Paper>
         {(title !== '' || subtitle !== '') && <Toolbar className={classes.toolbar}>
           <div className={classes.title}>
             <Typography variant="title" id="tabletitle">
@@ -97,14 +107,15 @@ class Table extends Component {
           </div>
           <div className={classes.spacer} />
         </Toolbar>}
-        <MuiTable className={classes.table} aria-labelledby="tableTitle">
+        <MuiTable className={classes.table} padding="none" aria-labelledby="tableTitle">
           <TableHead>
             <TableRow className={classes.tableRowHead}>
-              {headerCells.map(headerCell => {
+              {headerCells.map((headerCell, index, array) => {
                 const {label, width, sortable, cellProps} = headerCell
                 const { key, padding, numeric } = cellProps
                 return (
                   <TableCell
+                    className={index === array.length-1 ? (numeric ? classCellNumericLast : classCellLast) : (numeric ? classCellNumeric : classCellDefault)}
                     {...cellProps}
                     style={width ? { width: width } : undefined}
                     sortDirection={orderBy === key ? order : false}
@@ -129,10 +140,10 @@ class Table extends Component {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map(row => {
+            {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
               return React.cloneElement(row, {className: classNames(classes.tableRow, row.props.className)},
-                React.Children.map(row.props.children, cell => {
-                  return React.cloneElement(cell, {className: classNames(classes.tableCell, row.props.className)})
+                React.Children.map(row.props.children, (cell, index) => {
+                  return React.cloneElement(cell, {className: (index === React.Children.count(row.props.children)-1 ? classNames(classes.tableCell, classes.tableCellLast, classes.tableCellBody, row.props.className) : classNames(classes.tableCell, classes.tableCellBody, row.props.className))})
                 })
               )
             })/*.sort(getSorting(order, orderBy))*/}
@@ -141,7 +152,7 @@ class Table extends Component {
             .map((row, index) => {
               return(
                 <TableRow key={2147483647-index} className={classes.tableRow}>
-                  <TableCell colSpan={headerCells.length} className={classes.tableCell}/>
+                  <TableCell colSpan={headerCells.length} className={classNames(classes.tableCell, classes.tableCellBody)}/>
                 </TableRow>
               );
             })}

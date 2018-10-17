@@ -15,6 +15,7 @@ function getViews() {
 
 function getFormattedViews() {
   function formatHostname(hostname) {
+    console.log(hostname)
     let parts = hostname.split(".")
     return parts[parts.length-2].slice(0, 1).toUpperCase() + parts[parts.length-2].slice(1)
   }
