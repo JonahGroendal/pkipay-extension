@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import MuiTable from '@material-ui/core/Table'
@@ -61,123 +61,114 @@ function sort(data, order, orderBy, fixedIndices) {
   return sortedData
 }
 
-class Table extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      order: props.initOrder,
-      orderBy: props.initOrderBy,
-      page: 0,
+function Table(props) {
+  const [order, setOrder] = useState(props.initOrder)
+  const [orderBy, setOrderBy] = useState(props.initOrderBy)
+  const [page, setPage] = useState(0)
+
+  function handleRequestSort(property) {
+    let newOrder = 'desc'
+    if (orderBy === property && order === 'desc') {
+      newOrder = 'asc'
     }
+    setOrderBy(property)
+    setOrder(newOrder)
   }
 
-  handleRequestSort = property => {
-    const orderBy = property;
-    let order = 'desc';
-    if (this.state.orderBy === property && this.state.order === 'desc') {
-      order = 'asc';
-    }
-    this.setState({ order, orderBy });
-  };
+  function handleChangePage(event, page) {
+    setPage(page)
+  }
 
-  handleChangePage = (event, page) => {
-    this.setState({ page });
-  };
-
-  render() {
-    const { classes, children, title, subtitle, headerCells, rowsData, fixedIndices, rowsPerPage } = this.props
-    const { order, orderBy, page } = this.state
-    const rowsDataSorted = sort(this.props.rowsData, order, orderBy, fixedIndices)
-    const rows = rowsDataSorted.map(children) //`children` is a render prop
-    const classCellDefault = classes.tableCell
-    const classCellLast = classNames(classes.tableCell, classes.tableCellLast)
-    const classCellNumeric = classNames(classes.tableCell, classes.tableCellNumeric)
-    const classCellNumericLast = classNames(classes.tableCell, classes.tableCellNumeric, classes.tableCellLast)
-
-    return (
-      <Paper>
-        {(title !== '' || subtitle !== '') && <Toolbar className={classes.toolbar}>
-          <div className={classes.title}>
-            <Typography variant="title" id="tabletitle">
-              {title}
-            </Typography>
-            {subtitle ? <Typography variant="body1">
-              {subtitle}
-            </Typography> : false}
-          </div>
-          <div className={classes.spacer} />
-        </Toolbar>}
-        <MuiTable className={classes.table} padding="none" aria-labelledby="tableTitle">
-          <TableHead>
-            <TableRow className={classes.tableRowHead}>
-              {headerCells.map((headerCell, index, array) => {
-                const {label, width, sortable, cellProps} = headerCell
-                const { key, padding, numeric } = cellProps
-                return (
-                  <TableCell
-                    className={index === array.length-1 ? (numeric ? classCellNumericLast : classCellLast) : (numeric ? classCellNumeric : classCellDefault)}
-                    {...cellProps}
-                    style={width ? { width: width } : undefined}
-                    sortDirection={orderBy === key ? order : false}
-                  >
-                    {sortable && <Tooltip title="Sort" placement="top-start" enterDelay={300}>
-                      <TableSortLabel
-                        active={orderBy === key}
-                        direction={order}
-                        onClick={e => this.handleRequestSort(key)}
-                      >
-                        <Typography variant="body2">
-                          {label}
-                        </Typography>
-                      </TableSortLabel>
-                    </Tooltip>}
-                    {!sortable && <Typography variant="body2">
-                      {label}
-                    </Typography>}
-                  </TableCell>
-                );
-              }, this)}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
-              return React.cloneElement(row, {className: classNames(classes.tableRow, row.props.className)},
-                React.Children.map(row.props.children, (cell, index) => {
-                  return React.cloneElement(cell, {className: (index === React.Children.count(row.props.children)-1 ? classNames(classes.tableCell, classes.tableCellLast, classes.tableCellBody, row.props.className) : classNames(classes.tableCell, classes.tableCellBody, row.props.className))})
-                })
-              )
-            })/*.sort(getSorting(order, orderBy))*/}
-            {// Now fill in rest of page with blank rows
-            [...Array(rowsPerPage - Math.min(rowsPerPage, rowsData.length - page * rowsPerPage))]
-            .map((row, index) => {
-              return(
-                <TableRow key={2147483647-index} className={classes.tableRow}>
-                  <TableCell colSpan={headerCells.length} className={classNames(classes.tableCell, classes.tableCellBody)}/>
-                </TableRow>
+  const { classes, children, title, subtitle, headerCells, rowsData, fixedIndices, rowsPerPage } = props
+  const rowsDataSorted = sort(props.rowsData, order, orderBy, fixedIndices)
+  const rows = rowsDataSorted.map(children) //`children` is a render prop
+  const classCellDefault = classes.tableCell
+  const classCellLast = classNames(classes.tableCell, classes.tableCellLast)
+  const classCellNumeric = classNames(classes.tableCell, classes.tableCellNumeric)
+  const classCellNumericLast = classNames(classes.tableCell, classes.tableCellNumeric, classes.tableCellLast)
+  return (
+    <Paper>
+      {(title !== '' || subtitle !== '') && <Toolbar className={classes.toolbar}>
+        <div className={classes.title}>
+          <Typography variant="title" id="tabletitle">
+            {title}
+          </Typography>
+          {subtitle ? <Typography variant="body1">
+            {subtitle}
+          </Typography> : false}
+        </div>
+        <div className={classes.spacer} />
+      </Toolbar>}
+      <MuiTable className={classes.table} padding="none" aria-labelledby="tableTitle">
+        <TableHead>
+          <TableRow className={classes.tableRowHead}>
+            {headerCells.map((headerCell, index, array) => {
+              const {label, width, sortable, cellProps} = headerCell
+              const { key, padding, numeric } = cellProps
+              return (
+                <TableCell
+                  className={index === array.length-1 ? (numeric ? classCellNumericLast : classCellLast) : (numeric ? classCellNumeric : classCellDefault)}
+                  {...cellProps}
+                  style={width ? { width: width } : undefined}
+                  sortDirection={orderBy === key ? order : false}
+                >
+                  {sortable && <Tooltip title="Sort" placement="top-start" enterDelay={300}>
+                    <TableSortLabel
+                      active={orderBy === key}
+                      direction={order}
+                      onClick={e => handleRequestSort(key)}
+                    >
+                      <Typography variant="body2">
+                        {label}
+                      </Typography>
+                    </TableSortLabel>
+                  </Tooltip>}
+                  {!sortable && <Typography variant="body2">
+                    {label}
+                  </Typography>}
+                </TableCell>
               );
             })}
-          </TableBody>
-        </MuiTable>
-        <TablePagination
-          classes={{toolbar: classes.pagination}}
-          component="div"
-          count={rowsData.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          rowsPerPageOptions={[rowsPerPage,]}
-          backIconButtonProps={{
-            'aria-label': 'Previous Page',
-            style: {height: '32px'},
-          }}
-          nextIconButtonProps={{
-            'aria-label': 'Next Page',
-            style: {height: '32px'},
-          }}
-          onChangePage={this.handleChangePage}
-        />
-      </Paper>
-    )
-  }
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
+            return React.cloneElement(row, {className: classNames(classes.tableRow, row.props.className)},
+              React.Children.map(row.props.children, (cell, index) => {
+                return React.cloneElement(cell, {className: (index === React.Children.count(row.props.children)-1 ? classNames(classes.tableCell, classes.tableCellLast, classes.tableCellBody, row.props.className) : classNames(classes.tableCell, classes.tableCellBody, row.props.className))})
+              })
+            )
+          })/*.sort(getSorting(order, orderBy))*/}
+          {// Now fill in rest of page with blank rows
+          [...Array(rowsPerPage - Math.min(rowsPerPage, rowsData.length - page * rowsPerPage))]
+          .map((row, index) => {
+            return(
+              <TableRow key={2147483647-index} className={classes.tableRow}>
+                <TableCell colSpan={headerCells.length} className={classNames(classes.tableCell, classes.tableCellBody)}/>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </MuiTable>
+      <TablePagination
+        classes={{toolbar: classes.pagination}}
+        component="div"
+        count={rowsData.length}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        rowsPerPageOptions={[rowsPerPage,]}
+        backIconButtonProps={{
+          'aria-label': 'Previous Page',
+          style: {height: '32px'},
+        }}
+        nextIconButtonProps={{
+          'aria-label': 'Next Page',
+          style: {height: '32px'},
+        }}
+        onChangePage={handleChangePage}
+      />
+    </Paper>
+  )
 }
 
 Table.propTypes = {

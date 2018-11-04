@@ -17,7 +17,10 @@ function getFormattedViews() {
   function formatHostname(hostname) {
     console.log(hostname)
     let parts = hostname.split(".")
-    return parts[parts.length-2].slice(0, 1).toUpperCase() + parts[parts.length-2].slice(1)
+    if (parts.length >= 2)
+      return parts[parts.length-2].slice(0, 1).toUpperCase() + parts[parts.length-2].slice(1)
+    else
+      return hostname
   }
   function formatDuration(duration) {
      var hours = Math.floor(duration/3600)
@@ -29,6 +32,7 @@ function getFormattedViews() {
   return new Promise(function(resolve, reject) {
     getViews()
     .then(rawViews => {
+      console.log(rawViews)
       let views = []
       rawViews.forEach(rawView => {
         let name = rawView.name

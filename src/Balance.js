@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useContext } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import AddFunds from './AddFunds'
 import Web3Context from './Web3Context'
@@ -34,34 +34,33 @@ const styles = theme => ({
 
 function Balance(props) {
   const { classes } = props
+
+  const storage = useContext(BrowserStorageContext)
+  if (!storage.state) return
+
+  const cache = useContext(Web3Context)
+
+  const settings = storage.state.settings
+  const currencySymbol = strings.currency[settings.currency]
+  const balanceFiat = cache.fiatPerEth[settings.currency] * cache.subject.balances.ETH
+  const balanceMEth = cache.subject.balances.ETH*1000
+
   return (
-    <BrowserStorageContext.Consumer>
-      {storage => {
-        if (!storage.state) return
-        const settings = storage.state.settings
-        return (
-          <Paper className={classes.paper}>
-            <div className={classes.row}>
-              <Web3Context.Consumer>
-                {cache => { return (
-                  <div className={classes.balance}>
-                    <Typography className={classes.balance} variant="title">
-                      {strings.currency[settings.currency] + (cache.fiatPerEth[settings.currency] * cache.subject.balances.ETH).toFixed(2)}
-                    </Typography>
-                    <Typography className={classes.balance} variant="body1">
-                      {' (' + (cache.subject.balances.ETH*100).toFixed(0) + 'mETH)'}
-                    </Typography>
-                  </div>
-                )}}
-              </Web3Context.Consumer>
-              <ModalButton className={classes.addFundsButton} text="Add Funds" variant="outlined" color="secondary">
-                <AddFunds />
-              </ModalButton>
-            </div>
-          </Paper>
-        )
-      }}
-    </BrowserStorageContext.Consumer>
+    <Paper className={classes.paper}>
+      <div className={classes.row}>
+        <div className={classes.balance}>
+          <Typography className={classes.balance} variant="title">
+            {currencySymbol + balanceFiat.toFixed(2)}
+          </Typography>
+          <Typography className={classes.balance} variant="body1">
+            {`(${balanceMEth.toFixed(0)} mETH)`}
+          </Typography>
+        </div>
+        <ModalButton className={classes.addFundsButton} text="Add Funds" variant="outlined" color="secondary">
+          <AddFunds />
+        </ModalButton>
+      </div>
+    </Paper>
   )
 }
 
