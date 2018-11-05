@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import AddFunds from './AddFunds'
 import Web3Context from './Web3Context'
@@ -35,10 +35,10 @@ const styles = theme => ({
 function Balance(props) {
   const { classes } = props
 
-  const storage = useContext(BrowserStorageContext)
+  const storage = React.useContext(BrowserStorageContext)
   if (!storage.state) return
 
-  const cache = useContext(Web3Context)
+  const cache = React.useContext(Web3Context)
 
   const settings = storage.state.settings
   const currencySymbol = strings.currency[settings.currency]

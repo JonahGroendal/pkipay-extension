@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { withStyles } from '@material-ui/core/styles'
 import MuiTable from '@material-ui/core/Table'
@@ -62,9 +62,9 @@ function sort(data, order, orderBy, fixedIndices) {
 }
 
 function Table(props) {
-  const [order, setOrder] = useState(props.initOrder)
-  const [orderBy, setOrderBy] = useState(props.initOrderBy)
-  const [page, setPage] = useState(0)
+  const [order, setOrder] = React.useState(props.initOrder)
+  const [orderBy, setOrderBy] = React.useState(props.initOrderBy)
+  const [page, setPage] = React.useState(0)
 
   function handleRequestSort(property) {
     let newOrder = 'desc'

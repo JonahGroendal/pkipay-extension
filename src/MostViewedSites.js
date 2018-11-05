@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { getFormattedViews, setIncluded } from './api/storageDb'
 import Table from './Table'
 import TableRow from '@material-ui/core/TableRow'
@@ -29,68 +29,58 @@ const styles = theme => ({
   },
 })
 
-class MostViewedSites extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      views: [],
-    }
+function MostViewedSites(props) {
+  const [views, setViews] = React.useState([])
+
+  React.useEffect(() => {
+    getFormattedViews().then(setViews)
+  }, [])
+
+  const handleClickRemove = (viewID) => () => {
+    setIncluded(viewID, false)
+    .then(() => getFormattedViews())
+    .then(setViews)
   }
 
-  componentDidMount() {
-    this.updateViews()
-  }
-
-  async updateViews() {
-    const views = await getFormattedViews()
-    this.setState({
-      views: views
-    })
-  }
-
-  render() {
-    if (!this.state.views) return
-    const { classes } = this.props
-    const { views } = this.state
-    console.log(views)
-    const headerCells = [
-      {label: 'Site', width: '55%', sortable: true, cellProps: {key: 'hostname', numeric: false}},
-      {label: 'Share', width: '30%', sortable: true, cellProps: {key: 'share', numeric: true}},
-      {label: '', width: '15%', sortable: false, cellProps: {key: 'delete', numeric: false}},
-    ]
-    return (
-      <Table
-        headerCells={headerCells}
-        rowsData={views}
-        initOrderBy="share"
-        classes={{ tableRowHead: classes.tableRowHead }}
-      >
-        {(view, index) => <TableRow className={classes.tableRow} hover key={view.id}>
-          <TableCell className={classes.tableCell}>
-            <Tooltip title={view.hostname}>
-              <Typography variant="subheading" noWrap>
-                {view.hostname}
-              </Typography>
-            </Tooltip>
-          </TableCell>
-          <TableCell className={classes.tableCell} numeric={true}>
+  //if (!views) return
+  const { classes } = props
+  const headerCells = [
+    {label: 'Site', width: '55%', sortable: true, cellProps: {key: 'hostname', numeric: false}},
+    {label: 'Share', width: '30%', sortable: true, cellProps: {key: 'share', numeric: true}},
+    {label: '', width: '15%', sortable: false, cellProps: {key: 'delete', numeric: false}},
+  ]
+  return (
+    <Table
+      headerCells={headerCells}
+      rowsData={views}
+      initOrderBy="share"
+      classes={{ tableRowHead: classes.tableRowHead }}
+    >
+      {(view, index) => <TableRow className={classes.tableRow} hover key={view.id}>
+        <TableCell className={classes.tableCell}>
+          <Tooltip title={view.hostname}>
             <Typography variant="subheading" noWrap>
-              {view.share + '%'}
+              {view.hostname}
             </Typography>
-          </TableCell>
-          <TableCell className={classes.tableCell}>
-            <Tooltip title="Remove view">
-              <Button className={classes.button} size="small"
-                aria-label="Remove" fullWidth
-                onClick={e => setIncluded(view.id, false).then(this.updateViews())}>
-                <DeleteOutlinedIcon />
-              </Button>
-            </Tooltip>
-          </TableCell>
-        </TableRow>}
-      </Table>
-    )
-  }
+          </Tooltip>
+        </TableCell>
+        <TableCell className={classes.tableCell} numeric={true}>
+          <Typography variant="subheading" noWrap>
+            {view.share + '%'}
+          </Typography>
+        </TableCell>
+        <TableCell className={classes.tableCell}>
+          <Tooltip title="Remove view">
+            <Button className={classes.button} size="small"
+              aria-label="Remove" fullWidth
+              onClick={handleClickRemove(view.id)}>
+              <DeleteOutlinedIcon />
+            </Button>
+          </Tooltip>
+        </TableCell>
+      </TableRow>}
+    </Table>
+  )
 }
 
 export default withStyles(styles)(MostViewedSites)
