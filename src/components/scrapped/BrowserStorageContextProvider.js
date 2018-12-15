@@ -59,7 +59,7 @@ export default class BrowserStorageContextProvider extends Component {
     const index = subs.findIndex(s => s.hostname === hostname)
     if (index === -1) return
     if (subs[index].permanent) subs[index].amount = 0
-    subs.splice(index, 1)
+    else subs.splice(index, 1)
 
     this.handleChange('subs', subs)
   }

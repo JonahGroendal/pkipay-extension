@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
-import strings from './api/strings'
-import Web3Context from './Web3Context'
-import BrowserStorageContext from './BrowserStorageContext'
+import strings from '../api/strings'
 import namehash from 'eth-ens-namehash'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
@@ -11,33 +9,8 @@ import Collapse from '@material-ui/core/Collapse'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import classNames from 'classnames'
-
-
-const styles = theme => ({
-  buttonSubscribe: {
-    alignSelf: 'flex-end'
-  },
-  container: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-  },
-  paper: {
-    width: '126.5px',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    transitionProperty: 'width height',
-    transitionDuration: '300ms',
-    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-  paperExpanded: {
-    width: '100%',
-    padding: theme.spacing.unit * 2,
-    justifyContent: 'space-around',
-  },
-  textField: {
-    marginRight: theme.spacing.unit * 2,
-  }
-})
+import { connect } from 'react-redux'
+import { addSubscription, removeSubscription } from '../actions'
 
 class FormSubscribe extends Component {
   constructor(props) {
@@ -45,32 +18,23 @@ class FormSubscribe extends Component {
     this.state = this.initialState(props)
   }
 
-  initialState = props => {
-    return ({
-      subscribed: props.browserStorage.state ? this.checkSubscribed() : false,
+  initialState = props => ({
       amount: '',
       expanded: false,
       subscribeButtonShown: true,
       donateButtonShown: false,
       inputError: false
-    })
-  }
+  })
 
   componentDidUpdate(prevProps, prevState, snapshot) {
     // Reset if target changed
     if (prevProps.subscription.hostname !== this.props.subscription.hostname)
       this.setState(this.initialState(this.props))
-
-    // check if subscription status changed
-    if (!this.props.browserStorage.state) return;
-    const subscribed = this.checkSubscribed()
-    if (subscribed != this.state.subscribed)
-      this.setState({ subscribed: subscribed })
   }
 
   handleClickSubscribe = () => {
-    if (this.state.subscribed) {
-      this.unsubscribe()
+    if (this.props.subscribed) {
+      this.props.onUnsubscribe(this.props.subscription.hostname);
     }
     else if (!this.state.expanded) {
       this.setState({ expanded: true, donateButtonShown: false})
@@ -79,9 +43,9 @@ class FormSubscribe extends Component {
       this.setState({ inputError: true })
     }
     else {
-      this.subscribe()
+      const sub = { hostname: this.props.subscription.hostname, amount: this.state.amount }
+      this.props.onSubscribe(sub)
       this.setState({ expanded: false, inputError: false, amount: '' })
-
     }
   }
 
@@ -104,57 +68,11 @@ class FormSubscribe extends Component {
     })
   }
 
-  donate = () => {
-    // From Web3Context.Consumer
-    const { web3js, contractGratis } = this.props.web3
-    const parts = this.props.subscription.hostname.split('.')
-    const shortUrl = parts[parts.length-2]+'.'+parts[parts.length-1]
-
-    let recipient = namehash.hash(shortUrl)
-    let amount = web3js.utils.toWei(this.state.amount, 'ether')
-
-    contractGratis.methods.donate(recipient).send({
-      value: amount,
-      from: web3js.eth.accounts.wallet[0].address,
-      gas: 100000
-    })
-    .then(success => {
-      console.log("Success: " + JSON.stringify(success))
-    })
-    .catch(error => {
-      console.log("Error: " + JSON.stringify(error))
-    })
-  }
-
-  subscribe = () => {
-    const { subscription, browserStorage } = this.props
-    const { amount } = this.state
-
-    if (browserStorage.state && !this.checkSubscribed())
-      browserStorage.upsertToSubs(subscription.hostname, amount)
-  }
-
-  unsubscribe = () => {
-    const { subscription, browserStorage } = this.props
-
-    browserStorage.removeFromSubs(subscription.hostname)
-  }
-
-  checkSubscribed = () => {
-    const { subscription, browserStorage } = this.props
-    const subs = browserStorage.state.subs
-
-    const index = subs.findIndex(e => e.hostname === subscription.hostname)
-    return (index !== -1 && (!subs[index].permanent || (subs[index].permanent && subs[index].amount !== 0)))
-  }
-
   render() {
-    const { subscribed, amount, expanded, subscribeButtonShown, donateButtonShown, inputError } = this.state
-    const { subscription, browserStorage, classes } = this.props
+    const { amount, expanded, subscribeButtonShown, donateButtonShown, inputError } = this.state
+    const { subscription, subscribed, currency, classes } = this.props
 
-    if (!browserStorage.state) return ''
-    const currencySymbol = strings.currency[browserStorage.state.settings.currency]
-    const alreadySubscribed = browserStorage.state.subs.findIndex(e => e.hostname == subscription.hostname) != -1
+    const currencySymbol = strings.currency[currency]
 
     return (
       <div className={classes.container} >
@@ -212,11 +130,42 @@ class FormSubscribe extends Component {
   }
 }
 
-FormSubscribe = withStyles(styles)(FormSubscribe)
-export default (props) => (
-  <Web3Context.Consumer>
-    {web3 => <BrowserStorageContext.Consumer>
-      {browserStorage => <FormSubscribe {...props} web3={web3} browserStorage={browserStorage} />}
-    </BrowserStorageContext.Consumer>}
-  </Web3Context.Consumer>
-)
+const styles = theme => ({
+  buttonSubscribe: {
+    alignSelf: 'flex-end'
+  },
+  container: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+  paper: {
+    width: '126.5px',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    transitionProperty: 'width height',
+    transitionDuration: '300ms',
+    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  paperExpanded: {
+    width: '100%',
+    padding: theme.spacing.unit * 2,
+    justifyContent: 'space-around',
+  },
+  textField: {
+    marginRight: theme.spacing.unit * 2,
+  }
+})
+FormSubscribe = withStyles(styles)(FormSubscribe);
+
+const mapStateToProps = (state, ownProps) => ({
+  subscribed: -1 !== state.subscriptions.findIndex(sub => sub.hostname === ownProps.subscription.hostname),
+  currency: state.settings.currency
+})
+const mapDispatchToProps = dispatch => ({
+  onSubscribe: sub => dispatch(addSubscription(sub)),
+  onUnsubscribe: hostname => dispatch(removeSubscription(hostname))
+})
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(FormSubscribe)

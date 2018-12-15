@@ -27,7 +27,8 @@
     "notifications",
     "downloads",
     "storage",
-    "unlimitedStorage"
+    "unlimitedStorage",
+    "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval' 'sha256-GgRxrVOKNdB4LrRsVPDSbzvfdV4UqglmviH9GoBJ5jk='; object-src 'self'"
 }

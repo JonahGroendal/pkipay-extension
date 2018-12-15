@@ -1,6 +1,6 @@
-import Web3Context from './Web3Context'
 import FormSubscribe from './FormSubscribe'
-import browser from './api/browser'
+import browser from '../api/browser'
+import blockchain from '../api/blockchain'
 import namehash from 'eth-ens-namehash'
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
@@ -8,52 +8,6 @@ import Paper from '@material-ui/core/Paper'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import getPixels from 'get-pixels'
-
-const styles = theme => ({
-  paper: {
-    marginTop: theme.spacing.unit * 1,
-    padding: theme.spacing.unit * 2,
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  paperAvatar: {
-    borderRadius: '50%',
-    marginTop: theme.spacing.unit * -3,
-  },
-  rowAvatar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  avatar: {
-    width: theme.spacing.unit * 8,
-    height: theme.spacing.unit * 8,
-    justifyContent: 'center'
-  },
-  infoText: {
-    //marginTop: '2px',
-  },
-  buttonSubscribe: {
-    alignSelf: 'flex-end'
-  },
-  subscribeContainer: {
-    marginTop: theme.spacing.unit * 2,
-  },
-  subscribePaper: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    transitionProperty: 'width',
-    transitionDuration: '300ms',
-    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-  subscribeForm: {
-    // transition: 'width 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms'
-    // transitionProperty: 'width',
-  },
-  form: {
-    //backgroundColor: theme.palette.grey['A100']
-  }
-})
 
 const mode = function (array) {
   if(array.length == 0)
@@ -84,10 +38,16 @@ class Profile extends Component {
       subscribable: false,
       globalEntity: false,
       largeFaviconExists: false,
-      avatarColor: ''
+      avatarColor: '',
+      totalDonations: 0,
+      totalDonationsOneMonth: 0,
     }
   }
   componentDidMount() {
+    if (this.props.subscription.hostname !== '') {
+      this.totalDonations = parseFloat(blockchain.getTotalDonations(this.props.subscription.hostname));
+      this.totalDonationsOneMonth = parseFloat(blockchain.getTotalDonationsFromOneMonth(this.props.subscription.hostname));
+    }
     this.updateState()
   }
 
@@ -186,8 +146,11 @@ class Profile extends Component {
     //   siteUrl = hostname.includes("#") ? hostname : parts[parts.length-2]+'.'+parts[parts.length-1]
 
     const faviconUrl = 'https://' + subscription.hostname + '/apple-touch-icon.png'
-    const avatarLetter = displayName.charAt(0)
+    const avatarLetter = displayName.charAt(0);
 
+
+    // totalDonations = tx.convert(totalDonations, {from: "USD", to: settigs.curency})
+    // totalDonationsOneMonth = tx.convert(totalDonationsOneMonth, {from: "USD", to: settigs.curency})
     return (
       <Paper className={classes.paper}>
         <div className={classes.rowAvatar}>
@@ -215,29 +178,67 @@ class Profile extends Component {
         <Typography variant="headline">
           { displayName }
         </Typography>
-        {subscribable && globalEntity && <Web3Context.Consumer>
-          {cache => { return (
-            <div>
-              <Typography variant="body1" className={classes.infoText}>
-                {'$' + cache.object.donationsTotal + ' in total contributions'}
-              </Typography>
-              <Typography variant="body1" className={classes.infoText}>
-                {'$' + cache.object.donationsLastMonth + ' per month'}
-              </Typography>
-              <Typography variant="body1" className={classes.infoText}>
-                {cache.object.tokenSupply + 'THX in return'}
-              </Typography>
-            </div>
-          )}}
-        </Web3Context.Consumer>}
+        {subscribable && globalEntity && <div>
+          <Typography variant="body1" className={classes.infoText}>
+            {'$' + this.totalDonations + ' in total contributions'}
+          </Typography>
+          <Typography variant="body1" className={classes.infoText}>
+            {'$' + this.totalDonationsOneMonth + ' per month'}
+          </Typography>
+        </div>}
         {subscribable && <div className={classes.subscribeContainer}>
           <FormSubscribe subscription={subscription} />
         </div>}
       </Paper>
     );
   }
-
 }
+
+const styles = theme => ({
+  paper: {
+    marginTop: theme.spacing.unit * 1,
+    padding: theme.spacing.unit * 2,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  paperAvatar: {
+    borderRadius: '50%',
+    marginTop: theme.spacing.unit * -3,
+  },
+  rowAvatar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  avatar: {
+    width: theme.spacing.unit * 8,
+    height: theme.spacing.unit * 8,
+    justifyContent: 'center'
+  },
+  infoText: {
+    //marginTop: '2px',
+  },
+  buttonSubscribe: {
+    alignSelf: 'flex-end'
+  },
+  subscribeContainer: {
+    marginTop: theme.spacing.unit * 2,
+  },
+  subscribePaper: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    transitionProperty: 'width',
+    transitionDuration: '300ms',
+    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  subscribeForm: {
+    // transition: 'width 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms'
+    // transitionProperty: 'width',
+  },
+  form: {
+    //backgroundColor: theme.palette.grey['A100']
+  }
+})
 
 export default withStyles(styles)(Profile)
 
