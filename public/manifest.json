@@ -10,9 +10,9 @@
   },
   "background": {
     "scripts": [
-        "storagedb.js",
-        "background.js",
-        "alarms.js"
+      "storagedb.js",
+      "background.js",
+      "scheduledTransactions.js"
     ]
   },
   "content_scripts": [{
@@ -28,7 +28,8 @@
     "downloads",
     "storage",
     "unlimitedStorage",
-    "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
+    "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
+    "https://rinkeby.infura.io/*"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval' 'sha256-GgRxrVOKNdB4LrRsVPDSbzvfdV4UqglmviH9GoBJ5jk='; object-src 'self'"
 }

@@ -1,36 +1,34 @@
 import React, { Component } from 'react'
-import Settings from './Settings'
-import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles'
+import TransactionScreenContainer from '../containers/TransactionScreenContainer'
+import Settings from './Settings'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import Tabs from '@material-ui/core/Tabs'
 import Button from '@material-ui/core/Button'
 
-function Nav({ classes, tabIndex, children, onChangeTab }) {
-  return (
-    <div className={classes.root}>
-      <AppBar position="static" className={classes.appBar}>
-        <Toolbar className={classes.toolbar}>
-          <Typography variant="title" color="inherit" className={classes.flex}>
-            Gratiis
-          </Typography>
-          <Settings />
-        </Toolbar>
-        <Tabs
-          value={tabIndex}
-          onChange={onChangeTab}
-          fullWidth
-        >
+const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
+  <div className={classes.root}>
+    <AppBar position="static" className={classes.appBar}>
+      <Toolbar className={classes.toolbar}>
+        <Typography variant="title" color="inherit" className={classes.flex}>
+          Gratiis
+        </Typography>
+        <TransactionScreenContainer />
+        <Settings />
+      </Toolbar>
+      <Tabs
+        value={tabIndex}
+        onChange={(event, value) => onChangeTab(value)}
+        fullWidth
+      >
+        {children}
 
-          {children}
-
-        </Tabs>
-      </AppBar>
-    </div>
-  )
-}
+      </Tabs>
+    </AppBar>
+  </div>
+)
 
 const styles = theme => ({
   root: {
@@ -47,4 +45,5 @@ const styles = theme => ({
     marginRight: 20,
   },
 })
+
 export default withStyles(styles)(Nav);

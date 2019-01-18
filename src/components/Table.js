@@ -80,7 +80,8 @@ function Table(props) {
   }
 
   const { classes, children, title, subtitle, headerCells, rowsData, fixedIndices, rowsPerPage } = props
-  const rowsDataSorted = sort(props.rowsData, order, orderBy, fixedIndices)
+  console.log(rowsData)
+  const rowsDataSorted = sort(rowsData, order, orderBy, fixedIndices)
   const rows = rowsDataSorted.map(children) //`children` is a render prop
   const classCellDefault = classes.tableCell
   const classCellLast = classNames(classes.tableCell, classes.tableCellLast)
@@ -104,7 +105,7 @@ function Table(props) {
           <TableRow className={classes.tableRowHead}>
             {headerCells.map((headerCell, index, array) => {
               const {label, width, sortable, cellProps} = headerCell
-              const { key, padding, numeric } = cellProps
+              const { key, numeric } = cellProps
               return (
                 <TableCell
                   className={index === array.length-1 ? (numeric ? classCellNumericLast : classCellLast) : (numeric ? classCellNumeric : classCellDefault)}

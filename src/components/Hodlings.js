@@ -8,6 +8,43 @@ import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import Tooltip from '@material-ui/core/Tooltip'
 
+const headerCells = [
+  {label: 'Site', width: '45%', sortable: true, cellProps: {key: 'name', padding: 'default', numeric: false}},
+  {label: 'Balance', width: '22%', sortable: true, cellProps: {key: 'balance', padding: 'none', numeric: true}},
+]
+const mockData = [
+  {name: 'wikipedia.org', balance: 10},
+  {name: 'github.com', balance: 44},
+]
+
+const Hodlings = ({ balances, currencySymbol, classes }) => (
+  <Table
+    title="THX Holdings"
+    className={classes.table}
+    headerCells={headerCells}
+    rowsData={balances}
+  >
+    {(holding, index) => (
+      <TableRow className={classes.tableRow} hover key={index}>
+        <TableCell className={classes.tableCell}>
+          <Tooltip title={holding.name}>
+            <Typography variant="subheading">
+              {holding.name}
+            </Typography>
+          </Tooltip>
+        </TableCell>
+        <TableCell className={classes.tableCell} numeric={true} padding="none">
+          <Tooltip title={holding.balance + " THX"}>
+            <Typography variant="subheading">
+              {currencySymbol + holding.balance.toFixed(2)}
+            </Typography>
+          </Tooltip>
+        </TableCell>
+      </TableRow>
+    )}
+  </Table>
+)
+
 const styles = theme => ({
   paper: {
     paddingTop: theme.spacing.unit * 2,
@@ -19,55 +56,5 @@ const styles = theme => ({
     cursor: 'pointer',
   },
 })
-
-class Hodlings extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-
-    }
-  }
-
-  render() {
-    const { classes } = this.props
-    const headerCells = [
-      {label: 'Site', width: '45%', sortable: true, cellProps: {key: 'name', padding: 'default', numeric: false}},
-      {label: 'Balance', width: '22%', sortable: true, cellProps: {key: 'balance', padding: 'none', numeric: true}},
-      {label: 'Total Supply', width: '33%', sortable: false, cellProps: {key: 'supply', padding: 'dense', numeric: true}},
-    ]
-    const mockData = [
-      {name: 'wikipedia.org', balance: 10, totalSupply: 120000},
-      {name: 'github.com', balance: 44, totalSupply: 10000},
-    ]
-    return (
-      <Table className={classes.table} title="THX Holdings"
-        headerCells={headerCells} rowsData={mockData}>
-        {(holding, index) => <TableRow className={classes.tableRow} hover key={index}>
-          <TableCell className={classes.tableCell}>
-            <Tooltip title={holding.name}>
-              <Typography variant="subheading">
-                {holding.name}
-              </Typography>
-            </Tooltip>
-          </TableCell>
-          <TableCell className={classes.tableCell} numeric={true} padding="none">
-            <Tooltip title={holding.balance + " THX"}>
-              <Typography variant="subheading">
-                {holding.balance}
-              </Typography>
-            </Tooltip>
-          </TableCell>
-          <TableCell className={classes.tableCell} numeric={true}>
-            <Tooltip title={holding.totalSupply + " THX"}>
-              <Typography variant="subheading">
-                {holding.totalSupply}
-              </Typography>
-            </Tooltip>
-          </TableCell>
-        </TableRow>}
-      </Table>
-    )
-  }
-}
 
 export default withStyles(styles)(Hodlings)

@@ -1,16 +1,18 @@
 import React, { Component } from 'react'
 import strings from '../api/strings'
+import web3js from '../api/web3js'
 import namehash from 'eth-ens-namehash'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
+import Tooltip from '@material-ui/core/Tooltip'
 import Collapse from '@material-ui/core/Collapse'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
-import { addSubscription, removeSubscription } from '../actions'
+import { addSubscription, removeSubscription, rescheduleSubscriptionsPayments, unlockWalletRequest } from '../actions'
 
 class FormSubscribe extends Component {
   constructor(props) {
@@ -43,7 +45,7 @@ class FormSubscribe extends Component {
       this.setState({ inputError: true })
     }
     else {
-      const sub = { hostname: this.props.subscription.hostname, amount: this.state.amount }
+      const sub = { hostname: this.props.subscription.hostname, amount: Number(this.state.amount) }
       this.props.onSubscribe(sub)
       this.setState({ expanded: false, inputError: false, amount: '' })
     }
@@ -70,7 +72,7 @@ class FormSubscribe extends Component {
 
   render() {
     const { amount, expanded, subscribeButtonShown, donateButtonShown, inputError } = this.state
-    const { subscription, subscribed, currency, classes } = this.props
+    const { subscription, subscribed, subscribedAmount, currency, classes } = this.props
 
     const currencySymbol = strings.currency[currency]
 
@@ -103,15 +105,17 @@ class FormSubscribe extends Component {
             }}
           />}
           {subscribeButtonShown && <div className={classes.buttonSubscribe}>
-            <Button
-              onClick={this.handleClickSubscribe}
-              variant={(expanded || subscribed) ? "outlined" : "contained"}
-              size="medium"
-              color="secondary"
-              elevation={expanded ? 0 : 1}
-            >
-              {subscribed ? "Unsubscribe" : "Subscribe"}
-            </Button>
+            <Tooltip title={subscribed ? "stop giving "+currencySymbol+subscribedAmount.toString()+" every month" : ""}>
+              <Button
+                onClick={this.handleClickSubscribe}
+                variant={(expanded || subscribed) ? "outlined" : "contained"}
+                size="medium"
+                color="secondary"
+                elevation={expanded ? 0 : 1}
+              >
+                {subscribed ? "Unsubscribe" : "Subscribe"}
+              </Button>
+            </Tooltip>
           </div>}
           {donateButtonShown && <div className={classes.buttonDonate}>
             <Button
@@ -157,13 +161,26 @@ const styles = theme => ({
 })
 FormSubscribe = withStyles(styles)(FormSubscribe);
 
+function getSubscribedAmount(subscriptions, subscription) {
+  let index = subscriptions.findIndex(sub => sub.hostname === subscription.hostname)
+  if (index > -1)
+    return subscriptions[index].amount
+  return 0
+}
 const mapStateToProps = (state, ownProps) => ({
   subscribed: -1 !== state.subscriptions.findIndex(sub => sub.hostname === ownProps.subscription.hostname),
-  currency: state.settings.currency
+  subscribedAmount: getSubscribedAmount(state.subscriptions, ownProps.subscription),
+  currency: state.settings.currency,
 })
 const mapDispatchToProps = dispatch => ({
-  onSubscribe: sub => dispatch(addSubscription(sub)),
-  onUnsubscribe: hostname => dispatch(removeSubscription(hostname))
+  onSubscribe: sub => {
+    dispatch(addSubscription(sub))
+    if (web3js.eth.accounts.wallet.length > 0)
+      dispatch(rescheduleSubscriptionsPayments())
+    else
+      dispatch(unlockWalletRequest()).then(() => dispatch(rescheduleSubscriptionsPayments()))
+  },
+  onUnsubscribe: hostname => dispatch(removeSubscription(hostname)),
 })
 export default connect(
   mapStateToProps,

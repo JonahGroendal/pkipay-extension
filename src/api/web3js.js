@@ -10,11 +10,9 @@ if (typeof web3 !== 'undefined') {
   web3js = new Web3(web3.currentProvider)
 } else {
   console.log("Using Infura for web3")
-  web3js = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
-  //web3js = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/VyklZt7tGRrfmhhyMHG8"))
-  //web3js = new Web3(new Web3.providers.WebsocketProvider("wss://rinkeby.infura.io/_ws"))
+  //web3js = new Web3(new Web3.providers.WebsocketProvider("ws://localhost:8545"));
+  web3js = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/v3/48899b10645a48e189e345be4be19ece"))
+  //web3js = new Web3(new Web3.providers.WebsocketProvider("wss://rinkeby.infura.io/ws/v3/48899b10645a48e189e345be4be19ece"))
 }
-
-web3js.eth.accounts.wallet.add(strings.web3.addresses.wallet)
 
 export default web3js

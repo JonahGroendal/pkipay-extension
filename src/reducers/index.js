@@ -1,10 +1,18 @@
 import { combineReducers } from 'redux'
 import subscriptions from './subscriptions'
 import settings from './settings'
-import nextPayment from './nextPayment'
+import objectHostname from './objectHostname'
+import unlockWalletScreen from './unlockWalletScreen'
+import transactionScreen from './transactionScreen'
+import scheduledTXs from './scheduledTXs'
+import wallet from './wallet'
 
 export default combineReducers({
   subscriptions,
   settings,
-  nextPayment
+  objectHostname,
+  unlockWalletScreen,
+  transactionScreen,
+  wallet,
+  scheduledTXs,
 })

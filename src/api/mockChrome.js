@@ -45,12 +45,23 @@ let mockChrome = {
   storage: {
     local: {
       get: function(obj, callback) {
+        if (typeof obj === 'string') obj = [obj];
         let retObj = {}
-        let key
-        for (key in obj) {
-          retObj[key] = ( mockChrome.storage.local.data[key] || obj[key] )
+        if (Array.isArray(obj)) {
+          let value;
+          let key;
+          for (key in obj) {
+            value = mockChrome.storage.local.data[key];
+            if (value) retObj[key] = value
+          }
+          callback(retObj)
+        } else {
+          let key
+          for (key in obj) {
+            retObj[key] = ( mockChrome.storage.local.data[key] || obj[key] )
+          }
+          callback(retObj)
         }
-        callback(retObj)
       },
       set: function(obj) {
         let key

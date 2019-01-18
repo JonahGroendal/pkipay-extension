@@ -8,14 +8,25 @@ let strings = {
     "CAD": "$",
   },
   paymentSchedule: {
-    firstOfTheMonth: now => new Date((new Date(now)).getFullYear(), (new Date(now)).getMonth(), 1),
+    firstOfTheMonth: now => {
+      let year = (new Date(now)).getFullYear()
+      let monthIndex = (new Date(now)).getMonth() + 1
+      if (monthIndex === 12) {
+        year += 1
+        monthIndex = 0
+      }
+      return new Date(year, monthIndex, 1)
+    },
     lastOfTheMonth: now => new Date(strings.paymentSchedule.firstOfTheMonth(now).valueOf() - 86400000), // 86400000ms == 1day
   },
   web3: {
     addresses: {
-      wallet: "0x3386ebe18cd1e84df3bbb691da831aceec0f2544971ec48877f09f26a80b1440",
-      resolver: "0x5Eaab6793f36af8C727eaBf2FB0C8393207eC076",
-      currency: "0x98E76130446453a9678CcF0B0984B6fD85e4697B",
+      wallet: "0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009",
+      Resolver: "0x7d05E654F478547F17744B90297dC2Cff1d8eAFD",
+      Currency: "0x550d0e5BB991f61dea8E09bd0f83ac76306bD5f8",
+      BuyMultipleTokens: "0x1aa2aB850D8c5E943cf4f5A7d0eFAd296F01e269",
+      TokenBuyer: "0xa310e6DA2A13E1292A2fa53FD90995484693ac82",
+      TokenBuyerFactory: "0x00e60C7dF3C63772C9361B1bA75e4d8a027dB605"
     }
   },
   themeType: {

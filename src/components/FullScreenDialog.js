@@ -28,32 +28,29 @@ const Transition = props => {
   return <Slide direction="up" {...props} />;
 }
 
-const FullScreenDialog = props => {
-  const { classes, title, children, open, onClose } = props;
-  return (
-    <Dialog
-      className={classes.root}
-      fullScreen
-      open={open}
-      onClose={onClose}
-      TransitionComponent={Transition}
-    >
-      <AppBar className={classes.appBar}>
-        <Toolbar>
-          <IconButton color="inherit" onClick={onClose} aria-label="Close">
-            <CloseIcon />
-          </IconButton>
-          <Typography variant="title" color="inherit" className={classes.flex}>
-            {title}
-          </Typography>
-        </Toolbar>
-      </AppBar>
+const FullScreenDialog = ({ classes, title, children, open, onClose, hideClose }) => (
+  <Dialog
+    className={classes.root}
+    fullScreen
+    open={open}
+    onClose={onClose}
+    TransitionComponent={Transition}
+  >
+    <AppBar className={classes.appBar}>
+      <Toolbar>
+        {!hideClose && <IconButton color="inherit" onClick={onClose} aria-label="Close">
+          <CloseIcon />
+        </IconButton>}
+        <Typography variant="title" color="inherit" className={classes.flex}>
+          {title}
+        </Typography>
+      </Toolbar>
+    </AppBar>
 
-      {children}
+    {children}
 
-    </Dialog>
-  );
-}
+  </Dialog>
+);
 
 FullScreenDialog.propTypes = {
   classes: PropTypes.object.isRequired,

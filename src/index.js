@@ -1,19 +1,49 @@
 import 'typeface-roboto'
 
-import App from './components/App.js'
 import React from 'react'
 import ReactDOM from 'react-dom'
-import registerServiceWorker from './registerServiceWorker'
+import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
-import { createStore } from 'redux'
+import thunkMiddleware from 'redux-thunk'
+import { createLogger } from 'redux-logger'
+import AppContainer from './containers/AppContainer.js'
 import rootReducer from './reducers'
+import { reviewTx } from './actions'
+import { loadState, saveState } from './api/browser'
+import { createTxScheduled } from './api/blockchain'
+import registerServiceWorker from './registerServiceWorker'
+import { throttle, omit } from 'lodash'
 
-const store = createStore(rootReducer);
+loadState().then(persistedState => {
+  const loggerMiddleware = createLogger()
 
-ReactDOM.render(
-  <Provider store={store}>
-    <App />
-  </Provider>,
-  document.getElementById('render-target')
-);
-registerServiceWorker();
+  const store = createStore(
+    rootReducer,
+    persistedState,
+    applyMiddleware(
+      thunkMiddleware,
+      loggerMiddleware
+    )
+  );
+  console.log(persistedState)
+  console.log(store.getState())
+
+  ReactDOM.render(
+    <Provider store={store}>
+      <AppContainer />
+    </Provider>,
+    document.getElementById('render-target')
+  );
+  registerServiceWorker();
+
+  store.subscribe(throttle(() => {
+    saveState(omit(store.getState(),'objectHostname'));
+  }, 3000));
+
+  // if (store.state.nextPayment <= Date.now())
+  //   const timestamps = Object.keys(store.state.schuledTxs).sort((a, b) => a - b)
+  //   timestamps.forEach(timestamp => {
+  //
+  //   })
+  //   store.dispatch(sendSignedTx( ))
+})

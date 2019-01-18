@@ -45,8 +45,8 @@ class Profile extends Component {
   }
   componentDidMount() {
     if (this.props.subscription.hostname !== '') {
-      this.totalDonations = parseFloat(blockchain.getTotalDonations(this.props.subscription.hostname));
-      this.totalDonationsOneMonth = parseFloat(blockchain.getTotalDonationsFromOneMonth(this.props.subscription.hostname));
+      this.totalDonations = blockchain.getTotalDonations(this.props.subscription.hostname);
+      this.totalDonationsOneMonth = blockchain.getTotalDonationsFromOneMonth(this.props.subscription.hostname);
     }
     this.updateState()
   }

@@ -4,6 +4,7 @@ import strings from '../api/strings'
 import { withStyles } from '@material-ui/core/styles'
 import IconButton from '@material-ui/core/IconButton'
 import SettingsIcon from '@material-ui/icons/SettingsApplications'
+import Tooltip from '@material-ui/core/Tooltip'
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -18,8 +19,13 @@ import { connect } from 'react-redux';
 import { setCurrency, setPaymentSchedule, setThemeType } from '../actions'
 
 function Settings(props) {
-  const { settings, onChangeCurrency, onChangePaymentSchedule, onChangeThemeType } = props;
-  const { classes } = props;
+  const {
+    settings,
+    onChangeCurrency,
+    onChangePaymentSchedule,
+    onChangeThemeType,
+    classes
+  } = props;
 
   const [open, setOpen] = React.useState(false);
 
@@ -35,7 +41,9 @@ function Settings(props) {
         color="inherit"
         aria-label="Settings"
       >
-        <SettingsIcon />
+        <Tooltip title="settings">
+          <SettingsIcon />
+        </Tooltip>
       </IconButton>
       <FullScreenDialog
         title="Settings"
