@@ -1,14 +1,19 @@
 const api = chrome || browser;
 
 api.runtime.onInstalled.addListener(function() {
+  // Send scheduled transaction on alarm
   api.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name.substring(0, 2) !== 'TX') return;
+    // Get application state
     api.storage.sync.get(null, function(storage) {
       if (api.lastError) return;
+      // Piece together chunks of stringified state
       const serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
       if (!serializedState) return;
+      // Get scheduledTx
       const tx = JSON.parse(serializedState).scheduledTXs[alarm.name]
       if (Date.now() - tx.when > 604800000) return;
+      // Send TX
       let oReq = new XMLHttpRequest();
       oReq.addEventListener('load', function() {
         console.log(oReq.response)
@@ -21,7 +26,8 @@ api.runtime.onInstalled.addListener(function() {
         "params": [tx.rawTransaction],
         "id": 1
       }));
-      console.log()
+
+      // Notify user
       chrome.notifications.create(alarm.name, {
         type: 'basic',
         iconUrl: 'favicon.ico',

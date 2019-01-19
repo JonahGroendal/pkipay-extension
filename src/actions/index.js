@@ -4,15 +4,21 @@ import strings from '../api/strings'
 import { createTxBuyThx, depositAllCurrency } from '../api/blockchain'
 import EthereumTx from 'ethereumjs-tx'
 
-export const addSubscription = subscription => ({
-  type: 'ADD_SUBSCRIPTION',
-  subscription
-});
+export const addSubscription = subscription => dispatch => {
+  dispatch({
+    type: 'ADD_SUBSCRIPTION',
+    subscription
+  })
+   return dispatch(rescheduleSubscriptionsPayments())
+}
 
-export const removeSubscription = hostname => ({
-  type: 'REMOVE_SUBSCRIPTION',
-  hostname
-});
+export const removeSubscription = hostname => dispatch => {
+  dispatch({
+    type: 'REMOVE_SUBSCRIPTION',
+    hostname
+  })
+  return dispatch(rescheduleSubscriptionsPayments())
+}
 
 export const setCurrency = currency => ({
   type: 'SET_CURRENCY',
@@ -27,11 +33,6 @@ export const setPaymentSchedule = paymentSchedule => ({
 export const setThemeType = themeType => ({
   type: 'SET_THEME_TYPE',
   themeType
-});
-
-export const setNextPayment = nextPayment => ({
-  type: 'SET_NEXT_PAYMENT',
-  nextPayment
 });
 
 export const setObjectHostname = objectHostname => ({
@@ -138,34 +139,51 @@ export const confirmTx = () => ({
 })
 
 export const sendTx = (txObject, counterparties) => dispatch => {
-  return web3js.eth.sendTransaction(txObject)
-  .once('transactionHash', hash => {
-    dispatch({
-      type: 'SEND_TX_SUCCESS',
-      payload: { txHash: hash }
+  return new Promise((resolve, reject) => {
+    const walletLocked = web3js.eth.accounts.wallet.length === 0
+    Promise.resolve(walletLocked && dispatch(unlockWalletRequest()))
+    .then(() =>  web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey))
+    .then(signedTx => {
+      web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
+      .once('transactionHash', hash => {
+        dispatch({
+          type: 'SEND_TX_SUCCESS',
+          payload: { txHash: hash }
+        })
+      })
+      .once('error', error => {
+        dispatch({
+          type: 'SEND_TX_ERROR',
+          payload: { txError: error }
+        })
+        dispatch(updateScheduledTxs())
+        .then(() => reject(error))
+      })
+      .then(receipt => {
+        if (receipt.status) counterparties.forEach(name => dispatch(addToken(name)))
+        dispatch(updateScheduledTxs()).then(() => resolve(receipt))
+      })
     })
-    counterparties.forEach(name => dispatch(addToken(name)))
+    .catch(error => {
+      dispatch({
+        type: 'SEND_TX_ERROR',
+        payload: { txError: error }
+      })
+      dispatch(updateScheduledTxs())
+      .then(() => reject(error))
+    })
   })
-  .once('error', error => dispatch({
-    type: 'SEND_TX_ERROR',
-    payload: { txError: error }
-  }))
 }
 
 export const scheduleTx = (when, txObject) => (dispatch, getState) => {
   return (async function () {
-    const { scheduledTXs } = getState()
+    const walletLocked = web3js.eth.accounts.wallet.length === 0
+    if (walletLocked) await dispatch(unlockWalletRequest())
+
     let id
     let rawTransaction
     let txHash
-    const keys = Object.keys(scheduledTXs)
-    .filter(tx => scheduledTXs[tx].when > Date.now())
-    .sort((a, b) => parseInt(scheduledTXs[a].nonce) - parseInt(scheduledTXs[b].nonce))
     try {
-      if (keys.length === 0)
-        txObject.nonce = await web3js.eth.getTransactionCount(web3js.eth.accounts.wallet[0].address, 'pending')
-      else
-        txObject.nonce = parseInt(scheduledTXs[keys[keys.length-1]].txObject.nonce) + 1
       const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
       rawTransaction = signedTx.rawTransaction
       txHash = '0x' + new EthereumTx(rawTransaction).hash().toString('hex')
@@ -187,49 +205,45 @@ export const scheduleTx = (when, txObject) => (dispatch, getState) => {
 export const unscheduleTx = id => dispatch => {
   return new Promise((resolve, reject) => {
     browser.alarms.clear(id, cleared => {
-      if (cleared)
-        resolve(dispatch({ type: 'UNSCHEDULE_TX', payload: { id }}))
-      else
-        reject(dispatch({ type: 'UNSCHEDULE_TX_ERROR' }))
-    })
-  })
-}
-
-export const scheduleSubscriptionsPayment = when => (dispatch, getState) => {
-  return new Promise((resolve, reject) => {
-    const hostnames = []
-    const amounts = []
-    getState().subscriptions.forEach(sub => {
-      if (!sub.hostname.includes('#')) {
-        hostnames.push(sub.hostname)
-        amounts.push(sub.amount)
+      if (cleared) {
+        dispatch({ type: 'UNSCHEDULE_TX', payload: { id }})
+        resolve()
+      } else {
+        dispatch({ type: 'UNSCHEDULE_TX_ERROR' })
+        reject()
       }
     })
-    createTxBuyThx(web3js.eth.accounts.wallet[0].address, hostnames, amounts)
-    .then(txObject => resolve(dispatch(scheduleTx(when, txObject))))
-    .catch(reject)
   })
 }
 
 export const rescheduleSubscriptionsPayments = () => (dispatch, getState) => {
   return (async function () {
-    let { scheduledTXs, settings } = getState()
+    console.log('rescheduling!')
+    let { scheduledTXs, settings, subscriptions, wallet } = getState()
     const now = Date.now()
     // Delete unsent transactions
-    let keys = Object.keys(scheduledTXs)
+    let keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
     for (let i=0; i<keys.length; i++) {
-      if (scheduledTXs[keys[i]].when > now)
-        await dispatch(unscheduleTx(keys[i]))
+      await dispatch(unscheduleTx(keys[i]))
+    }
+    const hasValidHostname = sub => !sub.hostname.includes('#')
+    const hostnames = subscriptions.filter(hasValidHostname).map(sub => sub.hostname)
+    const amounts = subscriptions.filter(hasValidHostname).map(sub => sub.amount)
+    const nonce = await web3js.eth.getTransactionCount(web3js.eth.accounts.wallet[0].address, 'pending')
+    let txObjects = []
+    for (let i=0; i<6; i++) {
+      const txObject = await createTxBuyThx(wallet.addresses[0], hostnames, amounts)
+      txObject.nonce = nonce + i
+      txObjects.push(txObject)
     }
     // Schedule transactions
+    const calcWhen = strings.paymentSchedule[settings.paymentSchedule]
     let monthIndex = (new Date(now)).getMonth()
     let year = (new Date(now)).getFullYear()
-    for (let i=0; i<12; i++) {
-      const calcNextPaymentTime = strings.paymentSchedule[settings.paymentSchedule]
-      if (i === 0)
-        await dispatch(scheduleSubscriptionsPayment(Date.now() + 3000))
-      else
-        await dispatch(scheduleSubscriptionsPayment(calcNextPaymentTime((new Date(year, monthIndex)).valueOf()).valueOf()))
+    let when
+    for (let i=0; i<txObjects.length; i++) {
+      when = calcWhen((new Date(year, monthIndex)).valueOf()).valueOf()
+      await dispatch(scheduleTx(when, txObjects[i]))
       monthIndex += 1
       if (monthIndex === 12) {
         year += 1
@@ -239,18 +253,33 @@ export const rescheduleSubscriptionsPayments = () => (dispatch, getState) => {
   })()
 }
 
-export const updateScheduledTxsNonces = () => (dispatch, getState) => {
+export const updateScheduledTxs = () => (dispatch, getState) => {
+  console.log('updateScheduledTxs')
   return (async function() {
-    let nonce = await web3js.eth.getTransactionCount(web3js.eth.accounts.wallet[0].address, 'pending')
     let { scheduledTXs } = getState()
-    const keys = Object.keys(scheduledTXs).sort()
+    const now = Date.now()
+    const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
+    console.log('scheduledTXs', scheduledTXs)
+    console.log('keys', keys)
+    if (keys.length === 0) return;
+    const nonce = await web3js.eth.getTransactionCount(web3js.eth.accounts.wallet[0].address, 'pending')
+    // Check if nonces need to be updated
+    let id = keys[0]
+    console.log('transactionCount', nonce)
+    console.log('old tx nonce', parseInt(scheduledTXs[id].txObject.nonce))
+    if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;
+    // update nonces
+    let txObjects = []
+    let whens = []
     for (let i=0; i<keys.length; i++) {
-      const id = keys[i]
-      if (scheduledTXs[id].when > Date.now()) {
-        await dispatch(unscheduleTx(id))
-        scheduledTXs[id].txObject.nonce = nonce + i
-        await dispatch(scheduleTx(scheduledTXs[id].when, scheduledTXs[id].txObject))
-      }
+      id = keys[i]
+      txObjects.push(scheduledTXs[id].txObject)
+      whens.push(scheduledTXs[id].when)
+      await dispatch(unscheduleTx(id))
+    }
+    for (let i=0; i<txObjects.length; i++) {
+      txObjects[i].nonce = nonce + i
+      await dispatch(scheduleTx(whens[i], txObjects[i]))
     }
   })()
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import TransactionScreen from '../components/TransactionScreen'
-import { sendTx, cancelTx, closeTx, openTx, confirmTx, unlockWalletRequest } from '../actions'
+import { sendTx, cancelTx, closeTx, openTx, confirmTx } from '../actions'
 import convertUSD from '../api/ECBForexRates'
 import cryptoCompare from 'cryptocompare'
 import web3js from '../api/web3js'
@@ -20,7 +20,6 @@ function TransactionScreenContainer(props) {
     onClickCancel,
     onClickClose,
     onClickOpen,
-    onUnlockWalletRequest,
     onTxConfirmation,
     currency,
   } = props
@@ -37,12 +36,7 @@ function TransactionScreenContainer(props) {
   }, [isOpen, txConfirmed, txHash])
 
   const gasValues = useGasValues(txObject)
-  const onClickSend = () => {
-    if (web3js.eth.accounts.wallet.length > 0)
-      onSend(txObject, counterparties)
-    else
-      onUnlockWalletRequest().then(() => onSend(txObject, counterparties))
-  }
+  const onClickSend = () => onSend(txObject, counterparties)
 
   return React.createElement(TransactionScreen, {
     isOpen,
@@ -100,7 +94,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = (dispatch, ownProps) => ({
   onSend: (txObject, counterparties) => dispatch(sendTx(txObject, counterparties)),
-  onUnlockWalletRequest: () => dispatch(unlockWalletRequest()),
   onClickCancel: () => dispatch(cancelTx()),
   onClickClose: () => dispatch(closeTx()),
   onClickOpen: () => dispatch(openTx()),

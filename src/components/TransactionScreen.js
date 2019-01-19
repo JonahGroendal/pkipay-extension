@@ -22,7 +22,6 @@ import DoneIcon from '@material-ui/icons/Done';
 import ErrorIcon from '@material-ui/icons/Error';
 import Badge from '@material-ui/core/Badge';
 import { connect } from 'react-redux';
-import { setNextPayment } from '../actions';
 
 function TransactionScreen(props) {
   const {

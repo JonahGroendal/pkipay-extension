@@ -12,7 +12,7 @@ import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
-import { addSubscription, removeSubscription, rescheduleSubscriptionsPayments, unlockWalletRequest } from '../actions'
+import { addSubscription, removeSubscription } from '../actions'
 
 class FormSubscribe extends Component {
   constructor(props) {
@@ -173,13 +173,7 @@ const mapStateToProps = (state, ownProps) => ({
   currency: state.settings.currency,
 })
 const mapDispatchToProps = dispatch => ({
-  onSubscribe: sub => {
-    dispatch(addSubscription(sub))
-    if (web3js.eth.accounts.wallet.length > 0)
-      dispatch(rescheduleSubscriptionsPayments())
-    else
-      dispatch(unlockWalletRequest()).then(() => dispatch(rescheduleSubscriptionsPayments()))
-  },
+  onSubscribe: sub => dispatch(addSubscription(sub)),
   onUnsubscribe: hostname => dispatch(removeSubscription(hostname)),
 })
 export default connect(
