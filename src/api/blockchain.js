@@ -138,18 +138,26 @@ export async function getDaiBalance(address) {
 }
 
 export async function getTokenBalance(address, domainName) {
-  const ensNode = namehash.hash(domainName)
-  const tokenAddress = await resolver.methods.payees(ensNode).call()
-  const contract = new web3js.eth.Contract(abis.ERC20, tokenAddress)
-  const weiValue = await contract.methods.balanceOf(address).call()
+  let weiValue
+  try {
+    const ensNode = namehash.hash(domainName)
+    const tokenAddress = await resolver.methods.payees(ensNode).call()
+    const contract = new web3js.eth.Contract(abis.ERC20, tokenAddress)
+    weiValue = await contract.methods.balanceOf(address).call()
+  } catch(error) {
+    return null
+  }
 
-  return parseInt(web3js.utils.fromWei(weiValue))
+  return parseFloat(web3js.utils.fromWei(weiValue))
 }
 
 export async function getTokenBalances(address, domainNames) {
   let balances = []
   for (let i=0; i<domainNames.length; i++) {
-    balances.push({ name: domainNames[i], balance: parseInt(await getTokenBalance(address, domainNames[i])) })
+    balances.push({
+      name: domainNames[i],
+      balance: await getTokenBalance(address, domainNames[i])
+    })
   }
   return balances
 }
