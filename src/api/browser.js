@@ -14,9 +14,16 @@ import zlib from 'zlib'
 // }
 // export default browser
 
-const api = (chrome || browser)
-  ? (chrome.tabs || browser.tabs) ? chrome || browser : mockChrome
-  : mockChrome
+const api = ((typeof browser === 'undefined' || typeof browser.tabs === 'undefined')
+            && (typeof chrome === 'undefined' || typeof chrome.tabs === 'undefined'))
+            ? mockChrome
+            : (typeof browser === 'undefined' || typeof browser.tabs === 'undefined')
+               ? chrome
+               : browser
+
+// const api = (typeof chrome !== 'undefined' || typeof browser !== 'undefined')
+//   ? (chrome.tabs || browser.tabs) ? chrome || browser : mockChrome
+//   : mockChrome
 
 export default api
 

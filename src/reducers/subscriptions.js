@@ -2,8 +2,7 @@ const initialState = [
   // Permanent subscription
   // `amount` is denominated in USD
   // gratiis#mostViewedSites must be at index 0
-  {hostname: "gratiis#mostViewedSites", amount: 0, name: "Most Viewed Sites", permanent: true },
-  {hostname: "open.spotify.com", amount: 5 },
+  //{hostname: "gratiis#mostViewedSites", amount: 0, name: "Most Viewed Sites", permanent: true },
 ];
 
 const subscriptions = (state = initialState, action) => {
@@ -11,7 +10,7 @@ const subscriptions = (state = initialState, action) => {
     case 'ADD_SUBSCRIPTION':
       return [
         ...state,
-        action.subscription
+        { hostname: action.subscription.hostname, amount: action.subscription.amount }
       ];
     case 'REMOVE_SUBSCRIPTION':
       return state.filter(sub => sub.hostname !== action.hostname || sub.permanent);

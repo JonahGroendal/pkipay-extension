@@ -59,11 +59,13 @@ export const unlockWallet = password => (dispatch, getState) => {
   } catch (error) {
     return dispatch({ type: 'UNLOCK_WALLET_FAILURE' })
   }
-  return resolveWalletUnlock(dispatch({ type: 'UNLOCK_WALLET_SUCCESS' }))
+  dispatch({ type: 'UNLOCK_WALLET_SUCCESS' })
+  return resolveWalletUnlock()
 }
 
 export const unlockWalletCancel = () => dispatch => {
-  rejectWalletUnlock(dispatch({ type: 'UNLOCK_WALLET_CANCEL' }))
+  dispatch({ type: 'UNLOCK_WALLET_CANCEL' })
+  return rejectWalletUnlock()
 }
 
 export const createWallet = password => dispatch => {
@@ -144,7 +146,7 @@ export const sendTx = (txObject, counterparties) => dispatch => {
     Promise.resolve(walletLocked && dispatch(unlockWalletRequest()))
     .then(() =>  web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey))
     .then(signedTx => {
-      web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
+      return web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
       .once('transactionHash', hash => {
         dispatch({
           type: 'SEND_TX_SUCCESS',
@@ -160,6 +162,7 @@ export const sendTx = (txObject, counterparties) => dispatch => {
         .then(() => reject(error))
       })
       .then(receipt => {
+        console.log('txReceipt', receipt)
         if (receipt.status) counterparties.forEach(name => dispatch(addToken(name)))
         dispatch(updateScheduledTxs()).then(() => resolve(receipt))
       })
@@ -177,8 +180,8 @@ export const sendTx = (txObject, counterparties) => dispatch => {
 
 export const scheduleTx = (when, txObject) => (dispatch, getState) => {
   return (async function () {
-    const walletLocked = web3js.eth.accounts.wallet.length === 0
-    if (walletLocked) await dispatch(unlockWalletRequest())
+    if (web3js.eth.accounts.wallet.length === 0) // If wallet locked
+      await dispatch(unlockWalletRequest())
 
     let id
     let rawTransaction
@@ -229,20 +232,22 @@ export const rescheduleSubscriptionsPayments = () => (dispatch, getState) => {
     const hasValidHostname = sub => !sub.hostname.includes('#')
     const hostnames = subscriptions.filter(hasValidHostname).map(sub => sub.hostname)
     const amounts = subscriptions.filter(hasValidHostname).map(sub => sub.amount)
-    const nonce = await web3js.eth.getTransactionCount(web3js.eth.accounts.wallet[0].address, 'pending')
+    if (hostnames.length === 0) return;
+    const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
     let txObjects = []
     for (let i=0; i<6; i++) {
-      const txObject = await createTxBuyThx(wallet.addresses[0], hostnames, amounts)
-      txObject.nonce = nonce + i
-      txObjects.push(txObject)
+      txObjects.push(Object.assign(
+        await createTxBuyThx(wallet.addresses[0], hostnames, amounts),
+        { nonce: nonce + i }
+      ))
     }
     // Schedule transactions
-    const calcWhen = strings.paymentSchedule[settings.paymentSchedule]
+    const calcWhen = now => strings.paymentSchedule[settings.paymentSchedule](now).valueOf()
     let monthIndex = (new Date(now)).getMonth()
     let year = (new Date(now)).getFullYear()
     let when
     for (let i=0; i<txObjects.length; i++) {
-      when = calcWhen((new Date(year, monthIndex)).valueOf()).valueOf()
+      when = calcWhen((new Date(year, monthIndex)).valueOf())
       await dispatch(scheduleTx(when, txObjects[i]))
       monthIndex += 1
       if (monthIndex === 12) {
@@ -256,17 +261,13 @@ export const rescheduleSubscriptionsPayments = () => (dispatch, getState) => {
 export const updateScheduledTxs = () => (dispatch, getState) => {
   console.log('updateScheduledTxs')
   return (async function() {
-    let { scheduledTXs } = getState()
+    let { scheduledTXs, wallet } = getState()
     const now = Date.now()
     const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
-    console.log('scheduledTXs', scheduledTXs)
-    console.log('keys', keys)
     if (keys.length === 0) return;
-    const nonce = await web3js.eth.getTransactionCount(web3js.eth.accounts.wallet[0].address, 'pending')
+    const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
     // Check if nonces need to be updated
     let id = keys[0]
-    console.log('transactionCount', nonce)
-    console.log('old tx nonce', parseInt(scheduledTXs[id].txObject.nonce))
     if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;
     // update nonces
     let txObjects = []

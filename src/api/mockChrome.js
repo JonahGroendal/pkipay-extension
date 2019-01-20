@@ -70,6 +70,34 @@ let mockChrome = {
         }
       },
       data: {}
+    },
+    sync: {
+      get: function(obj, callback) {
+        if (typeof obj === 'string') obj = [obj];
+        let retObj = {}
+        if (Array.isArray(obj)) {
+          let value;
+          let key;
+          for (key in obj) {
+            value = mockChrome.storage.sync.data[key];
+            if (value) retObj[key] = value
+          }
+          callback(retObj)
+        } else {
+          let key
+          for (key in obj) {
+            retObj[key] = ( mockChrome.storage.sync.data[key] || obj[key] )
+          }
+          callback(retObj)
+        }
+      },
+      set: function(obj) {
+        let key
+        for (key in obj) {
+          mockChrome.storage.sync.data[key] = JSON.parse(JSON.stringify(obj[key]))
+        }
+      },
+      data: {}
     }
   }
 }

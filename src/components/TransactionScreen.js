@@ -90,7 +90,9 @@ function TransactionScreen(props) {
                         </ListItemIcon>
                       </div>
                     </div>
-                    <ListItemText primary={to} />
+                    <Tooltip title={to}>
+                      <ListItemText primary={Array.from(to.substring(0, 17)).map((c, i) => i!==16 ? c : String.fromCharCode(8230)).join('')} />
+                    </Tooltip>
                   </ListItem>
                 ))}
               </List>
