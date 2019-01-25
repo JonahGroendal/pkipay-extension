@@ -21,7 +21,7 @@ const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
       <Tabs
         value={tabIndex}
         onChange={(event, value) => onChangeTab(value)}
-        fullWidth
+        variant="fullWidth"
       >
         {children}
 
