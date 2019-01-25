@@ -109,7 +109,8 @@ function Table(props) {
               return (
                 <TableCell
                   className={index === array.length-1 ? (numeric ? classCellNumericLast : classCellLast) : (numeric ? classCellNumeric : classCellDefault)}
-                  {...cellProps}
+                  key={key}
+                  align={numeric ? 'right' : 'inherit'}
                   style={width ? { width: width } : undefined}
                   sortDirection={orderBy === key ? order : false}
                 >

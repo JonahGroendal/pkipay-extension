@@ -1,20 +1,14 @@
-import React, { Component } from 'react'
+import React from 'react'
 import Table from './Table'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
 import { withStyles } from '@material-ui/core/styles'
-import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
-import Button from '@material-ui/core/Button'
 import Tooltip from '@material-ui/core/Tooltip'
 
 const headerCells = [
   {label: 'Site', width: '45%', sortable: true, cellProps: {key: 'name', padding: 'default', numeric: false}},
   {label: 'Balance', width: '22%', sortable: true, cellProps: {key: 'balance', padding: 'none', numeric: true}},
-]
-const mockData = [
-  {name: 'wikipedia.org', balance: 10},
-  {name: 'github.com', balance: 44},
 ]
 
 const Hodlings = ({ balances, currencySymbol, classes }) => (

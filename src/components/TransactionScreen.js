@@ -1,7 +1,5 @@
 import React from 'react'
 import FullScreenDialog from './FullScreenDialog'
-import strings from '../api/strings'
-import { getViews } from '../api/storageDb'
 import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
@@ -11,7 +9,6 @@ import SendIcon from '@material-ui/icons/Send'
 import Tooltip from '@material-ui/core/Tooltip'
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
@@ -21,7 +18,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import DoneIcon from '@material-ui/icons/Done';
 import ErrorIcon from '@material-ui/icons/Error';
 import Badge from '@material-ui/core/Badge';
-import { connect } from 'react-redux';
 
 function TransactionScreen(props) {
   const {

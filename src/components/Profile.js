@@ -44,10 +44,6 @@ class Profile extends Component {
     }
   }
   componentDidMount() {
-    if (this.props.subscription.hostname !== '') {
-      this.totalDonations = blockchain.getTotalDonations(this.props.subscription.hostname);
-      this.totalDonationsOneMonth = blockchain.getTotalDonationsFromOneMonth(this.props.subscription.hostname);
-    }
     this.updateState()
   }
 
@@ -58,6 +54,15 @@ class Profile extends Component {
 
   updateState = () => {
     const { hostname, name } = this.props.subscription
+    if (hostname !== '') {
+      this.setState({ totalDonations: 0, totalDonationsOneMonth: 0 })
+      Promise.all([
+        blockchain.getTotalDonations(hostname),
+        blockchain.getTotalDonationsFromOneMonth(hostname)
+      ]).then(([totalDonations, totalDonationsOneMonth]) => {
+        this.setState({ totalDonations, totalDonationsOneMonth})
+      })
+    }
     if (hostname === '') {
       browser.tabs.query({'active': true, 'lastFocusedWindow': true}, (tabs) => {
         this.setState({
@@ -180,10 +185,10 @@ class Profile extends Component {
         </Typography>
         {subscribable && globalEntity && <div>
           <Typography variant="body1" className={classes.infoText}>
-            {'$' + this.totalDonations + ' in total contributions'}
+            {'$' + this.state.totalDonations + ' in total contributions'}
           </Typography>
           <Typography variant="body1" className={classes.infoText}>
-            {'$' + this.totalDonationsOneMonth + ' per month'}
+            {'$' + this.state.totalDonationsOneMonth + ' last month'}
           </Typography>
         </div>}
         {subscribable && <div className={classes.subscribeContainer}>

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import FullScreenDialog from './FullScreenDialog'
 import strings from '../api/strings'
 import { withStyles } from '@material-ui/core/styles'
@@ -11,7 +11,6 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import Switch from '@material-ui/core/Switch';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import WifiIcon from '@material-ui/icons/Wifi';
 import ListSubheader from '@material-ui/core/ListSubheader';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';

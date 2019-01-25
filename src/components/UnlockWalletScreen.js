@@ -30,6 +30,12 @@ const UnlockWalletScreen = ({ isOpen, isError, onSubmit, onChange, onClose, clas
     </DialogContent>
     <DialogActions>
       <Button
+        onClick={onClose}
+        color="secondary"
+      >
+        Cancel
+      </Button>
+      <Button
         onClick={onSubmit}
         color="secondary"
       >

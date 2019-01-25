@@ -1,9 +1,8 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Table from './Table'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
-import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import DeleteOutlinedIcon from '@material-ui/icons/DeleteForeverOutlined'
@@ -38,7 +37,8 @@ const Subscriptions = ({ subscriptions, onUnsubscribe, onClickSubscription,
               subscription.hostname.includes("#")
               ? <AccountCircleIcon style={{width: "19.5px", height: "19.5px", marginLeft: "-1.75px", marginRight: "-1.75px"}}/>
               : <img src={'https://www.google.com/s2/favicons?domain=' + subscription.hostname}
-                height="16px" width="16px" style={{ borderRadius: "50%" }}/>
+                height="16px" width="16px" style={{ borderRadius: "50%" }}
+                alt="favicon"/>
             }
           </Button>
         </Tooltip>

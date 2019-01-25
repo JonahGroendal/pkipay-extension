@@ -5,7 +5,7 @@ import blockchain from '../api/blockchain'
 import strings from '../api/strings'
 import convertUSD from '../api/ECBForexRates.js'
 
-function BalanceContainer({ address, currency }) {
+function BalanceContainer({ address, currency, txScreenOpen }) {
 
   const [balance, setBalance] = React.useState(null);
 
@@ -13,15 +13,10 @@ function BalanceContainer({ address, currency }) {
     setBalance(convertUSD(currency, parseFloat(newDaiBalance)/(10**18)));
   }
   // Fetch initial balance
-  React.useEffect(async () => {
-    if (address)
-      blockchain.getDaiBalance(address).then(handleChange);
-  }, [address]);
-  // Fetch balance whenever it changes
   React.useEffect(() => {
-    if (address)
-      return blockchain.subscribeToDaiTransfer(address, handleChange);
-  }, [address]);
+    if (address && !txScreenOpen)
+      blockchain.getDaiBalance(address).then(handleChange);
+  }, [address, txScreenOpen]);
 
   const currencySymbol = strings.currency[currency];
 
@@ -31,5 +26,6 @@ function BalanceContainer({ address, currency }) {
 const mapStateToProps = state => ({
   address: state.wallet.addresses[0],
   currency: state.settings.currency,
+  txScreenOpen: state.transactionScreen.isOpen
 })
 export default connect(mapStateToProps)(BalanceContainer)

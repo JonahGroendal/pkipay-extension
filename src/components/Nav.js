@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import TransactionScreenContainer from '../containers/TransactionScreenContainer'
 import Settings from './Settings'
@@ -6,7 +6,6 @@ import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import Tabs from '@material-ui/core/Tabs'
-import Button from '@material-ui/core/Button'
 
 const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
   <div className={classes.root}>

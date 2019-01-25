@@ -16,7 +16,7 @@ export default {
 const resolver = new web3js.eth.Contract(abis.Resolver, strings.web3.addresses.Resolver);
 const currency = new web3js.eth.Contract(abis.ERC20, strings.web3.addresses.Currency);
 const buyMultipleTokens = new web3js.eth.Contract(abis.BuyMultipleTokens, strings.web3.addresses.BuyMultipleTokens);
-const tokenBuyerFactory = new web3js.eth.Contract(abis.TokenBuyerFactory, strings.web3.addresses.TokenBuyerFactory);
+//const tokenBuyerFactory = new web3js.eth.Contract(abis.TokenBuyerFactory, strings.web3.addresses.TokenBuyerFactory);
 
 export async function createTxBuyThx(address, hostnames, values) {
   if (!Array.isArray(hostnames)) hostnames = [hostnames,];
@@ -191,11 +191,11 @@ export async function getTotalDonationsFromOneMonth(hostname) {
   const estFromBlock = currentBlockNum - 60*60*24*30/15
   if (estFromBlock > 0) {
     const estFromBlockTimestamp = (await web3js.eth.getBlock(estFromBlock)).timestamp;
-    const secondsPerBlock = (currentTimestamp - estFromBlockTimestamp) / 60*60*24*30/15;
+    const secondsPerBlock = (currentTimestamp - estFromBlockTimestamp) / ((60*60*24*30)/15);
     let fromBlock = Math.floor(currentBlockNum - 60*60*24*30/secondsPerBlock);
     if (fromBlock < 0) fromBlock = 0;
-    return getTotalDonations(hostname, fromBlock);
+    return await getTotalDonations(hostname, fromBlock);
   }
-  return getTotalDonations(hostname, 0);
+  return await getTotalDonations(hostname, 0);
 
 }

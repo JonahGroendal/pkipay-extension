@@ -1,8 +1,6 @@
 import React from 'react'
-import { connect } from 'react-redux'
 import CreateWalletScreenContainer from '../containers/CreateWalletScreenContainer'
 import UnlockWalletScreenContainer from '../containers/UnlockWalletScreenContainer'
-import TransactionScreenContainer from '../containers/TransactionScreenContainer'
 import Pages from './Pages'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
