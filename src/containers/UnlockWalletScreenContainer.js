@@ -6,15 +6,20 @@ import { unlockWallet, unlockWalletCancel, closeTx } from '../actions'
 function UnlockWalletScreenContainer({ isOpen, isError, onUnlock, onClose }) {
   const [value, setValue] = React.useState('')
 
-  function onChange(event) {
+  function handleChange(event) {
     setValue(event.target.value)
   }
-  function onSubmit(event) {
-    event.preventDefault()
+  function handleSubmit() {
     onUnlock(value)
   }
 
-  return React.createElement(UnlockWalletScreen, {isOpen, isError, onSubmit, onChange, onClose })
+  return React.createElement(UnlockWalletScreen, {
+    isOpen,
+    isError,
+    onSubmit: handleSubmit,
+    onChange: handleChange,
+    onClose
+  })
 }
 
 const mapStateToProps = state => ({

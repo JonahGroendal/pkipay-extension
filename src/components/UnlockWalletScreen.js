@@ -1,38 +1,42 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
-import FullScreenDialog from './FullScreenDialog'
+import Dialog from '@material-ui/core/Dialog'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
 
 const UnlockWalletScreen = ({ isOpen, isError, onSubmit, onChange, onClose, classes }) => (
-  <FullScreenDialog
-    className={classes.root}
-    title="Unlock wallet"
+  <Dialog
     open={isOpen}
     onClose={onClose}
+    maxWidth="md"
+    aria-labelledby="unlock-wallet-title"
   >
-    <form onSubmit={onSubmit}>
+    <DialogTitle id="unlock-wallet-title">Unlock wallet</DialogTitle>
+    <DialogContent>
       <TextField
         onChange={onChange}
         error={isError}
         label="Password"
         type="password"
-        margin="normal"
+        onKeyPress={e => {
+          if (e.key === 'Enter') {
+            onSubmit();
+            e.preventDefault();
+          }
+        }}
       />
+    </DialogContent>
+    <DialogActions>
       <Button
-        type="submit"
-        variant="outlined" size="medium" color="secondary"
+        onClick={onSubmit}
+        color="secondary"
       >
         Unlock
       </Button>
-    </form>
-  </FullScreenDialog>
+    </DialogActions>
+  </Dialog>
 )
 
-const styles = theme => ({
-  root: {
-    zIndex: 100
-  }
-})
-
-export default withStyles(styles)(UnlockWalletScreen)
+export default UnlockWalletScreen
