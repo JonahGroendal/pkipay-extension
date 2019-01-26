@@ -27,24 +27,14 @@ const api = ((typeof browser === 'undefined' || typeof browser.tabs === 'undefin
 
 export default api
 
-export function loadState() {
-  console.log('loading state!')
-  return new Promise((resolve, reject) => {
-    Promise.all([getFromStorage(null), getHostname()])
-    .then(([storage, hostname]) => {
-      const serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
-      if (serializedState) {
-        console.log(serializedState.substring(23000, 24000))
-        resolve({
-          ...JSON.parse(serializedState),
-          objectHostname: hostname
-        })
-      } else {
-        resolve({ objectHostname: hostname })
-      }
-    })
-    .catch(reject)
-  })
+export async function loadState() {
+  let state = {}
+  const [storage, hostname] = await Promise.all([getFromStorage(null), getHostname()])
+  state.objectHostname = hostname
+  const serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
+  if (serializedState)
+    Object.assign(state, JSON.parse(serializedState))
+  return state
 }
 
 export function saveState(state) {

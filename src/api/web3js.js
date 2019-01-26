@@ -1,7 +1,5 @@
 /*global web3*/
 import Web3 from 'web3'
-import strings from './strings'
-import gratisABI from './gratisABI'
 
 // initialize web3js
 let web3js

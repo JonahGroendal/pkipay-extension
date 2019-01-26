@@ -8,7 +8,7 @@
           "type": "bytes32"
         }
       ],
-      "name": "payees",
+      "name": "tokens",
       "outputs": [
         {
           "name": "",
@@ -18,7 +18,7 @@
       "payable": false,
       "stateMutability": "view",
       "type": "function",
-      "signature": "0xa52706a6"
+      "signature": "0x904194a3"
     },
     {
       "constant": false,
@@ -49,9 +49,9 @@
           "type": "address"
         }
       ],
-      "name": "PayeeCreated",
+      "name": "TokenCreated",
       "type": "event",
-      "signature": "0x00f5271602c1004191e39038f18adef7dc49252a461fa04397527ca87cc48ea4"
+      "signature": "0xa3c2da69295bcaba324b997624b6c59792aab58e331a8e878f9673aff68bd24a"
     },
     {
       "anonymous": false,
@@ -79,12 +79,17 @@
           "type": "bytes32"
         }
       ],
-      "name": "createPayee",
-      "outputs": [],
+      "name": "createToken",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0x2bf47596"
+      "signature": "0xae3edb65"
     },
     {
       "constant": false,
@@ -877,75 +882,7 @@
 
   "TokenBuyer": [
     {
-      "constant": false,
       "inputs": [
-        {
-          "name": "_owner",
-          "type": "address"
-        },
-        {
-          "name": "_currency",
-          "type": "address"
-        },
-        {
-          "name": "_resolver",
-          "type": "address"
-        }
-      ],
-      "name": "init",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x184b9559"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "tokenSales",
-          "type": "address[]"
-        },
-        {
-          "name": "values",
-          "type": "uint256[]"
-        }
-      ],
-      "name": "buyAgainFromMany",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0x11236726"
-    },
-    {
-      "constant": false,
-      "inputs": [
-        {
-          "name": "ensNodes",
-          "type": "bytes32[]"
-        },
-        {
-          "name": "values",
-          "type": "uint256[]"
-        }
-      ],
-      "name": "buyFromMany",
-      "outputs": [],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "function",
-      "signature": "0xff694f11"
-    }
-  ],
-
-  "TokenBuyerFactory": [
-    {
-      "inputs": [
-        {
-          "name": "_prototype",
-          "type": "address"
-        },
         {
           "name": "_currency",
           "type": "address"
@@ -967,26 +904,35 @@
           "indexed": false,
           "name": "",
           "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "",
+          "type": "uint256"
         }
       ],
-      "name": "TokenBuyerCreated",
+      "name": "Buy",
       "type": "event",
-      "signature": "0xf2e7d0c7108429bba43da2e81cca2b24a5e701ea4b87effca3f12aa330b0979f"
+      "signature": "0xe3d4187f6ca4248660cc0ac8b8056515bac4a8132be2eca31d6d0cc170722a7e"
     },
     {
       "constant": false,
-      "inputs": [],
-      "name": "create",
-      "outputs": [
+      "inputs": [
         {
-          "name": "",
-          "type": "address"
+          "name": "ensNodes",
+          "type": "bytes32[]"
+        },
+        {
+          "name": "values",
+          "type": "uint256[]"
         }
       ],
+      "name": "multiBuy",
+      "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
       "type": "function",
-      "signature": "0xefc81a8c"
+      "signature": "0x07da68cd"
     }
   ]
 }

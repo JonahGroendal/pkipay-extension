@@ -4,7 +4,6 @@ import strings from './strings'
 import namehash from 'eth-ens-namehash'
 
 export default {
-  buyTHX,
   createTxBuyThx,
   getEthBalance,
   getDaiBalance,
@@ -16,6 +15,7 @@ export default {
 const resolver = new web3js.eth.Contract(abis.Resolver, strings.web3.addresses.Resolver);
 const currency = new web3js.eth.Contract(abis.ERC20, strings.web3.addresses.Currency);
 const buyMultipleTokens = new web3js.eth.Contract(abis.BuyMultipleTokens, strings.web3.addresses.BuyMultipleTokens);
+const tokenBuyer = new web3js.eth.Contract(abis.TokenBuyer, strings.web3.addresses.TokenBuyer);
 //const tokenBuyerFactory = new web3js.eth.Contract(abis.TokenBuyerFactory, strings.web3.addresses.TokenBuyerFactory);
 
 export async function createTxBuyThx(address, hostnames, values) {
@@ -24,39 +24,53 @@ export async function createTxBuyThx(address, hostnames, values) {
   const validHostnames = (e, i) => !hostnames[i].includes('#')
   const ensNodes = hostnames.filter(validHostnames).map(h => namehash.hash(h));
   const weiValues = values.filter(validHostnames).map(v => web3js.utils.toWei(v.toString()));
-  const abi = await buyMultipleTokens.methods.multiBuy(ensNodes, weiValues).encodeABI();
+  let abi
+  try { abi = await tokenBuyer.methods.multiBuy(ensNodes, weiValues).encodeABI() }
+  catch (error) { throw error }
   return {
     from: address,
-    to: strings.web3.addresses.BuyMultipleTokens,
-    gas: (300000 * ensNodes.length).toString(),
+    to: tokenBuyer.options.address,
+    gas: (300000 + (300000 * ensNodes.length)).toString(),
     data: abi
   }
 }
 
-// Deposit currency tokens into BuyMultipleTokens contract for future transfers
-export async function depositAllCurrency() {
+export async function approveTokenBuyer() {
   const balance = await currency.methods.balanceOf(web3js.eth.accounts.wallet[0].address).call()
-  const gasPrice = await web3js.eth.getGasPrice()
-  console.log('depositing currency')
-  console.log(parseInt(parseInt(gasPrice) * 1.01).toString())
-  try {
-    await currency.methods.approve(buyMultipleTokens.options.address, balance).send({
-      from: web3js.eth.accounts.wallet[0].address,
-      gas: 100000,
-      // higher gas price to ensure ordering
-      gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
-    })
-    await buyMultipleTokens.methods.deposit(web3js.eth.accounts.wallet[0].address, balance).send({
-      from: web3js.eth.accounts.wallet[0].address,
-      gas: 100000,
-      gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
-    })
-  } catch (error) {
-    console.log(error)
-    return false
-  }
-  return true
+  if (balance === "0") return;
+  const allowance = await currency.methods.allowance(web3js.eth.accounts.wallet[0].address, tokenBuyer.options.address).call()
+  const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+  if (allowance === maxUint) return;
+  return await currency.methods.approve(tokenBuyer.options.address, maxUint).send({
+    from: web3js.eth.accounts.wallet[0].address,
+    gas: 50000
+  })
 }
+
+// // Deposit currency tokens into BuyMultipleTokens contract for future transfers
+// export async function depositAllCurrency() {
+//   const balance = await currency.methods.balanceOf(web3js.eth.accounts.wallet[0].address).call()
+//   const gasPrice = await web3js.eth.getGasPrice()
+//   console.log('depositing currency')
+//   console.log(parseInt(parseInt(gasPrice) * 1.01).toString())
+//   try {
+//     await currency.methods.approve(buyMultipleTokens.options.address, balance).send({
+//       from: web3js.eth.accounts.wallet[0].address,
+//       gas: 100000,
+//       // higher gas price to ensure ordering
+//       gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
+//     })
+//     await buyMultipleTokens.methods.deposit(web3js.eth.accounts.wallet[0].address, balance).send({
+//       from: web3js.eth.accounts.wallet[0].address,
+//       gas: 100000,
+//       gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
+//     })
+//   } catch (error) {
+//     console.log(error)
+//     return false
+//   }
+//   return true
+// }
 
 // export async function createTokenBuyer() {
 //   const balance = await currency.methods.balanceOf(web3js.eth.accounts.wallet[0].address).call()
@@ -83,29 +97,29 @@ export async function depositAllCurrency() {
 //   return tokenBuyerAddress
 // }
 
-export async function buyTHX(hostname, amount) {
-  const ensNode = namehash.hash(hostname);
-  let address = await resolver.methods.payees(ensNode).call();
-  if (address === "0x0000000000000000000000000000000000000000") {
-    await resolver.methods.createPayee(ensNode).send({
-      from: web3js.eth.accounts.wallet[0].address,
-      gas: 200000,
-    });
-    address = await resolver.methods.payees(ensNode).call();
-  }
-  const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
-  const allowance = await currency.methods.allowance(web3js.eth.accounts.wallet[0].address, address).call();
-  if ( web3js.utils.toBN(allowance).lt(web3js.utils.toBN(amount)) ) {
-    await currency.methods.increaseAllowance(address, amount).send({
-      from: web3js.eth.accounts.wallet[0].address,
-      gas: 100000,
-    });
-  }
-  return await thxToken.methods.buy(amount).send({
-    from: web3js.eth.accounts.wallet[0].address,
-    gas: 150000,
-  })
-}
+// export async function buyTHX(hostname, amount) {
+//   const ensNode = namehash.hash(hostname);
+//   let address = await resolver.methods.tokens(ensNode).call();
+//   if (address === "0x0000000000000000000000000000000000000000") {
+//     await resolver.methods.createToken(ensNode).send({
+//       from: web3js.eth.accounts.wallet[0].address,
+//       gas: 200000,
+//     });
+//     address = await resolver.methods.tokens(ensNode).call();
+//   }
+//   const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
+//   const allowance = await currency.methods.allowance(web3js.eth.accounts.wallet[0].address, address).call();
+//   if ( web3js.utils.toBN(allowance).lt(web3js.utils.toBN(amount)) ) {
+//     await currency.methods.increaseAllowance(address, amount).send({
+//       from: web3js.eth.accounts.wallet[0].address,
+//       gas: 100000,
+//     });
+//   }
+//   return await thxToken.methods.buy(amount).send({
+//     from: web3js.eth.accounts.wallet[0].address,
+//     gas: 150000,
+//   })
+// }
 
 // export async function buyTHXFromSubs(subscriptions) {
 //   let recipients = []
@@ -141,7 +155,7 @@ export async function getTokenBalance(address, domainName) {
   let weiValue
   try {
     const ensNode = namehash.hash(domainName)
-    const tokenAddress = await resolver.methods.payees(ensNode).call()
+    const tokenAddress = await resolver.methods.tokens(ensNode).call()
     const contract = new web3js.eth.Contract(abis.ERC20, tokenAddress)
     weiValue = await contract.methods.balanceOf(address).call()
   } catch(error) {
@@ -175,7 +189,7 @@ export async function subscribeToDaiTransfer(address, onTransfer) {
 
 export async function getTotalDonations(hostname, fromBlock = 0) {
   const ensNode = namehash.hash(hostname);
-  const address = await resolver.methods.payees(ensNode).call();
+  const address = await resolver.methods.tokens(ensNode).call();
   const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
   const pastBuys = await thxToken.getPastEvents('Buy', { fromBlock: fromBlock })
   const pastRefunds = await thxToken.getPastEvents('Refund', { fromBlock: 0 })

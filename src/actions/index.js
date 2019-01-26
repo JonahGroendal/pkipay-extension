@@ -1,7 +1,7 @@
 import web3js from '../api/web3js'
 import browser from '../api/browser'
 import strings from '../api/strings'
-import { createTxBuyThx, depositAllCurrency } from '../api/blockchain'
+import { createTxBuyThx, approveTokenBuyer } from '../api/blockchain'
 import EthereumTx from 'ethereumjs-tx'
 
 export const addSubscription = subscription => dispatch => {
@@ -60,6 +60,7 @@ export const unlockWallet = password => (dispatch, getState) => {
     return dispatch({ type: 'UNLOCK_WALLET_FAILURE' })
   }
   dispatch({ type: 'UNLOCK_WALLET_SUCCESS' })
+  approveTokenBuyer()
   return resolveWalletUnlock()
 }
 
@@ -109,6 +110,7 @@ export const addAccount = (privateKey, password) => dispatch => {
     type: 'ADD_ACCOUNT',
     payload: { address: account.address, keystores }
   })
+  approveTokenBuyer()
   return account
 }
 
@@ -233,22 +235,16 @@ export const rescheduleSubscriptionsPayments = () => (dispatch, getState) => {
     const hostnames = subscriptions.filter(hasValidHostname).map(sub => sub.hostname)
     const amounts = subscriptions.filter(hasValidHostname).map(sub => sub.amount)
     if (hostnames.length === 0) return;
-    const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
-    let txObjects = []
-    for (let i=0; i<6; i++) {
-      txObjects.push(Object.assign(
-        await createTxBuyThx(wallet.addresses[0], hostnames, amounts),
-        { nonce: nonce + i }
-      ))
-    }
     // Schedule transactions
+    const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
+    const txObject = await createTxBuyThx(wallet.addresses[0], hostnames, amounts)
     const calcWhen = now => strings.paymentSchedule[settings.paymentSchedule](now).valueOf()
     let monthIndex = (new Date(now)).getMonth()
     let year = (new Date(now)).getFullYear()
     let when
-    for (let i=0; i<txObjects.length; i++) {
+    for (let i=0; i<6; i++) {
       when = calcWhen((new Date(year, monthIndex)).valueOf())
-      await dispatch(scheduleTx(when, txObjects[i]))
+      await dispatch(scheduleTx(when, { ...txObject, nonce: nonce + i }))
       monthIndex += 1
       if (monthIndex === 12) {
         year += 1

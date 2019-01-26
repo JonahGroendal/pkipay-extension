@@ -185,10 +185,10 @@ class Profile extends Component {
         </Typography>
         {subscribable && globalEntity && <div>
           <Typography variant="body1" className={classes.infoText}>
-            {'$' + this.state.totalDonations + ' in total contributions'}
+            {'$' + this.state.totalDonations.toFixed(2) + ' in total contributions'}
           </Typography>
           <Typography variant="body1" className={classes.infoText}>
-            {'$' + this.state.totalDonationsOneMonth + ' last month'}
+            {'$' + this.state.totalDonationsOneMonth.toFixed(2) + ' last month'}
           </Typography>
         </div>}
         {subscribable && <div className={classes.subscribeContainer}>
