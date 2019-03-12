@@ -8,7 +8,7 @@ import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
-import { addSubscription, removeSubscription } from '../actions'
+import { addSubscription, removeSubscription, setTabIndex } from '../actions'
 
 class FormSubscribe extends Component {
   constructor(props) {
@@ -169,7 +169,10 @@ const mapStateToProps = (state, ownProps) => ({
   currency: state.settings.currency,
 })
 const mapDispatchToProps = dispatch => ({
-  onSubscribe: sub => dispatch(addSubscription(sub)),
+  onSubscribe: sub => {
+    dispatch(addSubscription(sub))
+    .then(() => dispatch(setTabIndex(1)))
+  },
   onUnsubscribe: hostname => dispatch(removeSubscription(hostname)),
 })
 export default connect(

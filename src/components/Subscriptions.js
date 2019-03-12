@@ -18,75 +18,76 @@ const headerCells = [
   {label: '', width: '15%', sortable: false, cellProps: {key: 'unsubscribe', numeric: false}},
 ]
 
-const Subscriptions = ({ subscriptions, onUnsubscribe, onClickSubscription,
-                         currency, currencySymbol, nextPayment, classes }) => (
+const Subscriptions = ({
+  subscriptions,
+  highlightedSubscription,
+  onUnsubscribe,
+  onClickSubscription,
+  currency,
+  currencySymbol,
+  nextPayment,
+  classes,
+  highlightedRowIndex,
+}) => (
   <Table
-    className={classes.table} title="Monthly Subscriptions"
+    title="Monthly Subscriptions"
     subtitle={"next payment on " + nextPayment.toLocaleDateString()}
-    headerCells={headerCells} rowsData={subscriptions} rowsPerPage={4} fixedRows={[0,]}
+    headerCells={headerCells}
+    rowsData={subscriptions}
+    rowsPerPage={4}
+    fixedRows={[0,]}
+    highlightedRowIndex={highlightedRowIndex}
   >
-    {(subscription, index) => <TableRow
-      className={classes.tableRow} hover tabIndex={-1} key={index}>
-      <TableCell className={classes.tableCell}
-        onClick={() => onClickSubscription(subscription)}>
-        <Tooltip title="Go to profile">
-          <Button className={classNames(classes.button, classes.buttonToProfile)} size="small"
-            aria-label="Launch" fullWidth>
-            <KeyboardArrowLeftIcon />
-            {
-              subscription.hostname.includes("#")
-              ? <AccountCircleIcon style={{width: "19.5px", height: "19.5px", marginLeft: "-1.75px", marginRight: "-1.75px"}}/>
-              : <img src={'https://www.google.com/s2/favicons?domain=' + subscription.hostname}
-                height="16px" width="16px" style={{ borderRadius: "50%" }}
-                alt="favicon"/>
-            }
-          </Button>
-        </Tooltip>
-      </TableCell>
-      <TableCell component="th" scope="row" className={classes.tableCell}
-        onClick={() => onClickSubscription(subscription)}>
-        <Tooltip title={subscription.hostname}>
-          <Typography variant="subheading">
-            {subscription.name ? subscription.name : subscription.hostname}
-          </Typography>
-        </Tooltip>
-      </TableCell>
-      <TableCell className={classes.tableCell} numeric={true}>
-        <Tooltip title={subscription.amount+' '+currency+' per month'}>
-          <div className={classes.amount}>
+    {(subscription, index) => (
+      <TableRow hover tabIndex={-1} key={index}>
+        <TableCell
+          onClick={() => onClickSubscription(subscription)}>
+          <Tooltip title="Go to profile">
+            <Button className={classNames(classes.button, classes.buttonToProfile)} size="small"
+              aria-label="Launch" fullWidth>
+              <KeyboardArrowLeftIcon />
+              {
+                subscription.hostname.includes("#")
+                ? <AccountCircleIcon style={{width: "19.5px", height: "19.5px", marginLeft: "-1.75px", marginRight: "-1.75px"}}/>
+                : <img src={'https://www.google.com/s2/favicons?domain=' + subscription.hostname}
+                  height="16px" width="16px" style={{ borderRadius: "50%" }}
+                  alt="favicon"/>
+              }
+            </Button>
+          </Tooltip>
+        </TableCell>
+        <TableCell component="th" scope="row"
+          onClick={() => onClickSubscription(subscription)}>
+          <Tooltip title={subscription.hostname}>
             <Typography variant="subheading">
-              {currencySymbol + subscription.amount}
+              {subscription.name ? subscription.name : subscription.hostname}
             </Typography>
-          </div>
-        </Tooltip>
-      </TableCell>
-      <TableCell className={classes.tableCell}>
-        {!subscription.permanent && <Tooltip title="Unsubscribe">
-          <Button className={classes.button}
-            onClick={() => onUnsubscribe(subscription.hostname)}
-            size="small" aria-label="Launch">
-            <DeleteOutlinedIcon />
-          </Button>
-        </Tooltip>}
-      </TableCell>
-    </TableRow>}
+          </Tooltip>
+        </TableCell>
+        <TableCell align="numeric">
+          <Tooltip title={subscription.amount+' '+currency+' per month'}>
+            <div className={classes.amount}>
+              <Typography variant="subheading">
+                {currencySymbol + subscription.amount}
+              </Typography>
+            </div>
+          </Tooltip>
+        </TableCell>
+        <TableCell >
+          {!subscription.permanent && <Tooltip title="Unsubscribe">
+            <Button className={classes.button}
+              onClick={() => onUnsubscribe(subscription.hostname)}
+              size="small" aria-label="Launch">
+              <DeleteOutlinedIcon />
+            </Button>
+          </Tooltip>}
+        </TableCell>
+      </TableRow>
+    )}
   </Table>
 )
 
 const styles = theme => ({
-  root: {
-    width: '100%'
-  },
-  table: {
-    width: '100%',
-    tableLayout: 'fixed',
-  },
-  tableRow: {
-    height: theme.spacing.unit * 5,
-  },
-  tableCell: {
-    borderBottom: 0,
-  },
   amount: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -98,14 +99,7 @@ const styles = theme => ({
   },
   buttonToProfile: {
     padding: 0,
-  },
-  profileImage: {
-    marginRight: '0 !important',
-  },
-  pagination: {
-    height: theme.spacing.unit * 6,
-    minHeight: 0,
-  },
+  }
 })
 
 export default withStyles(styles)(Subscriptions)

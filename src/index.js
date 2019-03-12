@@ -35,7 +35,7 @@ loadState().then(persistedState => {
   registerServiceWorker();
 
   store.subscribe(throttle(() => {
-    saveState(omit(store.getState(),'objectHostname'));
+    saveState(omit(store.getState(),['objectHostname', 'pages']));
   }, 3000));
 
   // if (store.state.nextPayment <= Date.now())

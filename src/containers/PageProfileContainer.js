@@ -3,9 +3,10 @@ import PageProfile from '../components/PageProfile'
 import { connect } from 'react-redux'
 
 function PageProfileContainer({ subscription, onChangeSubscription }) {
-  const showMostViewedSites = subscription.hostname === 'gratiis#mostViewedSites'
-
-  return React.createElement(PageProfile, { subscription, showMostViewedSites })
+  return React.createElement(PageProfile, {
+    subscription,
+    showMostViewedSites: subscription.hostname === 'gratiis#mostViewedSites'
+  })
 }
 
 const mapStateToProps = state => ({

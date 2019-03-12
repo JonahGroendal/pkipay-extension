@@ -4,12 +4,17 @@ import strings from '../api/strings'
 import { createTxBuyThx, approveTokenBuyer } from '../api/blockchain'
 import EthereumTx from 'ethereumjs-tx'
 
+export const setTabIndex = index => ({
+  type: 'SET_TAB_INDEX',
+  tabIndex: index
+})
+
 export const addSubscription = subscription => dispatch => {
   dispatch({
     type: 'ADD_SUBSCRIPTION',
     subscription
   })
-   return dispatch(rescheduleSubscriptionsPayments())
+  return dispatch(rescheduleSubscriptionsPayments())
 }
 
 export const removeSubscription = hostname => dispatch => {

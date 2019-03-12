@@ -5,21 +5,17 @@ import PageManage from './PageManage'
 import Tab from '@material-ui/core/Tab'
 import SwipeableViews from 'react-swipeable-views'
 
-function Pages(props) {
-  const [index, setIndex] = React.useState(0)
-
-  return (
-    <div>
-      <Nav tabIndex={index} onChangeTab={setIndex}>
-        <Tab label="Profile" />
-        <Tab label="Manage" />
-      </Nav>
-      <SwipeableViews index={index} onChangeIndex={setIndex}>
-        <PageProfileContainer />
-        <PageManage onChangeIndex={setIndex} />
-      </SwipeableViews>
-    </div>
-  )
-}
+const Pages = ({ tabIndex, onChangeTab }) => (
+  <div>
+    <Nav tabIndex={tabIndex} onChangeTab={onChangeTab}>
+      <Tab label="Profile" />
+      <Tab label="Manage" />
+    </Nav>
+    <SwipeableViews index={tabIndex} onChangeIndex={onChangeTab}>
+      <PageProfileContainer />
+      <PageManage onChangeIndex={onChangeTab} />
+    </SwipeableViews>
+  </div>
+)
 
 export default Pages

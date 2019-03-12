@@ -14,28 +14,34 @@ function SubscriptionsContainer(props) {
     onChangeIndex,
   } = props
 
-  const nextPayment = strings.paymentSchedule[paymentSchedule](Date.now())
-  const currencySymbol = strings.currency[currency]
+  const prevSubs = usePrevious(subscriptions)
+  const [newRowIndex, setNewRowIndex] = React.useState(-1)
 
-  function onClickSubscription(subscription) {
-    setObject(subscription.hostname)
-    onChangeIndex(0)
-  }
+  React.useEffect(() => {
+    if (newRowIndex !== subscriptions.length - 1)
+      setNewRowIndex(subscriptions.length - 1)
+  }, [subscriptions])
 
   return React.createElement(Subscriptions, {
     subscriptions,
+    highlightedRowIndex: newRowIndex,
     onUnsubscribe,
-    onClickSubscription,
+    onClickSubscription: sub => {setObject(sub.hostname); onChangeIndex(0)},
     currency,
-    currencySymbol,
-    nextPayment
+    currencySymbol: strings.currency[currency],
+    nextPayment: strings.paymentSchedule[paymentSchedule](Date.now())
   })
 }
+
+// Update component only when tabIndex == 1
+const notInView = (prevProps, nextProps) => nextProps.tabIndex !== 1
+SubscriptionsContainer = React.memo(SubscriptionsContainer, notInView)
 
 const mapStateToProps = state => ({
   subscriptions: state.subscriptions,
   currency: state.settings.currency,
-  paymentSchedule: state.settings.paymentSchedule
+  paymentSchedule: state.settings.paymentSchedule,
+  tabIndex: state.pages.tabIndex
 });
 const mapDispatchToProps = dispatch => ({
   onUnsubscribe: hostname => dispatch(removeSubscription(hostname)),

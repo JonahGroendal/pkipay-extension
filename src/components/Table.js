@@ -23,30 +23,41 @@ const styles = theme => ({
   },
   table: {
     width: '100%',
-    tableLayout: 'fixed',
+    tableLayout: 'fixed'
   },
   tableRowHead: {
-    height: theme.spacing.unit * 4,
+    height: theme.spacing.unit * 4
   },
   tableRow: {
-    height: theme.spacing.unit * 5,
+    height: theme.spacing.unit * 5
+  },
+  highlighted: {
+    animationName: 'highlight',
+    animationDuration: '2s',
+    animationDelay: '.2s'
+  },
+  '@keyframes highlight': {
+    '0%':   {backgroundColor: 'rgba(0, 0 , 0, 0)'},
+    '50%':  {backgroundColor: theme.palette.action.selected},
+    '100%': {backgroundColor: 'rgba(0, 0 , 0, 0)'}
   },
   tableCell: {
     paddingLeft: theme.spacing.unit * 2 + ' !important',
+    borderBottom: 0
   },
   tableCellNumeric: {
-    paddingLeft: '0 !important',
+    paddingLeft: '0 !important'
   },
   tableCellLast: {
-    paddingRight: theme.spacing.unit * 2 + ' !important',
+    paddingRight: theme.spacing.unit * 2 + ' !important'
   },
   tableCellBody: {
-    borderBottom: 0,
+    borderBottom: 0
   },
   pagination: {
     height: theme.spacing.unit * 6,
-    minHeight: 0,
-  },
+    minHeight: 0
+  }
 })
 
 function sort(data, order, orderBy, fixedIndices) {
@@ -62,9 +73,28 @@ function sort(data, order, orderBy, fixedIndices) {
 }
 
 function Table(props) {
+  const {
+    classes,
+    children,
+    title,
+    subtitle,
+    headerCells,
+    rowsData,
+    fixedIndices,
+    rowsPerPage,
+    highlightedRowIndex
+  } = props
+
   const [order, setOrder] = React.useState(props.initOrder)
   const [orderBy, setOrderBy] = React.useState(props.initOrderBy)
+  const rowsDataSorted = sort(rowsData, order, orderBy, fixedIndices)
   const [page, setPage] = React.useState(0)
+  const stortedIndex = rowsDataSorted.findIndex(row => row === rowsData[highlightedRowIndex])
+
+  React.useEffect(() => {
+    if (highlightedRowIndex > -1)
+      setPage(Math.floor(stortedIndex/rowsPerPage))
+  }, [highlightedRowIndex])
 
   function handleRequestSort(property) {
     let newOrder = 'desc'
@@ -79,9 +109,6 @@ function Table(props) {
     setPage(page)
   }
 
-  const { classes, children, title, subtitle, headerCells, rowsData, fixedIndices, rowsPerPage } = props
-  console.log(rowsData)
-  const rowsDataSorted = sort(rowsData, order, orderBy, fixedIndices)
   const rows = rowsDataSorted.map(children) //`children` is a render prop
   const classCellDefault = classes.tableCell
   const classCellLast = classNames(classes.tableCell, classes.tableCellLast)
@@ -104,7 +131,7 @@ function Table(props) {
         <TableHead>
           <TableRow className={classes.tableRowHead}>
             {headerCells.map((headerCell, index, array) => {
-              const {label, width, sortable, cellProps} = headerCell
+              const { label, width, sortable, cellProps } = headerCell
               const { key, numeric } = cellProps
               return (
                 <TableCell
@@ -134,8 +161,8 @@ function Table(props) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
-            return React.cloneElement(row, {className: classNames(classes.tableRow, row.props.className)},
+          {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row, i) => {
+            return React.cloneElement(row, {className: (page*rowsPerPage+i === stortedIndex) ? classNames(classes.tableRow, classes.highlighted, row.props.className) : classNames(classes.tableRow, row.props.className)},
               React.Children.map(row.props.children, (cell, index) => {
                 return React.cloneElement(cell, {className: (index === React.Children.count(row.props.children)-1 ? classNames(classes.tableCell, classes.tableCellLast, classes.tableCellBody, row.props.className) : classNames(classes.tableCell, classes.tableCellBody, row.props.className))})
               })
@@ -171,6 +198,14 @@ function Table(props) {
       />
     </Paper>
   )
+}
+
+function usePrevious(value) {
+  const ref = React.useRef();
+  React.useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
 }
 
 Table.propTypes = {

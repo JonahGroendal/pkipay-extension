@@ -6,6 +6,7 @@ import unlockWalletScreen from './unlockWalletScreen'
 import transactionScreen from './transactionScreen'
 import scheduledTXs from './scheduledTXs'
 import wallet from './wallet'
+import pages from './pages'
 
 export default combineReducers({
   subscriptions,
@@ -15,4 +16,5 @@ export default combineReducers({
   transactionScreen,
   wallet,
   scheduledTXs,
+  pages,
 })

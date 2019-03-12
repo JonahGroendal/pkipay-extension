@@ -22,10 +22,10 @@ let strings = {
   web3: {
     addresses: {
       wallet: "0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009",
-      Resolver: "0x7a04d7eEa0a963BD5eC765172A4a73ca939E4873",
-      Currency: "0x7b2A277B88724Db621f6FDe1306797B627370DD1",
+      Resolver: "0x1564c1620095CDbE21610266f50CaC72eC21CFc5",
+      Currency: "0x5B7f6B7800D7f9e8E1849Fe21344C9dA0a802E06",
       BuyMultipleTokens: "0x1aa2aB850D8c5E943cf4f5A7d0eFAd296F01e269",
-      TokenBuyer: "0x60e2af7f959d4BB8D0e87AECeA4e9293899DF99a",
+      TokenBuyer: "0x7B80411cac2Fb58B7FD11DC6b355c26081FeD162",
     }
   },
   themeType: {

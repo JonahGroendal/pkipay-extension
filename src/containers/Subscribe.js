@@ -14,6 +14,8 @@ function Subscribe({ subscribe, currency, address, subscription }) {
   const onChange = e => setAmount(e.target.value)
   const onClick = () => subscribe(amount)
 
+  console.log("Subscribe")
+
   return React.createElement(InputAmount, {
     amount,
     currencySymbol,
@@ -30,6 +32,8 @@ const mapStateToProps = state => ({
 })
 const mapDispatchToProps = (dispatch, ownProps) => ({
   subscribe: amount => {
+    console.log("subscribe")
+    console.log(scheduleTx)
     dispatch(scheduleTx())
 
     // createTxBuyThx(from, ownProps.subscription.hostname, amount)

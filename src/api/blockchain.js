@@ -14,23 +14,26 @@ export default {
 
 const resolver = new web3js.eth.Contract(abis.Resolver, strings.web3.addresses.Resolver);
 const currency = new web3js.eth.Contract(abis.ERC20, strings.web3.addresses.Currency);
-const buyMultipleTokens = new web3js.eth.Contract(abis.BuyMultipleTokens, strings.web3.addresses.BuyMultipleTokens);
+//const buyMultipleTokens = new web3js.eth.Contract(abis.BuyMultipleTokens, strings.web3.addresses.BuyMultipleTokens);
 const tokenBuyer = new web3js.eth.Contract(abis.TokenBuyer, strings.web3.addresses.TokenBuyer);
-//const tokenBuyerFactory = new web3js.eth.Contract(abis.TokenBuyerFactory, strings.web3.addresses.TokenBuyerFactory);
 
 export async function createTxBuyThx(address, hostnames, values) {
   if (!Array.isArray(hostnames)) hostnames = [hostnames,];
   if (!Array.isArray(values)) values = [values,];
+  console.log(hostnames, values)
   const validHostnames = (e, i) => !hostnames[i].includes('#')
-  const ensNodes = hostnames.filter(validHostnames).map(h => namehash.hash(h));
+  // const ensNodes = hostnames.filter(validHostnames).map(h => namehash.hash(h));
+  const toBytes32 = str => '0x' + (new Buffer(str).toString('hex').padStart(64, "0"))
+  const to = hostnames.filter(validHostnames).map(toBytes32)
   const weiValues = values.filter(validHostnames).map(v => web3js.utils.toWei(v.toString()));
   let abi
-  try { abi = await tokenBuyer.methods.multiBuy(ensNodes, weiValues).encodeABI() }
+  //try { abi = await tokenBuyer.methods.multiBuy(ensNodes, weiValues).encodeABI() }
+  try { abi = await tokenBuyer.methods.multiBuy(to, weiValues).encodeABI() }
   catch (error) { throw error }
   return {
     from: address,
     to: tokenBuyer.options.address,
-    gas: (300000 + (300000 * ensNodes.length)).toString(),
+    gas: (300000 + (300000 * to.length)).toString(),
     data: abi
   }
 }
