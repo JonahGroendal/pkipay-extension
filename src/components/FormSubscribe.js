@@ -9,6 +9,7 @@ import InputAdornment from '@material-ui/core/InputAdornment'
 import classNames from 'classnames'
 import { connect } from 'react-redux'
 import { addSubscription, removeSubscription, setTabIndex } from '../actions'
+import { convertToUSD } from '../api/ECBForexRates'
 
 class FormSubscribe extends Component {
   constructor(props) {
@@ -41,7 +42,10 @@ class FormSubscribe extends Component {
       this.setState({ inputError: true })
     }
     else {
-      const sub = { hostname: this.props.subscription.hostname, amount: Number(this.state.amount) }
+      const sub = {
+        hostname: this.props.subscription.hostname,
+        amount: convertToUSD(this.props.currency, parseFloat(this.state.amount))
+      }
       this.props.onSubscribe(sub)
       this.setState({ expanded: false, inputError: false, amount: '' })
     }
@@ -57,7 +61,7 @@ class FormSubscribe extends Component {
   }
 
   handleChange = stateVarName => (event) => {
-    this.setState({[stateVarName]: event.target.value})
+    this.setState({ [stateVarName]: event.target.value })
   }
 
   handleToggle = stateVarName => () => {

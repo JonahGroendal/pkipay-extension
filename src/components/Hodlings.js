@@ -11,9 +11,9 @@ const headerCells = [
   {label: 'Balance', width: '22%', sortable: true, cellProps: {key: 'balance', padding: 'none', numeric: true}},
 ]
 
-const Hodlings = ({ balances, currencySymbol, classes }) => (
+const Hodlings = ({ balances, classes }) => (
   <Table
-    title="THX Holdings"
+    title="Token Holdings"
     className={classes.table}
     headerCells={headerCells}
     rowsData={balances}
@@ -23,14 +23,14 @@ const Hodlings = ({ balances, currencySymbol, classes }) => (
         <TableCell className={classes.tableCell}>
           <Tooltip title={holding.name}>
             <Typography variant="subheading">
-              {holding.name}
+              {Array.from(holding.name.substring(0, 30)).map((c, i) => i!==29 ? c : String.fromCharCode(8230)).join('')}
             </Typography>
           </Tooltip>
         </TableCell>
         <TableCell className={classes.tableCell} numeric={true} padding="none">
           <Tooltip title={holding.balance + " THX"}>
             <Typography variant="subheading">
-              {currencySymbol + holding.balance.toFixed(2)}
+              {holding.balance.toFixed(2)}
             </Typography>
           </Tooltip>
         </TableCell>

@@ -1,13 +1,16 @@
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
 import FormSubscribe from './FormSubscribe'
 import browser from '../api/browser'
 import blockchain from '../api/blockchain'
 import namehash from 'eth-ens-namehash'
-import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import getPixels from 'get-pixels'
+import strings from '../api/strings'
+import { convertFromUSD } from '../api/ECBForexRates'
 
 const mode = function (array) {
   if(array.length == 0)
@@ -48,8 +51,12 @@ class Profile extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (prevProps.subscription.hostname !== this.props.subscription.hostname)
+    if (
+      prevProps.subscription.hostname !== this.props.subscription.hostname
+      || prevProps.currency !== this.props.currency
+    ) {
       this.updateState()
+    }
   }
 
   updateState = () => {
@@ -60,7 +67,10 @@ class Profile extends Component {
         blockchain.getTotalDonations(hostname),
         blockchain.getTotalDonationsFromOneMonth(hostname)
       ]).then(([totalDonations, totalDonationsOneMonth]) => {
-        this.setState({ totalDonations, totalDonationsOneMonth})
+        this.setState({
+          totalDonations: convertFromUSD(this.props.currency, totalDonations),
+          totalDonationsOneMonth: convertFromUSD(this.props.currency, totalDonationsOneMonth)
+        })
       })
     }
     if (hostname === '') {
@@ -152,6 +162,7 @@ class Profile extends Component {
 
     const faviconUrl = 'https://' + subscription.hostname + '/apple-touch-icon.png'
     const avatarLetter = displayName.charAt(0);
+    const currencySymbol = strings.currency[this.props.currency]
 
 
     // totalDonations = tx.convert(totalDonations, {from: "USD", to: settigs.curency})
@@ -185,10 +196,10 @@ class Profile extends Component {
         </Typography>
         {subscribable && globalEntity && <div>
           <Typography variant="body1" className={classes.infoText}>
-            {'$' + this.state.totalDonations.toFixed(2) + ' in total contributions'}
+            {currencySymbol + this.state.totalDonations.toFixed(2) + ' in total contributions'}
           </Typography>
           <Typography variant="body1" className={classes.infoText}>
-            {'$' + this.state.totalDonationsOneMonth.toFixed(2) + ' last month'}
+            {currencySymbol + this.state.totalDonationsOneMonth.toFixed(2) + ' last month'}
           </Typography>
         </div>}
         {subscribable && <div className={classes.subscribeContainer}>
@@ -245,7 +256,12 @@ const styles = theme => ({
   }
 })
 
-export default withStyles(styles)(Profile)
+const mapStateToProps = state => ({
+  currency: state.settings.currency
+})
+
+export default connect(mapStateToProps)(withStyles(styles)(Profile))
+
 
 // componentDidUpdate(prevProps, prevState, snapshot) {
 //   if (this.props.shortUrl !== prevProps.shortUrl) {

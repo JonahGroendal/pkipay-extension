@@ -42,8 +42,7 @@ const styles = theme => ({
     '100%': {backgroundColor: 'rgba(0, 0 , 0, 0)'}
   },
   tableCell: {
-    paddingLeft: theme.spacing.unit * 2 + ' !important',
-    borderBottom: 0
+    paddingLeft: theme.spacing.unit * 2 + ' !important'
   },
   tableCellNumeric: {
     paddingLeft: '0 !important'
@@ -188,11 +187,9 @@ function Table(props) {
         rowsPerPageOptions={[rowsPerPage,]}
         backIconButtonProps={{
           'aria-label': 'Previous Page',
-          style: {height: '32px'},
         }}
         nextIconButtonProps={{
           'aria-label': 'Next Page',
-          style: {height: '32px'},
         }}
         onChangePage={handleChangePage}
       />

@@ -6,13 +6,14 @@ import web3js from '../api/web3js'
 import strings from '../api/strings'
 import { reviewTx } from '../actions'
 import { createTxBuyThx } from '../api/blockchain'
+import { convertToUSD } from '../api/ECBForexRates'
 
 function Donate({ donate, currency, address, subscription }) {
   const [amount, setAmount] = React.useState(2.0);
 
   const currencySymbol = strings.currency[currency];
   const onChange = e => setAmount(e.target.value)
-  const onClick = () => donate(address, amount)
+  const onClick = () => donate(address, convertToUSD(currency, amount))
 
   return React.createElement(InputAmount, {
     amount,

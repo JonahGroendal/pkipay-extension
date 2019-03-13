@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import Subscriptions from '../components/Subscriptions'
 import strings from '../api/strings'
 import { removeSubscription, setObjectHostname } from '../actions'
+import { convertFromUSD } from '../api/ECBForexRates'
 
 function SubscriptionsContainer(props) {
   const {
@@ -14,7 +15,6 @@ function SubscriptionsContainer(props) {
     onChangeIndex,
   } = props
 
-  const prevSubs = usePrevious(subscriptions)
   const [newRowIndex, setNewRowIndex] = React.useState(-1)
 
   React.useEffect(() => {
@@ -23,7 +23,7 @@ function SubscriptionsContainer(props) {
   }, [subscriptions])
 
   return React.createElement(Subscriptions, {
-    subscriptions,
+    subscriptions: subscriptions.map(sub => ({ ...sub, amount: convertFromUSD(currency, sub.amount)})),
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
     onClickSubscription: sub => {setObject(sub.hostname); onChangeIndex(0)},

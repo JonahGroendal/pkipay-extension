@@ -168,11 +168,7 @@ export const sendTx = (txObject, counterparties) => dispatch => {
         dispatch(updateScheduledTxs())
         .then(() => reject(error))
       })
-      .then(receipt => {
-        console.log('txReceipt', receipt)
-        if (receipt.status) counterparties.forEach(name => dispatch(addToken(name)))
-        dispatch(updateScheduledTxs()).then(() => resolve(receipt))
-      })
+      .then(receipt => dispatch(updateScheduledTxs()).then(() => resolve(receipt)))
     })
     .catch(error => {
       dispatch({
@@ -285,13 +281,3 @@ export const updateScheduledTxs = () => (dispatch, getState) => {
     }
   })()
 }
-
-export const addToken = name => ({
-  type: 'ADD_TOKEN',
-  payload: { name }
-})
-
-export const removeToken = name => ({
-  type: 'REMOVE_TOKEN',
-  payload: { name }
-})

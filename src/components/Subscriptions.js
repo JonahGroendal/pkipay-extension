@@ -60,15 +60,18 @@ const Subscriptions = ({
           onClick={() => onClickSubscription(subscription)}>
           <Tooltip title={subscription.hostname}>
             <Typography variant="subheading">
-              {subscription.name ? subscription.name : subscription.hostname}
+              {subscription.name
+                ? Array.from(subscription.name.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
+                : Array.from(subscription.hostname.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
+              }
             </Typography>
           </Tooltip>
         </TableCell>
         <TableCell align="numeric">
-          <Tooltip title={subscription.amount+' '+currency+' per month'}>
+          <Tooltip title={subscription.amount.toFixed(2)+' '+currency+' per month'}>
             <div className={classes.amount}>
               <Typography variant="subheading">
-                {currencySymbol + subscription.amount}
+                {currencySymbol + subscription.amount.toFixed(2)}
               </Typography>
             </div>
           </Tooltip>

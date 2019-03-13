@@ -6,7 +6,7 @@ import namehash from 'eth-ens-namehash'
 export default {
   createTxBuyThx,
   getEthBalance,
-  getDaiBalance,
+  getCurrencyBalance,
   subscribeToDaiTransfer,
   getTotalDonations,
   getTotalDonationsFromOneMonth
@@ -147,36 +147,55 @@ export async function approveTokenBuyer() {
 // }
 
 export async function getEthBalance(address) {
-  return await web3js.eth.getBalance(address);
+  const weiBalance = await web3js.eth.getBalance(address)
+  return parseFloat(web3js.utils.fromWei(weiBalance))
 }
 
-export async function getDaiBalance(address) {
-  return await currency.methods.balanceOf(address).call();
+export async function getCurrencyBalance(address) {
+  const weiBalance = await currency.methods.balanceOf(address).call()
+  return parseFloat(web3js.utils.fromWei(weiBalance))
 }
 
-export async function getTokenBalance(address, domainName) {
-  let weiValue
-  try {
-    const ensNode = namehash.hash(domainName)
-    const tokenAddress = await resolver.methods.tokens(ensNode).call()
-    const contract = new web3js.eth.Contract(abis.ERC20, tokenAddress)
-    weiValue = await contract.methods.balanceOf(address).call()
-  } catch(error) {
-    return null
+// export async function getTokenBalance(address, domainName) {
+//   let weiValue
+//   try {
+//     const ensNode = namehash.hash(domainName)
+//     const tokenAddress = await resolver.methods.tokens(ensNode).call()
+//     const contract = new web3js.eth.Contract(abis.ERC20, tokenAddress)
+//     weiValue = await contract.methods.balanceOf(address).call()
+//   } catch(error) {
+//     return null
+//   }
+//
+//   return parseFloat(web3js.utils.fromWei(weiValue))
+// }
+//
+// export async function getTokenBalances(address, domainNames) {
+//   let balances = []
+//   for (let i=0; i<domainNames.length; i++) {
+//     balances.push({
+//       name: domainNames[i],
+//       balance: await getTokenBalance(address, domainNames[i])
+//     })
+//   }
+//   return balances
+// }
+
+export async function getTokenBalances(address) {
+  let balances = {}
+  let events = await tokenBuyer.getPastEvents('Buy', {fromBlock: 0, filter: {buyer: address}})
+  console.log(events)
+  for (const event of events) {
+    if (!(event.returnValues.token in balances)) {
+      const contract = new web3js.eth.Contract(abis.TokenSale, event.returnValues.token)
+      balances[event.returnValues.token] = {
+        name: await contract.methods.name().call(),
+        balance: parseFloat(web3js.utils.fromWei(await contract.methods.balanceOf(address).call()))
+      }
+    }
   }
-
-  return parseFloat(web3js.utils.fromWei(weiValue))
-}
-
-export async function getTokenBalances(address, domainNames) {
-  let balances = []
-  for (let i=0; i<domainNames.length; i++) {
-    balances.push({
-      name: domainNames[i],
-      balance: await getTokenBalance(address, domainNames[i])
-    })
-  }
-  return balances
+  console.log(balances)
+  return Object.values(balances)
 }
 
 export async function subscribeToDaiTransfer(address, onTransfer) {
@@ -185,7 +204,7 @@ export async function subscribeToDaiTransfer(address, onTransfer) {
     filter: [{to: address}, {from: address}],
     fromBlock: currentBlock,
   }).on('data', function(event) {
-    getDaiBalance(address).then(onTransfer)
+    getCurrencyBalance(address).then(onTransfer)
   })
   return subscription.unsubscribe;
 }

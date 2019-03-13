@@ -20,18 +20,6 @@ function wallet(state=initialState, action) {
       };
     case 'DELETE_WALLET':
       return initialState;
-    case 'ADD_TOKEN':
-      if (state.tokens.indexOf(action.payload.name) !== -1)
-        return state;
-      return {
-        ...state,
-        tokens: [...state.tokens, action.payload.name]
-      }
-    case 'REMOVE_TOKEN':
-      return {
-        ...state,
-        tokens: state.tokens.filter(name => name !== action.payload.name)
-      }
     default:
       return state
   }

@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import TransactionScreen from '../components/TransactionScreen'
 import { sendTx, cancelTx, closeTx, openTx, confirmTx } from '../actions'
-import convertUSD from '../api/ECBForexRates'
+import { convertFromUSD } from '../api/ECBForexRates'
 import cryptoCompare from 'cryptocompare'
 import web3js from '../api/web3js'
 import strings from '../api/strings'
@@ -41,8 +41,8 @@ function TransactionScreenContainer(props) {
   return React.createElement(TransactionScreen, {
     isOpen,
     counterparties,
-    values: values.map(val => convertUSD(currency, web3js.utils.fromWei(val))),
-    gasValue: convertUSD(currency, gasValues.USD),
+    values: values.map(val => convertFromUSD(currency, web3js.utils.fromWei(val))),
+    gasValue: convertFromUSD(currency, gasValues.USD),
     gasValueETH: gasValues.ETH,
     txSent: (txHash !== null || txError !== null),
     txConfirmed,
