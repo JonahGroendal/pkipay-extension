@@ -1,15 +1,25 @@
 import React from 'react'
-import PageProfile from '../components/PageProfile'
 import { connect } from 'react-redux'
+import PageProfile from '../components/PageProfile'
+import { getUrl, getHostname } from '../api/browser'
+import { setObjectHostname } from '../actions'
 
-function PageProfileContainer({ subscription, onChangeSubscription }) {
-  return React.createElement(PageProfile, {
-    subscription,
-    showMostViewedSites: subscription.hostname === 'gratiis#mostViewedSites'
-  })
+function PageProfileContainer({ subscription, onChangeHostname }) {
+
+  React.useEffect(() => {
+    getUrl().then(url => onChangeHostname(getHostname(url)))
+  }, [])
+
+  return React.createElement(PageProfile, { subscription })
 }
 
 const mapStateToProps = state => ({
   subscription: { hostname: state.objectHostname }
 })
-export default connect(mapStateToProps)(PageProfileContainer)
+const mapDispatchToProps = dispatch => ({
+  onChangeHostname: h => dispatch(setObjectHostname(h))
+})
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(PageProfileContainer)

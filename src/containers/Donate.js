@@ -9,18 +9,15 @@ import { createTxBuyThx } from '../api/blockchain'
 import { convertToUSD } from '../api/ECBForexRates'
 
 function Donate({ donate, currency, address, subscription }) {
-  const [amount, setAmount] = React.useState(2.0);
-
-  const currencySymbol = strings.currency[currency];
-  const onChange = e => setAmount(e.target.value)
-  const onClick = () => donate(address, convertToUSD(currency, amount))
+  const [amount, setAmount] = React.useState(2.0)
 
   return React.createElement(InputAmount, {
     amount,
-    currencySymbol,
-    onChange,
-    onClick,
+    currencySymbol: strings.currency[currency],
+    onChange: e => setAmount(e.target.value),
+    onClick: () => donate(address, convertToUSD(currency, amount)),
     buttonText: "Give",
+    buttonDisabled: subscription.hostname === '',
     tooltip: "buy tokens from " + subscription.hostname,
   })
 }

@@ -28,13 +28,11 @@ const api = ((typeof browser === 'undefined' || typeof browser.tabs === 'undefin
 export default api
 
 export async function loadState() {
-  let state = {}
-  const [storage, hostname] = await Promise.all([getFromStorage(null), getHostname()])
-  state.objectHostname = hostname
+  const storage = await getFromStorage(null)
   const serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
   if (serializedState)
-    Object.assign(state, JSON.parse(serializedState))
-  return state
+    return JSON.parse(serializedState)
+  return {}
 }
 
 export function saveState(state) {
@@ -58,28 +56,23 @@ export function getFromStorage(keys) {
   })
 }
 
-export function getHostname() {
+export function getUrl() {
   return new Promise(function(resolve, reject) {
     api.tabs.query({ 'active': true, 'lastFocusedWindow': true }, (tabs) => {
       if (!api.lastError)
-        resolve(getDomain(tabs[0].url))
+        resolve(tabs[0].url)
       else
         reject(api.lastError)
     })
   })
 }
 
-// Same as tabHandler.getDomain() in background.js
-function getDomain(url)
-{
-  console.log(url)
-   if (url.match(/(http|https):\/\/[^0-9.]+/)) {
+export function getHostname(url) {
+   if (url.match(/https:\/\/[^0-9.]+/)) {
       var a = document.createElement("a");
       a.href = url;
 
       return a.hostname;
    }
-   else {
-      return '';
-   }
+   return ''
 }

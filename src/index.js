@@ -23,8 +23,6 @@ loadState().then(persistedState => {
       loggerMiddleware
     )
   );
-  console.log(persistedState)
-  console.log(store.getState())
 
   ReactDOM.render(
     <Provider store={store}>
@@ -35,7 +33,7 @@ loadState().then(persistedState => {
   registerServiceWorker();
 
   store.subscribe(throttle(() => {
-    saveState(omit(store.getState(),['objectHostname', 'pages']));
+    saveState(omit(store.getState(),['pages']));
   }, 3000));
 
   // if (store.state.nextPayment <= Date.now())

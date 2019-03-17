@@ -1,7 +1,7 @@
-const objectHostname = (state = null, action) => {
+const objectHostname = (state = '', action) => {
   switch (action.type) {
     case 'SET_OBJECT_HOSTNAME':
-      return action.objectHostname;
+      return action.hostname;
     default:
       return state;
   }

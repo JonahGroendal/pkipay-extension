@@ -4,11 +4,10 @@ import Profile from './Profile'
 import Donate from '../containers/Donate'
 import MostViewedSites from './MostViewedSites'
 
-const PageProfile = ({ subscription, showMostViewedSites }) => (
+const PageProfile = ({ subscription }) => (
   <Page>
-    <Profile subscription={subscription}/>
+    <Profile subscription={subscription} />
     <Donate subscription={subscription} />
-    {showMostViewedSites && <MostViewedSites />}
   </Page>
 )
 

@@ -6,7 +6,7 @@ import Tooltip from '@material-ui/core/Tooltip'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
 
-const InputAmount = ({ amount, currencySymbol, onChange, onClick, buttonText, tooltip, classes }) => (
+const InputAmount = ({ amount, currencySymbol, onChange, onClick, buttonText, buttonDisabled, tooltip, classes }) => (
   <Paper className={classes.paper}>
     <div className={classes.container}>
       <TextField
@@ -21,12 +21,15 @@ const InputAmount = ({ amount, currencySymbol, onChange, onClick, buttonText, to
         }}
       />
       <Tooltip title={tooltip}>
-        <Button
-          onClick={onClick}
-          variant="contained" size="medium" color="primary"
-        >
-          {buttonText}
-        </Button>
+        <div>
+          <Button
+            onClick={onClick}
+            disabled={buttonDisabled}
+            variant="contained" size="medium" color="primary"
+          >
+            {buttonText}
+          </Button>
+        </div>
       </Tooltip>
     </div>
   </Paper>

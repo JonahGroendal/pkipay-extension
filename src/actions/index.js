@@ -4,6 +4,11 @@ import strings from '../api/strings'
 import { createTxBuyThx, approveTokenBuyer } from '../api/blockchain'
 import EthereumTx from 'ethereumjs-tx'
 
+export const setObjectHostname = hostname => ({
+  type: 'SET_OBJECT_HOSTNAME',
+  hostname
+})
+
 export const setTabIndex = index => ({
   type: 'SET_TAB_INDEX',
   tabIndex: index
@@ -39,11 +44,6 @@ export const setThemeType = themeType => ({
   type: 'SET_THEME_TYPE',
   themeType
 });
-
-export const setObjectHostname = objectHostname => ({
-  type: 'SET_OBJECT_HOSTNAME',
-  objectHostname
-})
 
 let resolveWalletUnlock;
 let rejectWalletUnlock;

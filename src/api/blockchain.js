@@ -20,8 +20,7 @@ const tokenBuyer = new web3js.eth.Contract(abis.TokenBuyer, strings.web3.address
 export async function createTxBuyThx(address, hostnames, values) {
   if (!Array.isArray(hostnames)) hostnames = [hostnames,];
   if (!Array.isArray(values)) values = [values,];
-  console.log(hostnames, values)
-  const validHostnames = (e, i) => !hostnames[i].includes('#')
+  const validHostnames = (e, i) => hostnames[i] && !hostnames[i].includes('#')
   // const ensNodes = hostnames.filter(validHostnames).map(h => namehash.hash(h));
   const toBytes32 = str => '0x' + (new Buffer(str).toString('hex').padStart(64, "0"))
   const to = hostnames.filter(validHostnames).map(toBytes32)
@@ -39,6 +38,7 @@ export async function createTxBuyThx(address, hostnames, values) {
 }
 
 export async function approveTokenBuyer() {
+  console.log('approveTokenBuyer')
   const balance = await currency.methods.balanceOf(web3js.eth.accounts.wallet[0].address).call()
   if (balance === "0") return;
   const allowance = await currency.methods.allowance(web3js.eth.accounts.wallet[0].address, tokenBuyer.options.address).call()
@@ -182,6 +182,8 @@ export async function getCurrencyBalance(address) {
 // }
 
 export async function getTokenBalances(address) {
+  if (typeof address !== 'string' || address.length !== 42)
+    throw "Invalid address"
   let balances = {}
   let events = await tokenBuyer.getPastEvents('Buy', {fromBlock: 0, filter: {buyer: address}})
   console.log(events)
@@ -210,6 +212,7 @@ export async function subscribeToDaiTransfer(address, onTransfer) {
 }
 
 export async function getTotalDonations(hostname, fromBlock = 0) {
+  console.log('getTotalDonations')
   const ensNode = namehash.hash(hostname);
   const address = await resolver.methods.tokens(ensNode).call();
   const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
@@ -222,6 +225,7 @@ export async function getTotalDonations(hostname, fromBlock = 0) {
 }
 
 export async function getTotalDonationsFromOneMonth(hostname) {
+  console.log('getTotalDonationsFromOneMonth')
   const currentTimestamp = Date.now()/1000;
   const currentBlockNum = await web3js.eth.getBlockNumber()
   const estFromBlock = currentBlockNum - 60*60*24*30/15

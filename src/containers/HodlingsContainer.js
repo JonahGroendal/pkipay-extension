@@ -13,7 +13,7 @@ function useBalances(address, txScreenOpen) {
   const [balances, setBalances] = React.useState([])
 
   React.useEffect(() => {
-    if (!txScreenOpen)
+    if (!txScreenOpen && address)
       getTokenBalances(address).then(setBalances)
   }, [txScreenOpen, address])
 
