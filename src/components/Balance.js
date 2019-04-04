@@ -9,7 +9,7 @@ const Balance = ({ balance, currencySymbol, classes }) => (
   <Paper className={classes.paper}>
     <div className={classes.row}>
       <div className={classes.balance}>
-        <Typography className={classes.balance} variant="title">
+        <Typography variant="h6" className={classes.balance}>
           {balance === null ? "Loading..." : currencySymbol + balance.toFixed(2)}
         </Typography>
       </div>

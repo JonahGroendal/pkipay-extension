@@ -159,16 +159,16 @@ function Profile({ classes, subscription, currency }) {
           </svg>*/}
         </Paper>
       </div>
-      <Tooltip title={subscription.hostname}>
-        <Typography variant="headline">
+      <Tooltip title={subscription.hostname} enterDelay={300}>
+        <Typography variant="h5">
           { truncate(displayName, 23) || String.fromCharCode('&nbsp') }
         </Typography>
       </Tooltip>
       <div>
-        <Typography variant="body1" className={classes.infoText}>
+        <Typography variant="body2" className={classes.infoText}>
           {currencySymbol + totalDonations.toFixed(2) + ' in total contributions'}
         </Typography>
-        <Typography variant="body1" className={classes.infoText}>
+        <Typography variant="body2" className={classes.infoText}>
           {currencySymbol + totalDonationsOneMonth.toFixed(2) + ' last month'}
         </Typography>
       </div>

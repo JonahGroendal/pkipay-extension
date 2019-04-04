@@ -41,7 +41,7 @@ const CreateWalletScreen = ({
         type="password"
         margin="normal"
       />
-      <Typography variant="subheading">
+      <Typography variant="subtitle1">
         {'optionally, import an existing account:'}
       </Typography>
       <TextField

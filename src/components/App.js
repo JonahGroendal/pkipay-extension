@@ -14,16 +14,19 @@ function App({ themeType }) {
       primary: deepPurple,
       secondary: blue,
     },
+    typography: {
+      useNextVariants: true,
+    },
   })
   console.log(theme)
   return (
     <MuiThemeProvider theme={theme}>
-      <React.Fragment>
+      <div>
         <CssBaseline />
         <CreateWalletScreenContainer />
         <UnlockWalletScreenContainer />
         <Pages />
-      </React.Fragment>
+      </div>
     </MuiThemeProvider>
   )
 }

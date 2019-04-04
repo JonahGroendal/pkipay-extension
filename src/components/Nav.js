@@ -11,7 +11,7 @@ const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
   <div className={classes.root}>
     <AppBar position="static" className={classes.appBar}>
       <Toolbar className={classes.toolbar}>
-        <Typography variant="title" color="inherit" className={classes.flex}>
+        <Typography variant="h6" color="inherit" className={classes.flex}>
           Gratiis
         </Typography>
         <TransactionScreenContainer />

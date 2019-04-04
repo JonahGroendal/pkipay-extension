@@ -59,13 +59,13 @@ function MostViewedSites(props) {
       {(view, index) => <TableRow className={classes.tableRow} hover key={view.id}>
         <TableCell className={classes.tableCell}>
           <Tooltip title={view.hostname}>
-            <Typography variant="subheading" noWrap>
+            <Typography variant="subtitle1" noWrap>
               {view.hostname}
             </Typography>
           </Tooltip>
         </TableCell>
         <TableCell className={classes.tableCell} numeric={true}>
-          <Typography variant="subheading" noWrap>
+          <Typography variant="subtitle1" noWrap>
             {view.share + '%'}
           </Typography>
         </TableCell>

@@ -40,7 +40,7 @@ function Settings(props) {
         color="inherit"
         aria-label="Settings"
       >
-        <Tooltip title="settings">
+        <Tooltip title="settings" enterDelay={300}>
           <SettingsIcon />
         </Tooltip>
       </IconButton>

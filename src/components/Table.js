@@ -117,10 +117,10 @@ function Table(props) {
     <Paper>
       {(title !== '' || subtitle !== '') && <Toolbar className={classes.toolbar}>
         <div className={classes.title}>
-          <Typography variant="title" id="tabletitle">
+          <Typography variant="h6" id="tabletitle">
             {title}
           </Typography>
-          {subtitle ? <Typography variant="body1">
+          {subtitle ? <Typography variant="body2">
             {subtitle}
           </Typography> : false}
         </div>
@@ -146,12 +146,12 @@ function Table(props) {
                       direction={order}
                       onClick={e => handleRequestSort(key)}
                     >
-                      <Typography variant="body2">
+                      <Typography variant="body1">
                         {label}
                       </Typography>
                     </TableSortLabel>
                   </Tooltip>}
-                  {!sortable && <Typography variant="body2">
+                  {!sortable && <Typography variant="body1">
                     {label}
                   </Typography>}
                 </TableCell>

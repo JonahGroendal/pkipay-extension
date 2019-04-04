@@ -64,7 +64,7 @@ function SubscribeForm({ subscription, subscribed, subscribedAmount, currency, o
           }}
         />}
         <div className={classes.buttonSubscribe}>
-          <Tooltip title={subscribed ? "stop giving "+currencySymbol+subscribedAmount.toString()+" every month" : ""}>
+          <Tooltip title={subscribed ? "stop giving "+currencySymbol+subscribedAmount.toString()+" every month" : ""} enterDelay={500}>
             <div>
               <Button
                 onClick={handleClickSubscribe}

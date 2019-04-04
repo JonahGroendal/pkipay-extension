@@ -22,14 +22,14 @@ const Hodlings = ({ balances, classes }) => (
       <TableRow className={classes.tableRow} hover key={index}>
         <TableCell className={classes.tableCell}>
           <Tooltip title={holding.name}>
-            <Typography variant="subheading">
+            <Typography variant="subtitle1">
               {Array.from(holding.name.substring(0, 30)).map((c, i) => i!==29 ? c : String.fromCharCode(8230)).join('')}
             </Typography>
           </Tooltip>
         </TableCell>
-        <TableCell className={classes.tableCell} numeric={true} padding="none">
+        <TableCell className={classes.tableCell} align="right" padding="none">
           <Tooltip title={holding.balance + " THX"}>
-            <Typography variant="subheading">
+            <Typography variant="subtitle1">
               {holding.balance.toFixed(2)}
             </Typography>
           </Tooltip>

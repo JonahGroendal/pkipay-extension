@@ -42,7 +42,7 @@ const Subscriptions = ({
       <TableRow hover tabIndex={-1} key={index}>
         <TableCell
           onClick={() => onClickSubscription(subscription)}>
-          <Tooltip title="Go to profile">
+          <Tooltip title="Go to profile" enterDelay={500}>
             <Button className={classNames(classes.button, classes.buttonToProfile)} size="small"
               aria-label="Launch" fullWidth>
               <KeyboardArrowLeftIcon />
@@ -58,8 +58,8 @@ const Subscriptions = ({
         </TableCell>
         <TableCell component="th" scope="row"
           onClick={() => onClickSubscription(subscription)}>
-          <Tooltip title={subscription.hostname}>
-            <Typography variant="subheading">
+          <Tooltip title={subscription.hostname} enterDelay={500}>
+            <Typography variant="subtitle1">
               {subscription.name
                 ? Array.from(subscription.name.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
                 : Array.from(subscription.hostname.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
@@ -68,16 +68,16 @@ const Subscriptions = ({
           </Tooltip>
         </TableCell>
         <TableCell align="numeric">
-          <Tooltip title={subscription.amount.toFixed(2)+' '+currency+' per month'}>
+          <Tooltip title={subscription.amount.toFixed(2)+' '+currency+' per month'} enterDelay={500}>
             <div className={classes.amount}>
-              <Typography variant="subheading">
+              <Typography variant="subtitle1">
                 {currencySymbol + subscription.amount.toFixed(2)}
               </Typography>
             </div>
           </Tooltip>
         </TableCell>
         <TableCell >
-          {!subscription.permanent && <Tooltip title="Unsubscribe">
+          {!subscription.permanent && <Tooltip title="Unsubscribe" enterDelay={500}>
             <Button className={classes.button}
               onClick={() => onUnsubscribe(subscription.hostname)}
               size="small" aria-label="Launch">

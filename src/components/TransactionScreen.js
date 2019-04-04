@@ -46,7 +46,7 @@ function TransactionScreen(props) {
         color="inherit"
         aria-label="Review Transaction"
       >
-        <Tooltip title="last transaction">
+        <Tooltip title="last transaction" enterDelay={300}>
           <Badge
             invisible={badgeInvisible}
             badgeContent="!" color="secondary"
@@ -96,26 +96,26 @@ function TransactionScreen(props) {
             <Divider />
             <div className={classes.summary}>
               <div className={classes.summaryRow}>
-                <Typography variant="subheading">
+                <Typography variant="subtitle1">
                   {"Transfers"}
                 </Typography>
-                <Typography variant="subheading">
+                <Typography variant="subtitle1">
                   {currencySymbol + totalAmount.toFixed(2)}
                 </Typography>
               </div>
               <div className={classes.summaryRow}>
-                <Typography variant="subheading">
+                <Typography variant="subtitle1">
                   {"Network fees"}
                 </Typography>
-                <Typography variant="subheading">
+                <Typography variant="subtitle1">
                   {(gasValueETH*1000).toFixed(3) + "mETH (" + currencySymbol + gasValue.toFixed(2) + ")"}
                 </Typography>
               </div>
               <div className={classes.summaryRow}>
-                <Typography variant="subheading">
+                <Typography variant="subtitle1">
                   {"Total:"}
                 </Typography>
-                <Typography variant="subheading">
+                <Typography variant="subtitle1">
                   {currencySymbol + (totalAmount + gasValue).toFixed(2)}
                 </Typography>
               </div>
@@ -124,19 +124,19 @@ function TransactionScreen(props) {
             <div className={classes.statusAndButtons}>
               <div className={classes.statuses}>
                 {txSent && !txConfirmed && !txErrored && <div classname={classes.status}>
-                  <Typography variant="subheading">
+                  <Typography variant="subtitle1">
                     {"Transaction pending "}
                   </Typography>
                   <CircularProgress />
                 </div>}
                 {txSent && txConfirmed && <div className={classes.status}>
-                  <Typography variant="subheading">
+                  <Typography variant="subtitle1">
                     {"Transaction confirmed "}
                   </Typography>
                   <DoneIcon />
                 </div>}
                 {txSent && txErrored && <div className={classes.status}>
-                  <Typography variant="subheading">
+                  <Typography variant="subtitle1">
                     {"Transaction errored "}
                   </Typography>
                   <ErrorIcon />

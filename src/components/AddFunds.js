@@ -39,10 +39,10 @@ class AddFunds extends Component {
     const { classes } = this.props
     return (
       <div>
-        <Typography variant="title">
+        <Typography variant="h6">
           Send ETH to:
         </Typography>
-        <Typography variant="subheading" className={classes.publicKey}>
+        <Typography variant="subtitle1" className={classes.publicKey}>
            {web3js.eth.accounts.wallet[0].address}
         </Typography>
         <a className="coinbase-widget"

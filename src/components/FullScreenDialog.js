@@ -41,7 +41,7 @@ const FullScreenDialog = ({ classes, title, children, open, onClose, hideClose }
         {!hideClose && <IconButton color="inherit" onClick={onClose} aria-label="Close">
           <CloseIcon />
         </IconButton>}
-        <Typography variant="title" color="inherit" className={classes.flex}>
+        <Typography variant="h6" color="inherit" className={classes.flex}>
           {title}
         </Typography>
       </Toolbar>

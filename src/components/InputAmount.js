@@ -20,7 +20,7 @@ const InputAmount = ({ amount, currencySymbol, onChange, onClick, buttonText, bu
           step: ".01"
         }}
       />
-      <Tooltip title={tooltip}>
+      <Tooltip title={tooltip} enterDelay={300}>
         <div>
           <Button
             onClick={onClick}
