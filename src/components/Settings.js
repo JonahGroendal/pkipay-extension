@@ -10,8 +10,6 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
 import Switch from '@material-ui/core/Switch';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListSubheader from '@material-ui/core/ListSubheader';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import { connect } from 'react-redux';
@@ -84,7 +82,6 @@ const styles = theme => ({
     marginRight: theme.spacing.unit * 2
   }
 })
-Settings = withStyles(styles)(Settings)
 
 const mapStateToProps = state => ({
   settings: state.settings
@@ -97,4 +94,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(Settings)
+)(withStyles(styles)(Settings))

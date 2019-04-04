@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import InputAmount from '../components/InputAmount'
-import { buyTHX } from '../api/blockchain'
 import web3js from '../api/web3js'
 import strings from '../api/strings'
 import { reviewTx } from '../actions'

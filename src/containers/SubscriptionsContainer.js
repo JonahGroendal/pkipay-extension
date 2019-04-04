@@ -35,7 +35,6 @@ function SubscriptionsContainer(props) {
 
 // Update component only when tabIndex == 1
 const notInView = (prevProps, nextProps) => nextProps.tabIndex !== 1
-SubscriptionsContainer = React.memo(SubscriptionsContainer, notInView)
 
 const mapStateToProps = state => ({
   subscriptions: state.subscriptions,
@@ -51,4 +50,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(SubscriptionsContainer)
+)(React.memo(SubscriptionsContainer, notInView))

@@ -183,10 +183,9 @@ export async function getCurrencyBalance(address) {
 
 export async function getTokenBalances(address) {
   if (typeof address !== 'string' || address.length !== 42)
-    throw "Invalid address"
+    throw new Error("Invalid address")
   let balances = {}
   let events = await tokenBuyer.getPastEvents('Buy', {fromBlock: 0, filter: {buyer: address}})
-  console.log(events)
   for (const event of events) {
     if (!(event.returnValues.token in balances)) {
       const contract = new web3js.eth.Contract(abis.TokenSale, event.returnValues.token)
@@ -196,7 +195,6 @@ export async function getTokenBalances(address) {
       }
     }
   }
-  console.log(balances)
   return Object.values(balances)
 }
 

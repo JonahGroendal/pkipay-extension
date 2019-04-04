@@ -197,14 +197,6 @@ function Table(props) {
   )
 }
 
-function usePrevious(value) {
-  const ref = React.useRef();
-  React.useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
 Table.propTypes = {
   classes: PropTypes.object.isRequired,
   children: PropTypes.func.isRequired, //render prop

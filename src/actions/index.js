@@ -78,8 +78,8 @@ export const createWallet = password => dispatch => {
   let wallet
   let keystores
   try {
-    const wallet = web3js.eth.accounts.wallet.create(1);
-    const keystores = web3js.eth.accounts.wallet.encrypt(password)
+    wallet = web3js.eth.accounts.wallet.create(1);
+    keystores = web3js.eth.accounts.wallet.encrypt(password)
   } catch(error) {
     dispatch({
       type: 'CREATE_WALLET_ERROR',

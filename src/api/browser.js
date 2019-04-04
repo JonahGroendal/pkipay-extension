@@ -1,7 +1,6 @@
 /*global chrome*/
 /*global browser*/
 import mockChrome from './mockChrome'
-import zlib from 'zlib'
 
 // if ( (typeof browser === 'undefined' || typeof browser.tabs === 'undefined')
 //   && (typeof chrome === 'undefined' || typeof chrome.tabs === 'undefined') )
@@ -36,7 +35,6 @@ export async function loadState() {
 }
 
 export function saveState(state) {
-  console.log('saving state:', state)
   const serializedState = JSON.stringify(state)
   let chunks = {}
   for (let i=0; i<serializedState.length/6000; i++) {

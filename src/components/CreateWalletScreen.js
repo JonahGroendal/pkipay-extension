@@ -7,7 +7,6 @@ import Typography from '@material-ui/core/Typography'
 const CreateWalletScreen = ({
   isOpen,
   pwError,
-  privKeyError,
   onSubmit,
   onChangeEmail,
   onChangePw1,
@@ -46,7 +45,6 @@ const CreateWalletScreen = ({
       </Typography>
       <TextField
         onChange={onChangePrivKey}
-        error={privKeyError}
         label="Private key"
         margin="normal"
       />

@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 import strings from '../api/strings'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
@@ -109,7 +109,6 @@ const styles = theme => ({
     marginRight: theme.spacing.unit * 2,
   }
 })
-SubscribeForm = withStyles(styles)(SubscribeForm);
 
 function getSubscribedAmount(subscriptions, subscription) {
   let index = subscriptions.findIndex(sub => sub.hostname === subscription.hostname)
@@ -132,4 +131,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(SubscribeForm)
+)(withStyles(styles)(SubscribeForm))

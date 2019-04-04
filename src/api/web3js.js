@@ -1,4 +1,4 @@
-/*global web3*/
+// /*global web3*/
 import Web3 from 'web3'
 
 // // initialize web3js

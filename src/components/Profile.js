@@ -1,9 +1,7 @@
-import React, { Component } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
 import SubscribeForm from './SubscribeForm'
-import browser from '../api/browser'
 import blockchain from '../api/blockchain'
-import namehash from 'eth-ens-namehash'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import Avatar from '@material-ui/core/Avatar'
@@ -24,7 +22,7 @@ function Profile({ classes, subscription, currency }) {
   // React.useEffect(updateState, [subscription, currency])
 
   React.useEffect(() => {
-    const { hostname, name } = subscription
+    const { hostname } = subscription
     if (hostname) {
       blockchain.getTotalDonations(hostname).then(td => {
         setTotalDonations(convertFromUSD(currency, td))
@@ -180,7 +178,7 @@ function Profile({ classes, subscription, currency }) {
 }
 
 function mode(array) {
-  if(array.length == 0)
+  if(array.length === 0)
       return null;
   var modeMap = {};
   var maxEl = array[0], maxCount = 1;

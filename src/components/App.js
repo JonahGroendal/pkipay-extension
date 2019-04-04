@@ -18,7 +18,6 @@ function App({ themeType }) {
       useNextVariants: true,
     },
   })
-  console.log(theme)
   return (
     <MuiThemeProvider theme={theme}>
       <div>

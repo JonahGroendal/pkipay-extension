@@ -9,7 +9,6 @@ function CreateWalletScreenContainer({ isOpen, onCreate, onAdd }) {
   const [pw2, setPw2] = React.useState('')
   const [privKey, setPrivKey] = React.useState('0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009')
   const [pwError, setPwError] = React.useState(false)
-  const [privKeyError, setPrivKeyError] = React.useState(false)
 
   function onChangeEmail(event) { setEmail(event.target.value) }
   function onChangePw1(event) { setPw1(event.target.value) }
@@ -33,7 +32,6 @@ function CreateWalletScreenContainer({ isOpen, onCreate, onAdd }) {
   return React.createElement(CreateWalletScreen, {
     isOpen,
     pwError,
-    privKeyError,
     onSubmit,
     onChangeEmail,
     onChangePw1,
