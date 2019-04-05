@@ -10,16 +10,9 @@
   },
   "background": {
     "scripts": [
-      "storagedb.js",
-      "background.js",
       "scheduledTransactions.js"
     ]
   },
-  "content_scripts": [{
-    "matches": ["<all_urls>"],
-    "js": ["content.js"],
-    "all_frames": false
-  }],
   "permissions": [
     "alarms",
     "tabs",
