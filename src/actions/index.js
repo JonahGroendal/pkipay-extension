@@ -49,6 +49,7 @@ let resolveWalletUnlock;
 let rejectWalletUnlock;
 
 export const unlockWalletRequest = () => dispatch => {
+  console.log('unlockWalletRequest')
   dispatch({ type: 'UNLOCK_WALLET_REQUEST' })
 
   return new Promise((resolve, reject) => {
@@ -58,9 +59,10 @@ export const unlockWalletRequest = () => dispatch => {
 }
 
 export const unlockWallet = password => (dispatch, getState) => {
-  const { keystores } = getState().wallet
+  console.log('unlockWallet')
+  const { keystore } = getState().wallet
   try {
-    web3js.eth.accounts.wallet.decrypt(keystores, password)
+    web3js.eth.accounts.wallet.decrypt(keystore, password)
   } catch (error) {
     return dispatch({ type: 'UNLOCK_WALLET_FAILURE' })
   }
@@ -75,11 +77,12 @@ export const unlockWalletCancel = () => dispatch => {
 }
 
 export const createWallet = password => dispatch => {
+  console.log('createWallet')
   let wallet
-  let keystores
+  let keystore
   try {
     wallet = web3js.eth.accounts.wallet.create(1);
-    keystores = web3js.eth.accounts.wallet.encrypt(password)
+    keystore = web3js.eth.accounts.wallet.encrypt(password)
   } catch(error) {
     dispatch({
       type: 'CREATE_WALLET_ERROR',
@@ -93,17 +96,22 @@ export const createWallet = password => dispatch => {
   }
   dispatch({
     type: 'CREATE_WALLET',
-    payload: { addresses, keystores }
+    payload: { addresses, keystore }
   })
+  // Download copy of keystore for safe keeping
+  let file = new File([JSON.stringify(keystore[0])], 'keystore.json', {type: 'text/plain'})
+  browser.downloads.download({url: URL.createObjectURL(file), filename: 'keystore.json'})
+
   return wallet
 }
 
 export const addAccount = (privateKey, password) => dispatch => {
+  console.log('addAccount')
   let account
-  let keystores
+  let keystore
   try {
     account = web3js.eth.accounts.wallet.add(privateKey)
-    keystores = web3js.eth.accounts.wallet.encrypt(password)
+    keystore = web3js.eth.accounts.wallet.encrypt(password)
   } catch (error) {
     dispatch({
       type: 'ADD_ACCOUNT_ERROR',
@@ -113,7 +121,7 @@ export const addAccount = (privateKey, password) => dispatch => {
   }
   dispatch({
     type: 'ADD_ACCOUNT',
-    payload: { address: account.address, keystores }
+    payload: { address: account.address, keystore }
   })
   approveTokenBuyer()
   return account
@@ -148,40 +156,63 @@ export const confirmTx = () => ({
 })
 
 export const sendTx = (txObject, counterparties) => dispatch => {
-  return new Promise((resolve, reject) => {
+  return (async function() {
     const walletLocked = web3js.eth.accounts.wallet.length === 0
-    Promise.resolve(walletLocked && dispatch(unlockWalletRequest()))
-    .then(() =>  web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey))
-    .then(signedTx => {
-      return web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
-      .once('transactionHash', hash => {
-        dispatch({
-          type: 'SEND_TX_SUCCESS',
-          payload: { txHash: hash }
-        })
+    if (walletLocked)
+      await dispatch(unlockWalletRequest())
+    const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
+    const sentTx = web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
+    .once('transactionHash', txHash => {
+      dispatch({
+        type: 'SEND_TX_SUCCESS',
+        payload: { txHash }
       })
-      .once('error', error => {
-        dispatch({
-          type: 'SEND_TX_ERROR',
-          payload: { txError: error }
-        })
-        dispatch(updateScheduledTxs())
-        .then(() => reject(error))
-      })
-      .then(receipt => dispatch(updateScheduledTxs()).then(() => resolve(receipt)))
     })
-    .catch(error => {
+    .catch(txError => {
       dispatch({
         type: 'SEND_TX_ERROR',
-        payload: { txError: error }
+        payload: { txError }
       })
-      dispatch(updateScheduledTxs())
-      .then(() => reject(error))
     })
-  })
+    await dispatch(updateScheduledTxs())
+    return sentTx
+  })()
+  // return new Promise((resolve, reject) => {
+  //   const walletLocked = web3js.eth.accounts.wallet.length === 0
+  //   Promise.resolve(walletLocked && dispatch(unlockWalletRequest()))
+  //   .then(() =>  {console.log('signTransaction'); return web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)})
+  //   .then(signedTx => {
+  //     console.log('sendSignedTransaction')
+  //     return web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
+  //     .once('transactionHash', hash => {
+  //       dispatch({
+  //         type: 'SEND_TX_SUCCESS',
+  //         payload: { txHash: hash }
+  //       })
+  //     })
+  //     .once('error', error => {
+  //       dispatch({
+  //         type: 'SEND_TX_ERROR',
+  //         payload: { txError: error }
+  //       })
+  //       dispatch(updateScheduledTxs())
+  //       .then(() => reject(error))
+  //     })
+  //     .then(receipt => dispatch(updateScheduledTxs()).then(() => resolve(receipt)))
+  //   })
+  //   .catch(error => {
+  //     dispatch({
+  //       type: 'SEND_TX_ERROR',
+  //       payload: { txError: error }
+  //     })
+  //     dispatch(updateScheduledTxs())
+  //     .then(() => reject(error))
+  //   })
+  // })
 }
 
 export const scheduleTx = (when, txObject) => (dispatch, getState) => {
+  console.log('scheduleTx')
   return (async function () {
     if (web3js.eth.accounts.wallet.length === 0) // If wallet locked
       await dispatch(unlockWalletRequest())
@@ -209,6 +240,7 @@ export const scheduleTx = (when, txObject) => (dispatch, getState) => {
 }
 
 export const unscheduleTx = id => dispatch => {
+  console.log('unscheduleTx')
   return new Promise((resolve, reject) => {
     browser.alarms.clear(id, cleared => {
       if (cleared) {
@@ -223,6 +255,7 @@ export const unscheduleTx = id => dispatch => {
 }
 
 export const rescheduleSubscriptionsPayments = () => (dispatch, getState) => {
+  console.log('rescheduleSubscriptionsPayments')
   return (async function () {
     console.log('rescheduling!')
     let { scheduledTXs, settings, subscriptions, wallet } = getState()

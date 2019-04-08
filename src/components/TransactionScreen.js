@@ -35,6 +35,7 @@ function TransactionScreen(props) {
     onClickOpen,
     currencySymbol,
     badgeInvisible,
+    txObjectExists,
     classes,
   } = props;
 
@@ -63,10 +64,13 @@ function TransactionScreen(props) {
         <div className={classes.contentRoot}>
           <div className={classes.currentTransaction}>
             <div className={classes.details}>
-              <Typography variant="title">
+              <Typography variant="h6">
                 Details
               </Typography>
-              <List className={classes.list}>
+              {!txObjectExists && <Typography variant="subtitle1"className={classes.noTx}>
+                No transaction
+              </Typography>}
+              <List>
                 {counterparties.map((to, index) => (
                   <ListItem
                     key={index}
@@ -86,7 +90,7 @@ function TransactionScreen(props) {
                         </ListItemIcon>
                       </div>
                     </div>
-                    <Tooltip title={to}>
+                    <Tooltip title={to} enterDelay={300}>
                       <ListItemText primary={Array.from(to.substring(0, 17)).map((c, i) => i!==16 ? c : String.fromCharCode(8230)).join('')} />
                     </Tooltip>
                   </ListItem>
@@ -123,7 +127,7 @@ function TransactionScreen(props) {
             <Divider />
             <div className={classes.statusAndButtons}>
               <div className={classes.statuses}>
-                {txSent && !txConfirmed && !txErrored && <div classname={classes.status}>
+                {txSent && !txConfirmed && !txErrored && <div className={classes.status}>
                   <Typography variant="subtitle1">
                     {"Transaction pending "}
                   </Typography>
@@ -152,6 +156,7 @@ function TransactionScreen(props) {
                 <Button
                   onClick={onClickSend}
                   variant="contained" size="medium" color="secondary"
+                  disabled={!txObjectExists}
                 >
                   Send
                   <SendIcon className={classes.rightIcon} />
@@ -176,8 +181,9 @@ const styles = theme => ({
     display: 'flex',
     flexDirection: 'column'
   },
-  list: {
-    //backgroundColor: theme.palette.background.paper
+  noTx: {
+    marginLeft: theme.spacing.unit * 2,
+    marginTop: theme.spacing.unit * 2
   },
   details: {
     display: 'flex',

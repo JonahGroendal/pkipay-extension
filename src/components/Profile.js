@@ -23,6 +23,7 @@ function Profile({ classes, subscription, currency }) {
 
   React.useEffect(() => {
     const { hostname } = subscription
+    console.log(hostname)
     if (hostname) {
       blockchain.getTotalDonations(hostname).then(td => {
         setTotalDonations(convertFromUSD(currency, td))
@@ -30,26 +31,26 @@ function Profile({ classes, subscription, currency }) {
       blockchain.getTotalDonationsFromOneMonth(hostname).then(td => {
         setTotalDonationsOneMonth(convertFromUSD(currency, td))
       })
+      const faviconUrlLarge = 'https://' + hostname + '/apple-touch-icon.png'
+      let xhr = new XMLHttpRequest()
+      xhr.open("GET", faviconUrlLarge, true)
+      xhr.onloadend = () => {
+        if (xhr.status !== 404 && xhr.status !== 0)
+          setLargeFaviconExists(true)
+        else
+          setLargeFaviconExists(false)
+      }
+      xhr.send()
     } else {
       setTotalDonations(0)
       setTotalDonationsOneMonth(0)
+      setLargeFaviconExists(false)
     }
     const parts = hostname.split('.')
     if (parts.length > 2 && parts[parts.length-3] === 'www')
       setDisplayName(parts[parts.length-2]+'.'+parts[parts.length-1])
     else
       setDisplayName(hostname)
-
-    const faviconUrlLarge = 'https://' + hostname + '/apple-touch-icon.png'
-    let xhr = new XMLHttpRequest()
-    xhr.open("GET", faviconUrlLarge, true)
-    xhr.onloadend = () => {
-      if (xhr.status !== 404 && xhr.status !== 0)
-        setLargeFaviconExists(true)
-      else
-        setLargeFaviconExists(false)
-    }
-    xhr.send()
   }, [subscription.hostname, currency])
 
   // function updateState() {

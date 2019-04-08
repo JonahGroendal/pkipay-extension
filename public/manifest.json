@@ -21,8 +21,11 @@
     "downloads",
     "storage",
     "unlimitedStorage",
+    "https://rinkeby.infura.io/*",
+    "wss://rinkeby.infura.io/*",
     "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
-    "https://rinkeby.infura.io/*"
+    "https://min-api.cryptocompare.com/data/*",
+    "https://*/apple-touch-icon.png"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval' 'sha256-5As4+3YpY62+l38PsxCEkjB1R4YtyktBtRScTJ3fyLU='; object-src 'self'"
 }

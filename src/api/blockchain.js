@@ -18,6 +18,7 @@ const currency = new web3js.eth.Contract(abis.ERC20, strings.web3.addresses.Curr
 const tokenBuyer = new web3js.eth.Contract(abis.TokenBuyer, strings.web3.addresses.TokenBuyer);
 
 export async function createTxBuyThx(address, hostnames, values) {
+  console.log('createTxBuyThx')
   if (!Array.isArray(hostnames)) hostnames = [hostnames,];
   if (!Array.isArray(values)) values = [values,];
   const validHostnames = (e, i) => hostnames[i] && !hostnames[i].includes('#')
@@ -147,13 +148,15 @@ export async function approveTokenBuyer() {
 // }
 
 export async function getEthBalance(address) {
+  console.log('getEthBalance')
   const weiBalance = await web3js.eth.getBalance(address)
-  return parseFloat(web3js.utils.fromWei(weiBalance))
+  return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
 
 export async function getCurrencyBalance(address) {
+  console.log('getCurrencyBalance')
   const weiBalance = await currency.methods.balanceOf(address).call()
-  return parseFloat(web3js.utils.fromWei(weiBalance))
+  return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
 
 // export async function getTokenBalance(address, domainName) {
@@ -182,6 +185,7 @@ export async function getCurrencyBalance(address) {
 // }
 
 export async function getTokenBalances(address) {
+  console.log('getTokenBalances')
   if (typeof address !== 'string' || address.length !== 42)
     throw new Error("Invalid address")
   let balances = {}
@@ -191,7 +195,7 @@ export async function getTokenBalances(address) {
       const contract = new web3js.eth.Contract(abis.TokenSale, event.returnValues.token)
       balances[event.returnValues.token] = {
         name: await contract.methods.name().call(),
-        balance: parseFloat(web3js.utils.fromWei(await contract.methods.balanceOf(address).call()))
+        balance: parseFloat(web3js.utils.fromWei((await contract.methods.balanceOf(address).call()).toString()))
       }
     }
   }
@@ -199,6 +203,7 @@ export async function getTokenBalances(address) {
 }
 
 export async function subscribeToDaiTransfer(address, onTransfer) {
+  console.log('subscribeToDaiTransfer')
   const currentBlock = await web3js.eth.getBlockNumber();
   const subscription = currency.events.Transfer({
     filter: [{to: address}, {from: address}],
@@ -216,8 +221,8 @@ export async function getTotalDonations(hostname, fromBlock = 0) {
   const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
   const pastBuys = await thxToken.getPastEvents('Buy', { fromBlock: fromBlock })
   const pastRefunds = await thxToken.getPastEvents('Refund', { fromBlock: 0 })
-  const totalBuys = pastBuys.reduce((acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1])), 0);
-  const totalRefunds = pastRefunds.reduce((acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1])), 0);
+  const totalBuys = pastBuys.reduce((acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1].toString())), 0);
+  const totalRefunds = pastRefunds.reduce((acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1].toString())), 0);
 
   return totalBuys - totalRefunds;
 }

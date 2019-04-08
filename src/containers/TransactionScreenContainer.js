@@ -24,6 +24,8 @@ function TransactionScreenContainer(props) {
     currency,
   } = props
 
+  const gasValues = useGasValues(txObject)
+
   React.useEffect(() => {
     if (isOpen && !txConfirmed && txHash !== null) {
       const interval = setInterval(() => {
@@ -35,9 +37,6 @@ function TransactionScreenContainer(props) {
     }
   }, [isOpen, txConfirmed, txHash])
 
-  const gasValues = useGasValues(txObject)
-  const onClickSend = () => onSend(txObject, counterparties)
-
   return React.createElement(TransactionScreen, {
     isOpen,
     counterparties,
@@ -47,12 +46,13 @@ function TransactionScreenContainer(props) {
     txSent: (txHash !== null || txError !== null),
     txConfirmed,
     txErrored: txError !== null,
-    onClickSend,
+    onClickSend: () => onSend(txObject, counterparties),
     onClickCancel,
     onClickClose,
     onClickOpen,
     currencySymbol: strings.currency[currency],
-    badgeInvisible: (txObject === null || txHash !== null)
+    badgeInvisible: (txObject === null || txHash !== null),
+    txObjectExists: !!txObject
   })
 }
 
@@ -64,7 +64,8 @@ function useGasValues(txObject) {
   const [gasValues, setGasValues] = React.useState({USD: 0, ETH: 0})
   React.useEffect(() => {
     if (txObject !== null) {
-      web3js.eth.estimateGas(txObject).then(gas => {
+      web3js.eth.estimateGas(txObject)
+      .then(gas => {
         cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
         cryptoCompare.price('ETH', 'USD')
         .then(currencyPerEth => {
@@ -75,6 +76,7 @@ function useGasValues(txObject) {
           })
         })
       })
+      .catch(() => {})
     }
   }, [txObject])
 

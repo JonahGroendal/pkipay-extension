@@ -35,7 +35,7 @@ let mockChrome = {
   },
   tabs: {
     query: function(obj, callback) {
-      let tabs = [{url: "https://www.facebook.com/"}]
+      let tabs = [{url: "https://www.wikipedia.org/"}]
       callback(tabs);
     },
     onActivated: {
@@ -99,6 +99,9 @@ let mockChrome = {
       },
       data: {}
     }
+  },
+  downloads: {
+    download: (obj) => {}
   }
 }
 

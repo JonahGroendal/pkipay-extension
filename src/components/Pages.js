@@ -9,7 +9,7 @@ const Pages = ({ tabIndex, onChangeTab }) => (
   <div>
     <Nav tabIndex={tabIndex} onChangeTab={onChangeTab}>
       <Tab label="Profile" />
-      <Tab label="Manage" />
+      <Tab label="My wallet" />
     </Nav>
     <SwipeableViews index={tabIndex} onChangeIndex={onChangeTab}>
       <PageProfileContainer />
