@@ -102,7 +102,7 @@ export const createWallet = password => dispatch => {
   let file = new File([JSON.stringify(keystore[0])], 'keystore.json', {type: 'text/plain'})
   browser.downloads.download({url: URL.createObjectURL(file), filename: 'keystore.json'})
 
-  return wallet
+  return keystore
 }
 
 export const addAccount = (privateKey, password) => dispatch => {
@@ -124,7 +124,7 @@ export const addAccount = (privateKey, password) => dispatch => {
     payload: { address: account.address, keystore }
   })
   approveTokenBuyer()
-  return account
+  return keystore
 }
 
 export const reviewTx = tx => ({
@@ -155,88 +155,49 @@ export const confirmTx = () => ({
   type: 'CONFIRM_TX'
 })
 
-export const sendTx = (txObject, counterparties) => dispatch => {
-  return (async function() {
-    const walletLocked = web3js.eth.accounts.wallet.length === 0
-    if (walletLocked)
-      await dispatch(unlockWalletRequest())
-    const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
-    const sentTx = web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
-    .once('transactionHash', txHash => {
-      dispatch({
-        type: 'SEND_TX_SUCCESS',
-        payload: { txHash }
-      })
+export const sendTx = (txObject, counterparties) => async (dispatch) => {
+  if (web3js.eth.accounts.wallet.length === 0)
+    await dispatch(unlockWalletRequest())
+  const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
+  const txPromise = web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
+  .once('transactionHash', txHash => {
+    dispatch({
+      type: 'SEND_TX_SUCCESS',
+      payload: { txHash }
     })
-    .catch(txError => {
-      dispatch({
-        type: 'SEND_TX_ERROR',
-        payload: { txError }
-      })
+  })
+  .catch(txError => {
+    dispatch({
+      type: 'SEND_TX_ERROR',
+      payload: { txError }
     })
-    await dispatch(updateScheduledTxs())
-    return sentTx
-  })()
-  // return new Promise((resolve, reject) => {
-  //   const walletLocked = web3js.eth.accounts.wallet.length === 0
-  //   Promise.resolve(walletLocked && dispatch(unlockWalletRequest()))
-  //   .then(() =>  {console.log('signTransaction'); return web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)})
-  //   .then(signedTx => {
-  //     console.log('sendSignedTransaction')
-  //     return web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
-  //     .once('transactionHash', hash => {
-  //       dispatch({
-  //         type: 'SEND_TX_SUCCESS',
-  //         payload: { txHash: hash }
-  //       })
-  //     })
-  //     .once('error', error => {
-  //       dispatch({
-  //         type: 'SEND_TX_ERROR',
-  //         payload: { txError: error }
-  //       })
-  //       dispatch(updateScheduledTxs())
-  //       .then(() => reject(error))
-  //     })
-  //     .then(receipt => dispatch(updateScheduledTxs()).then(() => resolve(receipt)))
-  //   })
-  //   .catch(error => {
-  //     dispatch({
-  //       type: 'SEND_TX_ERROR',
-  //       payload: { txError: error }
-  //     })
-  //     dispatch(updateScheduledTxs())
-  //     .then(() => reject(error))
-  //   })
-  // })
+  })
+  await dispatch(updateScheduledTxs())
+  return txPromise
 }
 
-export const scheduleTx = (when, txObject) => (dispatch, getState) => {
-  console.log('scheduleTx')
-  return (async function () {
-    if (web3js.eth.accounts.wallet.length === 0) // If wallet locked
-      await dispatch(unlockWalletRequest())
-
-    let id
-    let rawTransaction
-    let txHash
-    try {
-      const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
-      rawTransaction = signedTx.rawTransaction
-      txHash = '0x' + new EthereumTx(rawTransaction).hash().toString('hex')
-      id = "TX" + parseInt(txObject.nonce).toString().padStart(8, '0')
-      browser.alarms.create(id, { when })
-    } catch(error) {
-      throw dispatch({
-        type: 'SCHEDULE_TX_ERROR',
-        payload: { txError: error }
-      })
-    }
-    return dispatch({
-      type: 'SCHEDULE_TX',
-      payload: { id, txObject, rawTransaction, txHash, when }
+export const scheduleTx = (when, txObject) => async (dispatch, getState) => {
+  if (web3js.eth.accounts.wallet.length === 0)
+    await dispatch(unlockWalletRequest())
+  let id
+  let rawTransaction
+  let txHash
+  try {
+    const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
+    rawTransaction = signedTx.rawTransaction
+    txHash = '0x' + new EthereumTx(rawTransaction).hash().toString('hex')
+    id = "TX" + parseInt(txObject.nonce).toString().padStart(8, '0')
+    browser.alarms.create(id, { when })
+  } catch(error) {
+    throw dispatch({
+      type: 'SCHEDULE_TX_ERROR',
+      payload: { txError: error }
     })
-  })()
+  }
+  return dispatch({
+    type: 'SCHEDULE_TX',
+    payload: { id, txObject, rawTransaction, txHash, when }
+  })
 }
 
 export const unscheduleTx = id => dispatch => {
@@ -254,63 +215,58 @@ export const unscheduleTx = id => dispatch => {
   })
 }
 
-export const rescheduleSubscriptionsPayments = () => (dispatch, getState) => {
+export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) => {
   console.log('rescheduleSubscriptionsPayments')
-  return (async function () {
-    console.log('rescheduling!')
-    let { scheduledTXs, settings, subscriptions, wallet } = getState()
-    const now = Date.now()
-    // Delete unsent transactions
-    let keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
-    for (let i=0; i<keys.length; i++) {
-      await dispatch(unscheduleTx(keys[i]))
+  let { scheduledTXs, settings, subscriptions, wallet } = getState()
+  const now = Date.now()
+  // Delete unsent transactions
+  let keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
+  for (let i=0; i<keys.length; i++) {
+    await dispatch(unscheduleTx(keys[i]))
+  }
+  const hasValidHostname = sub => !sub.hostname.includes('#')
+  const hostnames = subscriptions.filter(hasValidHostname).map(sub => sub.hostname)
+  const amounts = subscriptions.filter(hasValidHostname).map(sub => sub.amount)
+  if (hostnames.length === 0) return;
+  // Schedule transactions
+  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
+  const txObject = await createTxBuyThx(wallet.addresses[0], hostnames, amounts)
+  const calcWhen = now => strings.paymentSchedule[settings.paymentSchedule](now).valueOf()
+  let monthIndex = (new Date(now)).getMonth()
+  let year = (new Date(now)).getFullYear()
+  let when
+  for (let i=0; i<6; i++) {
+    when = calcWhen((new Date(year, monthIndex)).valueOf())
+    await dispatch(scheduleTx(when, { ...txObject, nonce: nonce + i }))
+    monthIndex += 1
+    if (monthIndex === 12) {
+      year += 1
+      monthIndex = 0
     }
-    const hasValidHostname = sub => !sub.hostname.includes('#')
-    const hostnames = subscriptions.filter(hasValidHostname).map(sub => sub.hostname)
-    const amounts = subscriptions.filter(hasValidHostname).map(sub => sub.amount)
-    if (hostnames.length === 0) return;
-    // Schedule transactions
-    const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
-    const txObject = await createTxBuyThx(wallet.addresses[0], hostnames, amounts)
-    const calcWhen = now => strings.paymentSchedule[settings.paymentSchedule](now).valueOf()
-    let monthIndex = (new Date(now)).getMonth()
-    let year = (new Date(now)).getFullYear()
-    let when
-    for (let i=0; i<6; i++) {
-      when = calcWhen((new Date(year, monthIndex)).valueOf())
-      await dispatch(scheduleTx(when, { ...txObject, nonce: nonce + i }))
-      monthIndex += 1
-      if (monthIndex === 12) {
-        year += 1
-        monthIndex = 0
-      }
-    }
-  })()
+  }
 }
 
-export const updateScheduledTxs = () => (dispatch, getState) => {
+export const updateScheduledTxs = () => async (dispatch, getState) => {
   console.log('updateScheduledTxs')
-  return (async function() {
-    let { scheduledTXs, wallet } = getState()
-    const now = Date.now()
-    const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
-    if (keys.length === 0) return;
-    const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
-    // Check if nonces need to be updated
-    let id = keys[0]
-    if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;
-    // update nonces
-    let txObjects = []
-    let whens = []
-    for (let i=0; i<keys.length; i++) {
-      id = keys[i]
-      txObjects.push(scheduledTXs[id].txObject)
-      whens.push(scheduledTXs[id].when)
-      await dispatch(unscheduleTx(id))
-    }
-    for (let i=0; i<txObjects.length; i++) {
-      txObjects[i].nonce = nonce + i
-      await dispatch(scheduleTx(whens[i], txObjects[i]))
-    }
-  })()
+  let { scheduledTXs, wallet } = getState()
+  const now = Date.now()
+  const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
+  if (keys.length === 0) return;
+  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
+  // Check if nonces need to be updated
+  let id = keys[0]
+  if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;
+  // update nonces
+  let txObjects = []
+  let whens = []
+  for (let i=0; i<keys.length; i++) {
+    id = keys[i]
+    txObjects.push(scheduledTXs[id].txObject)
+    whens.push(scheduledTXs[id].when)
+    await dispatch(unscheduleTx(id))
+  }
+  for (let i=0; i<txObjects.length; i++) {
+    txObjects[i].nonce = nonce + i
+    await dispatch(scheduleTx(whens[i], txObjects[i]))
+  }
 }
