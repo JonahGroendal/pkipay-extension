@@ -4,17 +4,17 @@ import strings from '../api/strings'
 import { createTxBuyThx, approveTokenBuyer } from '../api/blockchain'
 import EthereumTx from 'ethereumjs-tx'
 
-export const setObjectHostname = hostname => ({
+export const setObjectHostname = (hostname) => ({
   type: 'SET_OBJECT_HOSTNAME',
   hostname
 })
 
-export const setTabIndex = index => ({
+export const setTabIndex = (index) => ({
   type: 'SET_TAB_INDEX',
   tabIndex: index
 })
 
-export const addSubscription = subscription => dispatch => {
+export const addSubscription = (subscription) => (dispatch) => {
   dispatch({
     type: 'ADD_SUBSCRIPTION',
     subscription
@@ -22,7 +22,7 @@ export const addSubscription = subscription => dispatch => {
   return dispatch(rescheduleSubscriptionsPayments())
 }
 
-export const removeSubscription = hostname => dispatch => {
+export const removeSubscription = (hostname) => (dispatch) => {
   dispatch({
     type: 'REMOVE_SUBSCRIPTION',
     hostname
@@ -30,17 +30,17 @@ export const removeSubscription = hostname => dispatch => {
   return dispatch(rescheduleSubscriptionsPayments())
 }
 
-export const setCurrency = currency => ({
+export const setCurrency = (currency) => ({
   type: 'SET_CURRENCY',
   currency
 });
 
-export const setPaymentSchedule = paymentSchedule => ({
+export const setPaymentSchedule = (paymentSchedule) => ({
   type: 'SET_PAYMENT_SCHEDULE',
   paymentSchedule
 });
 
-export const setThemeType = themeType => ({
+export const setThemeType = (themeType) => ({
   type: 'SET_THEME_TYPE',
   themeType
 });
@@ -48,7 +48,7 @@ export const setThemeType = themeType => ({
 let resolveWalletUnlock;
 let rejectWalletUnlock;
 
-export const unlockWalletRequest = () => dispatch => {
+export const unlockWalletRequest = () => (dispatch) => {
   console.log('unlockWalletRequest')
   dispatch({ type: 'UNLOCK_WALLET_REQUEST' })
 
@@ -58,25 +58,25 @@ export const unlockWalletRequest = () => dispatch => {
   })
 }
 
-export const unlockWallet = password => (dispatch, getState) => {
+export const unlockWallet = (password) => (dispatch, getState) => {
   console.log('unlockWallet')
-  const { keystore } = getState().wallet
+  const { addresses, keystore, defaultAccount } = getState().wallet
   try {
     web3js.eth.accounts.wallet.decrypt(keystore, password)
   } catch (error) {
     return dispatch({ type: 'UNLOCK_WALLET_FAILURE' })
   }
   dispatch({ type: 'UNLOCK_WALLET_SUCCESS' })
-  approveTokenBuyer()
+  approveTokenBuyer(addresses[defaultAccount])
   return resolveWalletUnlock()
 }
 
-export const unlockWalletCancel = () => dispatch => {
+export const unlockWalletCancel = () => (dispatch) => {
   dispatch({ type: 'UNLOCK_WALLET_CANCEL' })
   return rejectWalletUnlock()
 }
 
-export const createWallet = password => dispatch => {
+export const createWallet = (password) => {
   console.log('createWallet')
   let wallet
   let keystore
@@ -84,50 +84,56 @@ export const createWallet = password => dispatch => {
     wallet = web3js.eth.accounts.wallet.create(1);
     keystore = web3js.eth.accounts.wallet.encrypt(password)
   } catch(error) {
-    dispatch({
+    return {
       type: 'CREATE_WALLET_ERROR',
       payload: { error }
-    })
-    return null
+    }
   }
-  let addresses = [];
-  for (let i=0; i<wallet.length; i++) {
-    addresses.push(wallet[i].address)
-  }
-  dispatch({
-    type: 'CREATE_WALLET',
-    payload: { addresses, keystore }
-  })
   // Download copy of keystore for safe keeping
   let file = new File([JSON.stringify(keystore[0])], 'keystore.json', {type: 'text/plain'})
   browser.downloads.download({url: URL.createObjectURL(file), filename: 'keystore.json'})
 
-  return keystore
+  let addresses = [];
+  for (let i=0; i<wallet.length; i++) {
+    addresses.push(wallet[i].address)
+  }
+  return {
+    type: 'CREATE_WALLET',
+    payload: { addresses, keystore }
+  }
 }
 
-export const addAccount = (privateKey, password) => dispatch => {
+export const deleteWallet = () => ({
+  type: 'DELETE_WALLET'
+})
+
+export const addAccount = (privateKey, password) => {
   console.log('addAccount')
-  let account
-  let keystore
+  let account; let keystore
   try {
     account = web3js.eth.accounts.wallet.add(privateKey)
     keystore = web3js.eth.accounts.wallet.encrypt(password)
   } catch (error) {
-    dispatch({
+    return {
       type: 'ADD_ACCOUNT_ERROR',
       payload: { error }
-    })
-    return null
+    }
   }
-  dispatch({
+  approveTokenBuyer(account.address)
+  return {
     type: 'ADD_ACCOUNT',
     payload: { address: account.address, keystore }
-  })
-  approveTokenBuyer()
-  return keystore
+  }
 }
 
-export const reviewTx = tx => ({
+export const setDefaultAccount = (accountIndex) => ({
+  type: 'SET_DEFAULT_ACCOUNT',
+  payload: {
+    defaultAccount: accountIndex
+  }
+})
+
+export const reviewTx = (tx) => ({
   type: 'REVIEW_TX',
   payload: {
     txObject: tx.tx,
@@ -155,11 +161,12 @@ export const confirmTx = () => ({
   type: 'CONFIRM_TX'
 })
 
-export const sendTx = (txObject, counterparties) => async (dispatch) => {
+export const sendTx = (txObject) => async (dispatch) => {
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
-  const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
-  const txPromise = web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
+  const pk = web3js.eth.accounts.wallet[txObject.from].privateKey
+  const signedTx = await web3js.eth.accounts.signTransaction(txObject, pk)
+  await web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
   .once('transactionHash', txHash => {
     dispatch({
       type: 'SEND_TX_SUCCESS',
@@ -173,7 +180,6 @@ export const sendTx = (txObject, counterparties) => async (dispatch) => {
     })
   })
   await dispatch(updateScheduledTxs())
-  return txPromise
 }
 
 export const scheduleTx = (when, txObject) => async (dispatch, getState) => {
@@ -183,24 +189,27 @@ export const scheduleTx = (when, txObject) => async (dispatch, getState) => {
   let rawTransaction
   let txHash
   try {
-    const signedTx = await web3js.eth.accounts.signTransaction(txObject, web3js.eth.accounts.wallet[0].privateKey)
+    const pk = web3js.eth.accounts.wallet[txObject.from].privateKey
+    const signedTx = await web3js.eth.accounts.signTransaction(txObject, pk)
     rawTransaction = signedTx.rawTransaction
     txHash = '0x' + new EthereumTx(rawTransaction).hash().toString('hex')
     id = "TX" + parseInt(txObject.nonce).toString().padStart(8, '0')
     browser.alarms.create(id, { when })
   } catch(error) {
-    throw dispatch({
+    dispatch({
       type: 'SCHEDULE_TX_ERROR',
       payload: { txError: error }
     })
+    return;
   }
-  return dispatch({
+  dispatch({
     type: 'SCHEDULE_TX',
     payload: { id, txObject, rawTransaction, txHash, when }
   })
+  return;
 }
 
-export const unscheduleTx = id => dispatch => {
+export const unscheduleTx = (id) => (dispatch) => {
   console.log('unscheduleTx')
   return new Promise((resolve, reject) => {
     browser.alarms.clear(id, cleared => {
@@ -229,8 +238,8 @@ export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) 
   const amounts = subscriptions.filter(hasValidHostname).map(sub => sub.amount)
   if (hostnames.length === 0) return;
   // Schedule transactions
-  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
-  const txObject = await createTxBuyThx(wallet.addresses[0], hostnames, amounts)
+  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
+  const txObject = await createTxBuyThx(wallet.addresses[wallet.defaultAccount], hostnames, amounts)
   const calcWhen = now => strings.paymentSchedule[settings.paymentSchedule](now).valueOf()
   let monthIndex = (new Date(now)).getMonth()
   let year = (new Date(now)).getFullYear()
@@ -252,7 +261,7 @@ export const updateScheduledTxs = () => async (dispatch, getState) => {
   const now = Date.now()
   const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
   if (keys.length === 0) return;
-  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[0], 'pending')
+  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
   // Check if nonces need to be updated
   let id = keys[0]
   if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;

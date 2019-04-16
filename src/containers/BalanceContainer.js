@@ -22,7 +22,7 @@ function BalanceContainer({ address, currency, txScreenOpen }) {
 }
 
 const mapStateToProps = state => ({
-  address: state.wallet.addresses[0],
+  address: state.wallet.addresses[state.wallet.defaultAccount],
   currency: state.settings.currency,
   txScreenOpen: state.transactionScreen.isOpen
 })

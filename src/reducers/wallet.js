@@ -2,6 +2,7 @@ const initialState = {
   addresses: [],
   tokens: [],
   keystore: [],
+  defaultAccount: -1
 }
 
 function wallet(state=initialState, action) {
@@ -10,16 +11,23 @@ function wallet(state=initialState, action) {
       return {
         ...state,
         addresses: action.payload.addresses,
-        keystore: action.payload.keystore
-      };
-    case 'ADD_ACCOUNT':
-      return {
-        ...state,
-        addresses: [action.payload.address, ...state.addresses],
-        keystore: action.payload.keystore
+        keystore: action.payload.keystore,
+        defaultAcount: 0
       };
     case 'DELETE_WALLET':
       return initialState;
+    case 'ADD_ACCOUNT':
+      return {
+        ...state,
+        addresses: [...state.addresses, action.payload.address],
+        keystore: action.payload.keystore,
+        defaultAccount: state.addresses.length
+      };
+    case 'SET_DEFAULT_ACCOUNT':
+      return {
+        ...state,
+        defaultAccount: action.payload.defaultAccount
+      }
     default:
       return state
   }

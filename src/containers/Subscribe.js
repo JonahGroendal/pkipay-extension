@@ -28,7 +28,7 @@ function Subscribe({ subscribe, currency, address, subscription }) {
 
 const mapStateToProps = state => ({
   currency: state.settings.currency,
-  address: state.wallet.addresses[0]
+  address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = (dispatch, ownProps) => ({
   subscribe: amount => {

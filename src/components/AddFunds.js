@@ -1,3 +1,8 @@
+
+
+// CHANGE TO USE DEFAULT ACCOUNT
+
+
 import web3js from '../api/web3js'
 import React, { Component } from 'react'
 import Typography from '@material-ui/core/Typography'

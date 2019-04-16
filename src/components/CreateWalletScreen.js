@@ -22,7 +22,7 @@ const CreateWalletScreen = ({
   classes
 }) => (
   <FullScreenDialog
-    title="New wallet"
+    title="Create or Import Wallet"
     open={isOpen}
     hideClose={true}
   >

@@ -67,7 +67,7 @@ const Subscriptions = ({
             </Typography>
           </Tooltip>
         </TableCell>
-        <TableCell align="numeric">
+        <TableCell align="right">
           <Tooltip title={subscription.amount.toFixed(2)+' '+currency+' per month'} enterDelay={500}>
             <div className={classes.amount}>
               <Typography variant="subtitle1">

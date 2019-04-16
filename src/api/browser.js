@@ -31,7 +31,7 @@ export async function loadState() {
   const serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
   if (serializedState)
     return JSON.parse(serializedState)
-  return {}
+  return undefined
 }
 
 export function saveState(state) {

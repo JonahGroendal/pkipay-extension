@@ -55,7 +55,9 @@ function SubscribeForm({ subscription, subscribed, subscribedAmount, currency, o
         {expanded && <TextField
           label="monthly amount"
           className={classes.textField}
+          autoFocus={true}
           onChange={event => setAmount(event.target.value)}
+          onKeyDown={event => {if (event.keyCode === 13) handleClickSubscribe()}}
           error={inputError}
           InputProps={{
             startAdornment: <InputAdornment position="start">{currencySymbol}</InputAdornment>,
@@ -124,7 +126,7 @@ const mapStateToProps = (state, ownProps) => ({
 const mapDispatchToProps = dispatch => ({
   onSubscribe: sub => {
     dispatch(addSubscription(sub))
-    .then(() => dispatch(setTabIndex(1)))
+    setTimeout(() => dispatch(setTabIndex(1)), 400)
   },
   onUnsubscribe: hostname => dispatch(removeSubscription(hostname)),
 })

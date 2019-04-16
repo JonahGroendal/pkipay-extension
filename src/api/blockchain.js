@@ -38,15 +38,15 @@ export async function createTxBuyThx(address, hostnames, values) {
   }
 }
 
-export async function approveTokenBuyer() {
+export async function approveTokenBuyer(address) {
   console.log('approveTokenBuyer')
-  const balance = await currency.methods.balanceOf(web3js.eth.accounts.wallet[0].address).call()
+  const balance = await currency.methods.balanceOf(address).call()
   if (balance === "0") return;
-  const allowance = await currency.methods.allowance(web3js.eth.accounts.wallet[0].address, tokenBuyer.options.address).call()
+  const allowance = await currency.methods.allowance(address, tokenBuyer.options.address).call()
   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
   if (allowance === maxUint) return;
   return await currency.methods.approve(tokenBuyer.options.address, maxUint).send({
-    from: web3js.eth.accounts.wallet[0].address,
+    from: address,
     gas: 50000
   })
 }
