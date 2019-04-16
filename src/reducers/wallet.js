@@ -12,7 +12,7 @@ function wallet(state=initialState, action) {
         ...state,
         addresses: action.payload.addresses,
         keystore: action.payload.keystore,
-        defaultAcount: 0
+        defaultAccount: 0
       };
     case 'DELETE_WALLET':
       return initialState;
