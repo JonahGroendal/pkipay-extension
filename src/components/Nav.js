@@ -1,6 +1,6 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import TransactionScreenContainer from '../containers/TransactionScreenContainer'
+import TransactionScreen from '../containers/TransactionScreen'
 import Settings from './Settings'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
@@ -14,7 +14,7 @@ const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
         <Typography variant="h6" color="inherit" className={classes.flex}>
           Gratiis
         </Typography>
-        <TransactionScreenContainer />
+        <TransactionScreen />
         <Settings />
       </Toolbar>
       <Tabs

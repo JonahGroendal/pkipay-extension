@@ -1,6 +1,6 @@
 import React from 'react'
-import CreateWalletScreenContainer from '../containers/CreateWalletScreenContainer'
-import UnlockWalletScreenContainer from '../containers/UnlockWalletScreenContainer'
+import CreateWalletScreen from '../containers/CreateWalletScreen'
+import UnlockWalletScreen from '../containers/UnlockWalletScreen'
 import Pages from '../containers/Pages'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
@@ -22,8 +22,8 @@ function App({ themeType }) {
     <MuiThemeProvider theme={theme}>
       <div>
         <CssBaseline />
-        <CreateWalletScreenContainer />
-        <UnlockWalletScreenContainer />
+        <CreateWalletScreen />
+        <UnlockWalletScreen />
         <Pages />
       </div>
     </MuiThemeProvider>

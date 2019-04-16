@@ -6,7 +6,7 @@ import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import thunkMiddleware from 'redux-thunk'
 import { createLogger } from 'redux-logger'
-import AppContainer from './containers/AppContainer.js'
+import App from './containers/App.js'
 import rootReducer from './reducers'
 import { loadState, saveState } from './api/browser'
 import registerServiceWorker from './registerServiceWorker'
@@ -26,7 +26,7 @@ loadState().then(persistedState => {
 
   ReactDOM.render(
     <Provider store={store}>
-      <AppContainer />
+      <App />
     </Provider>,
     document.getElementById('render-target')
   );

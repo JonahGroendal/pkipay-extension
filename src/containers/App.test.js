@@ -4,7 +4,7 @@ import { createStore, applyMiddleware } from 'redux';
 import thunkMiddleware from 'redux-thunk';
 import { Provider } from 'react-redux';
 import rootReducer from '../reducers';
-import AppContainer from './AppContainer';
+import App from './App';
 
 
 it('renders without crashing', () => {
@@ -16,7 +16,7 @@ it('renders without crashing', () => {
 
   ReactDOM.render(
     <Provider store={store}>
-      <AppContainer />
+      <App />
     </Provider>,
     div);
   ReactDOM.unmountComponentAtNode(div);

@@ -1,11 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import Balance from '../components/Balance'
+import PresentationalComponent from '../components/Balance'
 import blockchain from '../api/blockchain'
 import strings from '../api/strings'
 import { convertFromUSD } from '../api/ECBForexRates.js'
 
-function BalanceContainer({ address, currency, txScreenOpen }) {
+function Balance({ address, currency, txScreenOpen }) {
 
   const [balance, setBalance] = React.useState(null)
   const currencySymbol = strings.currency[currency]
@@ -15,7 +15,7 @@ function BalanceContainer({ address, currency, txScreenOpen }) {
       blockchain.getCurrencyBalance(address).then(setBalance);
   }, [address, txScreenOpen]);
 
-  return React.createElement(Balance, {
+  return React.createElement(PresentationalComponent, {
     balance: convertFromUSD(currency, balance),
     currencySymbol
   })
@@ -26,4 +26,4 @@ const mapStateToProps = state => ({
   currency: state.settings.currency,
   txScreenOpen: state.transactionScreen.isOpen
 })
-export default connect(mapStateToProps)(BalanceContainer)
+export default connect(mapStateToProps)(Balance)

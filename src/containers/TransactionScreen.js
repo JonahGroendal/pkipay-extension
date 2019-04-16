@@ -1,13 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import TransactionScreen from '../components/TransactionScreen'
+import PresentationalComponent from '../components/TransactionScreen'
 import { sendTx, cancelTx, closeTx, openTx, confirmTx } from '../actions'
 import { convertFromUSD } from '../api/ECBForexRates'
 import cryptoCompare from 'cryptocompare'
 import web3js from '../api/web3js'
 import strings from '../api/strings'
 
-function TransactionScreenContainer(props) {
+function TransactionScreen(props) {
   const {
     isOpen,
     counterparties,
@@ -37,7 +37,7 @@ function TransactionScreenContainer(props) {
     }
   }, [isOpen, txConfirmed, txHash])
 
-  return React.createElement(TransactionScreen, {
+  return React.createElement(PresentationalComponent, {
     isOpen,
     counterparties,
     values: values.map(val => convertFromUSD(currency, web3js.utils.fromWei(val))),
@@ -105,4 +105,4 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(TransactionScreenContainer)
+)(TransactionScreen)

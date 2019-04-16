@@ -1,14 +1,14 @@
 import React from 'react'
-import BalanceContainer from '../containers/BalanceContainer'
-import SubscriptionsContainer from '../containers/SubscriptionsContainer'
+import Balance from '../containers/Balance'
+import Subscriptions from '../containers/Subscriptions'
 import Page from './Page'
-import HodlingsContainer from '../containers/HodlingsContainer'
+import Hodlings from '../containers/Hodlings'
 
 const PageManage = ({ subscription, onChangeIndex }) => (
   <Page>
-    <SubscriptionsContainer onChangeIndex={onChangeIndex}/>
-    <BalanceContainer />
-    <HodlingsContainer />
+    <Subscriptions onChangeIndex={onChangeIndex}/>
+    <Balance />
+    <Hodlings />
   </Page>
 )
 

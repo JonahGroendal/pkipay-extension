@@ -1,15 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import CreateWalletScreen from '../components/CreateWalletScreen'
+import PresentationalComponent from '../components/CreateWalletScreen'
 import { createWallet, addAccount } from '../actions'
 
-function CreateWalletScreenContainer({ isOpen, onCreate, onAdd }) {
+function CreateWalletScreen({ isOpen, onCreate, onAdd }) {
   const [pw1, setPw1] = React.useState('')
   const [pw2, setPw2] = React.useState('')
   const [privKey, setPrivKey] = React.useState('0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009')
   const [pwError, setPwError] = React.useState(false)
 
-  return React.createElement(CreateWalletScreen, {
+  return React.createElement(PresentationalComponent, {
     isOpen,
     pwError,
     pw1,
@@ -48,4 +48,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(CreateWalletScreenContainer)
+)(CreateWalletScreen)

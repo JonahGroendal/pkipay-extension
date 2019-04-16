@@ -1,11 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import Subscriptions from '../components/Subscriptions'
+import PresentationalComponent from '../components/Subscriptions'
 import strings from '../api/strings'
 import { removeSubscription, setObjectHostname } from '../actions'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function SubscriptionsContainer(props) {
+function Subscriptions(props) {
   const {
     subscriptions,
     currency,
@@ -22,7 +22,7 @@ function SubscriptionsContainer(props) {
       setNewRowIndex(subscriptions.length - 1)
   }, [subscriptions])
 
-  return React.createElement(Subscriptions, {
+  return React.createElement(PresentationalComponent, {
     subscriptions: subscriptions.map(sub => ({ ...sub, amount: convertFromUSD(currency, sub.amount)})),
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
@@ -50,4 +50,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(React.memo(SubscriptionsContainer, notInView))
+)(React.memo(Subscriptions, notInView))

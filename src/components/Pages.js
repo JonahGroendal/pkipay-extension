@@ -1,6 +1,6 @@
 import React from 'react'
 import Nav from './Nav'
-import PageProfileContainer from '../containers/PageProfileContainer'
+import PageProfile from '../containers/PageProfile'
 import PageManage from './PageManage'
 import Tab from '@material-ui/core/Tab'
 import SwipeableViews from 'react-swipeable-views'
@@ -12,7 +12,7 @@ const Pages = ({ tabIndex, onChangeTab }) => (
       <Tab label="My wallet" />
     </Nav>
     <SwipeableViews index={tabIndex} onChangeIndex={onChangeTab}>
-      <PageProfileContainer />
+      <PageProfile />
       <PageManage onChangeIndex={onChangeTab} />
     </SwipeableViews>
   </div>

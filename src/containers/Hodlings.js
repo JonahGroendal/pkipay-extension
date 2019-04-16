@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import Hodlings from '../components/Hodlings'
+import PresentationalComponent from '../components/Hodlings'
 import { getTokenBalances } from '../api/blockchain'
 
-function HodlingsContainer({ address, txScreenOpen }) {
+function Hodlings({ address, txScreenOpen }) {
   const balances = useBalances(address, txScreenOpen)
 
-  return React.createElement(Hodlings, { balances })
+  return React.createElement(PresentationalComponent, { balances })
 }
 
 function useBalances(address, txScreenOpen) {
@@ -25,4 +25,4 @@ const mapStateToProps = state => ({
   txScreenOpen: state.transactionScreen.isOpen
 })
 
-export default connect(mapStateToProps)(HodlingsContainer)
+export default connect(mapStateToProps)(Hodlings)

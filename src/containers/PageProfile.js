@@ -1,16 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import PageProfile from '../components/PageProfile'
+import PresentationalComponent from '../components/PageProfile'
 import { getUrl, getHostname } from '../api/browser'
 import { setObjectHostname } from '../actions'
 
-function PageProfileContainer({ subscription, onChangeHostname }) {
+function PageProfile({ subscription, onChangeHostname }) {
 
   React.useEffect(() => {
     getUrl().then(url => onChangeHostname(getHostname(url)))
   }, [])
 
-  return React.createElement(PageProfile, { subscription })
+  return React.createElement(PresentationalComponent, { subscription })
 }
 
 const mapStateToProps = state => ({
@@ -22,4 +22,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(PageProfileContainer)
+)(PageProfile)

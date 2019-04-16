@@ -1,9 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import UnlockWalletScreen from '../components/UnlockWalletScreen'
+import PresentationalComponent from '../components/UnlockWalletScreen'
 import { unlockWallet, unlockWalletCancel, closeTx } from '../actions'
 
-function UnlockWalletScreenContainer({ isOpen, isError, onUnlock, onClose }) {
+function UnlockWalletScreen({ isOpen, isError, onUnlock, onClose }) {
   const [value, setValue] = React.useState('')
 
   function handleChange(event) {
@@ -13,7 +13,7 @@ function UnlockWalletScreenContainer({ isOpen, isError, onUnlock, onClose }) {
     onUnlock(value)
   }
 
-  return React.createElement(UnlockWalletScreen, {
+  return React.createElement(PresentationalComponent, {
     isOpen,
     isError,
     onSubmit: handleSubmit,
@@ -37,4 +37,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(UnlockWalletScreenContainer)
+)(UnlockWalletScreen)
