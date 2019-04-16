@@ -126,45 +126,42 @@ function TransactionScreen(props) {
             </div>
             <Divider />
             <div className={classes.statusAndButtons}>
-              <div className={classes.statuses}>
-                {txSent && !txConfirmed && !txErrored && <div className={classes.status}>
-                  <Typography variant="subtitle1">
-                    {"Transaction pending "}
-                  </Typography>
-                  <CircularProgress />
-                </div>}
-                {txSent && txConfirmed && <div className={classes.status}>
-                  <Typography variant="subtitle1">
-                    {"Transaction confirmed "}
-                  </Typography>
-                  <DoneIcon />
-                </div>}
-                {txSent && txErrored && <div className={classes.status}>
-                  <Typography variant="subtitle1">
-                    {"Transaction errored "}
-                  </Typography>
-                  <ErrorIcon />
-                </div>}
-              </div>
-              {!txSent && <div className={classes.buttons}>
+              <div className={classes.buttons}>
                 <Button
                   onClick={onClickCancel}
                   variant="outlined" size="medium"color="primary"
+                  disabled={txSent && !txErrored}
                 >
                   Cancel
                 </Button>
                 <Button
                   onClick={onClickSend}
                   variant="contained" size="medium" color="secondary"
-                  disabled={!txObjectExists}
+                  disabled={!txObjectExists || txSent}
                 >
                   Send
                   <SendIcon className={classes.rightIcon} />
                 </Button>
+              </div>
+              {txSent && !txConfirmed && !txErrored && <div className={classes.status}>
+                <Typography variant="subtitle1">
+                  {"Transaction pending "}
+                </Typography>
+                <CircularProgress />
+              </div>}
+              {txSent && txConfirmed && <div className={classes.status}>
+                <Typography variant="subtitle1">
+                  {"Transaction confirmed "}
+                </Typography>
+                <DoneIcon />
+              </div>}
+              {txSent && txErrored && <div className={classes.status}>
+                <Typography variant="subtitle1">
+                  {"Transaction errored "}
+                </Typography>
+                <ErrorIcon />
               </div>}
             </div>
-          </div>
-          <div className={classes.transactionsHistory}>
           </div>
         </div>
       </FullScreenDialog>
@@ -173,9 +170,7 @@ function TransactionScreen(props) {
 }
 
 const styles = theme => ({
-  contentRoot: {
-    backgroundColor: theme.palette.background.default
-  },
+  contentRoot: {},
   currentTransaction: {
     height: '70%',
     display: 'flex',
@@ -200,7 +195,9 @@ const styles = theme => ({
     paddingLeft: theme.spacing.unit * 2,
   },
   status: {
+    paddingTop: theme.spacing.unit * 4,
     display: 'flex',
+    justifyContent: 'space-around'
   },
   summary: {
     display: 'flex',

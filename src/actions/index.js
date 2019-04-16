@@ -19,7 +19,7 @@ export const addSubscription = (subscription) => (dispatch) => {
     type: 'ADD_SUBSCRIPTION',
     subscription
   })
-  return dispatch(rescheduleSubscriptionsPayments())
+  return dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
 }
 
 export const removeSubscription = (hostname) => (dispatch) => {
@@ -27,7 +27,7 @@ export const removeSubscription = (hostname) => (dispatch) => {
     type: 'REMOVE_SUBSCRIPTION',
     hostname
   })
-  return dispatch(rescheduleSubscriptionsPayments())
+  return dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
 }
 
 export const setCurrency = (currency) => ({
@@ -200,13 +200,12 @@ export const scheduleTx = (when, txObject) => async (dispatch, getState) => {
       type: 'SCHEDULE_TX_ERROR',
       payload: { txError: error }
     })
-    return;
+    throw error;
   }
   dispatch({
     type: 'SCHEDULE_TX',
     payload: { id, txObject, rawTransaction, txHash, when }
   })
-  return;
 }
 
 export const unscheduleTx = (id) => (dispatch) => {
