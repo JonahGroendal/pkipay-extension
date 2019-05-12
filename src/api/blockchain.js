@@ -1,7 +1,9 @@
 import web3js from './web3js'
 import abis from './contractABIs.json'
-import strings from './strings'
 import namehash from 'eth-ens-namehash'
+import TokenSaleResolver from 'pkipay-blockchain/build/contracts/TokenSaleResolver.json'
+import TokenBuyer from 'pkipay-blockchain/build/contracts/TokenBuyer.json'
+import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
 
 export default {
   createTxBuyThx,
@@ -12,28 +14,55 @@ export default {
   getTotalDonationsFromOneMonth
 }
 
-const resolver = new web3js.eth.Contract(abis.Resolver, strings.web3.addresses.Resolver);
-const currency = new web3js.eth.Contract(abis.ERC20, strings.web3.addresses.Currency);
-//const buyMultipleTokens = new web3js.eth.Contract(abis.BuyMultipleTokens, strings.web3.addresses.BuyMultipleTokens);
-const tokenBuyer = new web3js.eth.Contract(abis.TokenBuyer, strings.web3.addresses.TokenBuyer);
+const getAddress = (artifact, nodeEnv) => {
+  switch (nodeEnv) {
+    case 'development':
+      if (artifact.contractName === 'ERC20Mock')
+        return '0xC4375B7De8af5a38a93548eb8453a498222C4fF2' // Kovan DAI address
+      return artifact.networks[42].address;
+    case 'test':
+      const chainId = Object.keys(artifact.networks).sort((a, b) => b - a)[0];
+      return artifact.networks[chainId].address;
+    default:
+      return artifact.networks[1].address;
+  }
+}
+const resolver = new web3js.eth.Contract(TokenSaleResolver.abi, getAddress(TokenSaleResolver, process.env.NODE_ENV));
+const currency = new web3js.eth.Contract(ERC20Mock.abi, getAddress(ERC20Mock, process.env.NODE_ENV));
+const tokenBuyer = new web3js.eth.Contract(TokenBuyer.abi, getAddress(TokenBuyer, process.env.NODE_ENV));
 
 export async function createTxBuyThx(address, hostnames, values) {
   console.log('createTxBuyThx')
   if (!Array.isArray(hostnames)) hostnames = [hostnames,];
   if (!Array.isArray(values)) values = [values,];
   const validHostnames = (e, i) => hostnames[i] && !hostnames[i].includes('#')
-  // const ensNodes = hostnames.filter(validHostnames).map(h => namehash.hash(h));
-  const toBytes32 = str => '0x' + (new Buffer(str).toString('hex').padStart(64, "0"))
-  const to = hostnames.filter(validHostnames).map(toBytes32)
-  const weiValues = values.filter(validHostnames).map(v => web3js.utils.toWei(v.toString()));
-  let abi
-  //try { abi = await tokenBuyer.methods.multiBuy(ensNodes, weiValues).encodeABI() }
-  try { abi = await tokenBuyer.methods.multiBuy(to, weiValues).encodeABI() }
-  catch (error) { throw error }
+  hostnames = hostnames.filter(validHostnames);
+  values = values.filter(validHostnames);
+  if (values.length !== hostnames.length)
+    throw new Error("Invalid length of values")
+  for (let hostname of hostnames) {
+    if (hostname.split('.').length !== 2)
+      throw new Error("Invalid hostname: "+hostname+" is not of the form domain.tld")
+  }
+  let saleAddrs = []
+  let labelHashes = []
+  for (let hostname of hostnames) {
+    const saleAddr = await resolver.methods.addr(namehash.hash(hostname)).call()
+    console.log(saleAddr)
+    if (saleAddr === '0x0000000000000000000000000000000000000000') {
+      let labels = hostname.split('.').reverse()
+      labelHashes = labelHashes.concat(labels.map(web3js.utils.sha3))
+    } else {
+      saleAddrs.push(saleAddr)
+    }
+  }
+  const weiValues = values.map(v => web3js.utils.toWei(v.toString()));
+  console.log(currency.address, saleAddrs, labelHashes, weiValues)
+  let abi = tokenBuyer.methods.multiBuy(currency.address, saleAddrs, labelHashes, weiValues).encodeABI()
   return {
     from: address,
-    to: tokenBuyer.options.address,
-    gas: (300000 + (300000 * to.length)).toString(),
+    to: tokenBuyer.address,
+    gas: (300000 + (300000 * weiValues.length)).toString(),
     data: abi
   }
 }
@@ -42,10 +71,10 @@ export async function approveTokenBuyer(address) {
   console.log('approveTokenBuyer')
   const balance = await currency.methods.balanceOf(address).call()
   if (balance === "0") return;
-  const allowance = await currency.methods.allowance(address, tokenBuyer.options.address).call()
+  const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-  if (allowance === maxUint) return;
-  return await currency.methods.approve(tokenBuyer.options.address, maxUint).send({
+  if (parseInt(allowance.toString()) > 10**36) return;
+  await currency.methods.approve(tokenBuyer.address, maxUint).send({
     from: address,
     gas: 50000
   })
@@ -58,7 +87,7 @@ export async function approveTokenBuyer(address) {
 //   console.log('depositing currency')
 //   console.log(parseInt(parseInt(gasPrice) * 1.01).toString())
 //   try {
-//     await currency.methods.approve(buyMultipleTokens.options.address, balance).send({
+//     await currency.methods.approve(buyMultipleTokens.address, balance).send({
 //       from: web3js.eth.accounts.wallet[0].address,
 //       gas: 100000,
 //       // higher gas price to ensure ordering
@@ -184,22 +213,38 @@ export async function getCurrencyBalance(address) {
 //   return balances
 // }
 
-export async function getTokenBalances(address) {
+// export async function getTokenBalances(address) {
+//   console.log('getTokenBalances')
+//   if (typeof address !== 'string' || address.length !== 42)
+//     throw new Error("Invalid address")
+//   let balances = {}
+//   let events = await tokenBuyer.getPastEvents('Buy', {fromBlock: 0, filter: {buyer: address}})
+//   for (const event of events) {
+//     if (!(event.returnValues.token in balances)) {
+//       const contract = new web3js.eth.Contract(abis.TokenSale, event.returnValues.token)
+//       balances[event.returnValues.token] = {
+//         name: await contract.methods.name().call(),
+//         balance: parseFloat(web3js.utils.fromWei((await contract.methods.balanceOf(address).call()).toString()))
+//       }
+//     }
+//   }
+//   return Object.values(balances)
+// }
+export async function getTokenBalances(address, tokenNames) {
   console.log('getTokenBalances')
   if (typeof address !== 'string' || address.length !== 42)
     throw new Error("Invalid address")
-  let balances = {}
-  let events = await tokenBuyer.getPastEvents('Buy', {fromBlock: 0, filter: {buyer: address}})
-  for (const event of events) {
-    if (!(event.returnValues.token in balances)) {
-      const contract = new web3js.eth.Contract(abis.TokenSale, event.returnValues.token)
-      balances[event.returnValues.token] = {
-        name: await contract.methods.name().call(),
-        balance: parseFloat(web3js.utils.fromWei((await contract.methods.balanceOf(address).call()).toString()))
-      }
-    }
+  let balances = []
+  for (let name of tokenNames) {
+    const tokenAddr = await resolver.methods.addr(namehash.hash(name)).call()
+    console.log(tokenAddr)
+    const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+    balances.push({
+      name: name,
+      balance: parseFloat(web3js.utils.fromWei((await token.methods.balanceOf(address).call()).toString()))
+    })
   }
-  return Object.values(balances)
+  return balances
 }
 
 export async function subscribeToDaiTransfer(address, onTransfer) {
@@ -217,7 +262,8 @@ export async function subscribeToDaiTransfer(address, onTransfer) {
 export async function getTotalDonations(hostname, fromBlock = 0) {
   console.log('getTotalDonations')
   const ensNode = namehash.hash(hostname);
-  const address = await resolver.methods.tokens(ensNode).call();
+  //const address = await resolverOld.methods.tokens(ensNode).call();
+  const address = await resolver.methods.addr(ensNode).call();
   const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
   const pastBuys = await thxToken.getPastEvents('Buy', { fromBlock: fromBlock })
   const pastRefunds = await thxToken.getPastEvents('Refund', { fromBlock: 0 })

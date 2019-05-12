@@ -19,6 +19,8 @@ export const addSubscription = (subscription) => (dispatch) => {
     type: 'ADD_SUBSCRIPTION',
     subscription
   })
+  // Remember token name
+  dispatch(addToken(subscription.hostname))
   return dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
 }
 
@@ -133,6 +135,20 @@ export const setDefaultAccount = (accountIndex) => ({
   }
 })
 
+export const addToken = (tokenName) => ({
+  type: 'ADD_TOKEN',
+  payload: {
+    token: tokenName
+  }
+})
+
+export const removeToken = (tokenName) => ({
+  type: 'REMOVE_TOKEN',
+  payload: {
+    token: tokenName
+  }
+})
+
 export const reviewTx = (tx) => ({
   type: 'REVIEW_TX',
   payload: {
@@ -161,17 +177,19 @@ export const confirmTx = () => ({
   type: 'CONFIRM_TX'
 })
 
-export const sendTx = (txObject) => async (dispatch) => {
+export const sendTx = (txObject, counterparties) => async (dispatch) => {
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
   const pk = web3js.eth.accounts.wallet[txObject.from].privateKey
   const signedTx = await web3js.eth.accounts.signTransaction(txObject, pk)
-  await web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
+  return web3js.eth.sendSignedTransaction(signedTx.rawTransaction)
   .once('transactionHash', txHash => {
     dispatch({
       type: 'SEND_TX_SUCCESS',
       payload: { txHash }
     })
+    counterparties.forEach(counterparty => dispatch(addToken(counterparty)))
+    dispatch(updateScheduledTxs(parseInt(txObject.nonce)+1))
   })
   .catch(txError => {
     dispatch({
@@ -179,15 +197,13 @@ export const sendTx = (txObject) => async (dispatch) => {
       payload: { txError }
     })
   })
-  await dispatch(updateScheduledTxs())
+  console.log("next!")
 }
 
-export const scheduleTx = (when, txObject) => async (dispatch, getState) => {
+export const scheduleTx = (when, txObject, counterparties) => async (dispatch) => {
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
-  let id
-  let rawTransaction
-  let txHash
+  let id; let rawTransaction; let txHash;
   try {
     const pk = web3js.eth.accounts.wallet[txObject.from].privateKey
     const signedTx = await web3js.eth.accounts.signTransaction(txObject, pk)
@@ -254,13 +270,14 @@ export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) 
   }
 }
 
-export const updateScheduledTxs = () => async (dispatch, getState) => {
+export const updateScheduledTxs = (nonce=-1) => async (dispatch, getState) => {
   console.log('updateScheduledTxs')
   let { scheduledTXs, wallet } = getState()
   const now = Date.now()
   const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
   if (keys.length === 0) return;
-  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
+  if (nonce === -1)
+    nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
   // Check if nonces need to be updated
   let id = keys[0]
   if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;

@@ -17,6 +17,7 @@
     "get-pixels": "^3.3.2",
     "lodash": "^4.17.11",
     "meteor-node-stubs": "^0.4.1",
+    "pkipay-blockchain": "github:JonahGroendal/pkipay-blockchain",
     "prop-types": "^15.7.2",
     "react": "^16.8.4",
     "react-chartjs-2": "^2.7.4",

@@ -6,7 +6,7 @@ import { createWallet, addAccount } from '../actions'
 function CreateWalletScreen({ isOpen, onCreate, onAdd }) {
   const [pw1, setPw1] = React.useState('')
   const [pw2, setPw2] = React.useState('')
-  const [privKey, setPrivKey] = React.useState('0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009')
+  const [privKey, setPrivKey] = React.useState('0x17ff09f56c1235b968b61ff12500b97b04b929a7c68cc66357df4b42a8bf50dd')//0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009
   const [pwError, setPwError] = React.useState(false)
 
   return React.createElement(PresentationalComponent, {

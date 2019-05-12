@@ -28,6 +28,19 @@ function wallet(state=initialState, action) {
         ...state,
         defaultAccount: action.payload.defaultAccount
       }
+    case 'ADD_TOKEN':
+      if (state.tokens.includes(action.payload.token))
+        return { ...state }
+      else
+        return {
+          ...state,
+          tokens: [...state.tokens, action.payload.token]
+        }
+    case 'REMOVE_TOKEN':
+      return {
+        ...state,
+        tokens: state.tokens.filter(token => token !== action.payload.token)
+      }
     default:
       return state
   }

@@ -46,7 +46,7 @@ function TransactionScreen(props) {
     txSent: (txHash !== null || txError !== null),
     txConfirmed,
     txErrored: txError !== null,
-    onClickSend: () => onSend(txObject),
+    onClickSend: () => onSend(txObject, counterparties).then(console.log),
     onClickCancel,
     onClickClose,
     onClickOpen,
@@ -95,7 +95,7 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = (dispatch, ownProps) => ({
-  onSend: (txObject) => dispatch(sendTx(txObject)),
+  onSend: (txObject, counterparties) => dispatch(sendTx(txObject, counterparties)),
   onClickCancel: () => dispatch(cancelTx()),
   onClickClose: () => dispatch(closeTx()),
   onClickOpen: () => dispatch(openTx()),

@@ -31,20 +31,20 @@ describe('actions', () => {
   })
 
   it('should import account then create action to add it', () => {
-    const action = actions.addAccount('0xd3adcdbf12b4d79dfc05434d25b32fcc12d264a5be4eabddb1ce7bb5305c0009', 'password')
+    const action = actions.addAccount('0xb52d9c58080e72e61ba468d8c146e9b648a20a9f722b32b0fc75f440ec4df874', 'password')
     expect(action).toEqual(expect.objectContaining({
       type: 'ADD_ACCOUNT'
     }))
-    expect(action.payload.address.toLowerCase()).toEqual('0x4b42536834c29b4098e960decc6fce9107e8d597')
+    expect(action.payload.address.toLowerCase()).toEqual('0x969cb31d3633ed0ffd65957fd28e4b2551bf7286')
     expect(action.payload.keystore.length).toBeGreaterThanOrEqual(1)
     const walletIndex = web3js.eth.accounts.wallet.length - 1
-    expect(web3js.eth.accounts.wallet[walletIndex].address.toLowerCase()).toEqual('0x4b42536834c29b4098e960decc6fce9107e8d597')
+    expect(web3js.eth.accounts.wallet[walletIndex].address.toLowerCase()).toEqual('0x969cb31d3633ed0ffd65957fd28e4b2551bf7286')
   })
 
   it('should schedule TX for one min from now', async () => {
     let txObj = await createTxBuyThx(
-      '0x4b42536834c29b4098e960decc6fce9107e8d597',
-      'www.wikipedia.org',
+      '0x969cb31d3633ed0ffd65957fd28e4b2551bf7286',
+      'wikipedia.org',
       5
     )
     const inAMin = (new Date()).getTime() + 60000
@@ -54,7 +54,7 @@ describe('actions', () => {
         "id":"TX00000001",
         "when": inAMin,
         "txObject": {
-          "from": "0x4b42536834c29b4098e960decc6fce9107e8d597",
+          "from": "0x969cb31d3633ed0ffd65957fd28e4b2551bf7286",
           "to": "0xed2c2446d69274390aec4f2ae34314906b86a544",
           "gas": "0x927c0",
           "data": "0x07da68cd0000000000000000000000000000000000000000000000000000000000000040000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000007777772e77696b6970656469612e6f726700000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000004563918244f40000",
@@ -92,11 +92,11 @@ describe('actions', () => {
     }
 
     let txObj = await createTxBuyThx(
-      '0x4b42536834c29b4098e960decc6fce9107e8d597',
-      'www.wikipedia.org',
+      '0x969cb31d3633ed0ffd65957fd28e4b2551bf7286',
+      'wikipedia.org',
       5
     )
-    txObj.nonce = '0x0'
+    //txObj.nonce = '0x0'
     txObj.chainId = 4
     txObj.gasPrice = '0x3b9aca00'
 

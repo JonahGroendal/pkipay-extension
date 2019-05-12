@@ -16,6 +16,6 @@ import Web3 from 'web3'
 // }
 
 // let web3js = new Web3(new Web3.providers.HttpProvider("https://rinkeby.infura.io/v3/48899b10645a48e189e345be4be19ece"))
-let web3js = new Web3(new Web3.providers.WebsocketProvider("wss://rinkeby.infura.io/ws/v3/48899b10645a48e189e345be4be19ece"))
+let web3js = new Web3(new Web3.providers.WebsocketProvider("wss://kovan.infura.io/ws/v3/48899b10645a48e189e345be4be19ece"))
 
 export default web3js

@@ -32,8 +32,8 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
       dispatch(reviewTx({
         tx: tx,
         info: {
-          counterparties: [ownProps.subscription.hostname,],
-          values: [web3js.utils.toWei(amount.toString()),],
+          counterparties: [ownProps.subscription.hostname],
+          values: [web3js.utils.toWei(amount.toString())],
         }
       }))
     })
