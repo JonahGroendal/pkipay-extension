@@ -11,6 +11,7 @@ import Paper from '@material-ui/core/Paper'
 const CreateWalletScreen = ({
   isOpen,
   pwError,
+  privKeyError,
   onClickCreate,
   onClickImport,
   pw1,
@@ -78,6 +79,7 @@ const CreateWalletScreen = ({
           className={classes.textField}
           onChange={onChangePrivKey}
           value={privKey}
+          error={privKeyError}
           label="Private key"
           margin="normal"
           fullWidth={true}

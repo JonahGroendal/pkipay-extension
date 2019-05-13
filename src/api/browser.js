@@ -1,6 +1,7 @@
 /*global chrome*/
 /*global browser*/
 import mockChrome from './mockChrome'
+var zlib = require('zlib');
 
 // if ( (typeof browser === 'undefined' || typeof browser.tabs === 'undefined')
 //   && (typeof chrome === 'undefined' || typeof chrome.tabs === 'undefined') )
@@ -28,17 +29,21 @@ export default api
 
 export async function loadState() {
   const storage = await getFromStorage(null)
-  const serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
-  if (serializedState)
+  const compressedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
+  if (compressedState) {
+    const serializedState = zlib.inflateSync(new Buffer(compressedState, 'base64')).toString('utf8')
+    console.log(serializedState)
     return JSON.parse(serializedState)
+  }
   return undefined
 }
 
 export function saveState(state) {
   const serializedState = JSON.stringify(state)
+  const compressedState = zlib.deflateSync(serializedState).toString('base64')
   let chunks = {}
-  for (let i=0; i<serializedState.length/6000; i++) {
-    chunks['state'+i.toString().padStart(2,'0')] = serializedState.substring(i*6000, i*6000 + 6000)
+  for (let i=0; i<compressedState.length/2048; i++) {
+    chunks['state'+i.toString().padStart(2,'0')] = compressedState.substring(i*2048, i*2048 + 2048)
   }
   api.storage.sync.set(chunks)
 }
@@ -69,7 +74,7 @@ export function getHostname(url) {
    if (url.match(/https:\/\/[^0-9.]+/)) {
       var a = document.createElement("a");
       a.href = url;
-      
+
       return a.hostname.split('.').slice(-2).join('.')
    }
    return ''

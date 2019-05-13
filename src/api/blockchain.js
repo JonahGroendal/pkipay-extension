@@ -3,6 +3,7 @@ import abis from './contractABIs.json'
 import namehash from 'eth-ens-namehash'
 import TokenSaleResolver from 'pkipay-blockchain/build/contracts/TokenSaleResolver.json'
 import TokenBuyer from 'pkipay-blockchain/build/contracts/TokenBuyer.json'
+import ERC20 from 'pkipay-blockchain/build/contracts/ERC20.json'
 import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
 
 export default {
@@ -24,11 +25,13 @@ const getAddress = (artifact, nodeEnv) => {
       const chainId = Object.keys(artifact.networks).sort((a, b) => b - a)[0];
       return artifact.networks[chainId].address;
     default:
-      return artifact.networks[1].address;
+      if (artifact.contractName === 'ERC20Mock')
+        return '0xC4375B7De8af5a38a93548eb8453a498222C4fF2' // Kovan DAI address
+      return artifact.networks[42].address;
   }
 }
 const resolver = new web3js.eth.Contract(TokenSaleResolver.abi, getAddress(TokenSaleResolver, process.env.NODE_ENV));
-const currency = new web3js.eth.Contract(ERC20Mock.abi, getAddress(ERC20Mock, process.env.NODE_ENV));
+const currency = new web3js.eth.Contract(ERC20.abi, getAddress(ERC20Mock, process.env.NODE_ENV));
 const tokenBuyer = new web3js.eth.Contract(TokenBuyer.abi, getAddress(TokenBuyer, process.env.NODE_ENV));
 
 export async function createTxBuyThx(address, hostnames, values) {
@@ -237,12 +240,14 @@ export async function getTokenBalances(address, tokenNames) {
   let balances = []
   for (let name of tokenNames) {
     const tokenAddr = await resolver.methods.addr(namehash.hash(name)).call()
-    console.log(tokenAddr)
-    const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
-    balances.push({
-      name: name,
-      balance: parseFloat(web3js.utils.fromWei((await token.methods.balanceOf(address).call()).toString()))
-    })
+    if (tokenAddr !== '0x0000000000000000000000000000000000000000') {
+      const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+      const weiBalance = await token.methods.balanceOf(address).call()
+      balances.push({
+        name: name,
+        balance: parseFloat(web3js.utils.fromWei(weiBalance.toString()))
+      })
+    }
   }
   return balances
 }

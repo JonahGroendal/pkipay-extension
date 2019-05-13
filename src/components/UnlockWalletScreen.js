@@ -20,6 +20,7 @@ const UnlockWalletScreen = ({ isOpen, isError, onSubmit, onChange, onClose, clas
         error={isError}
         label="Password"
         type="password"
+        autoFocus={true}
         onKeyPress={e => {
           if (e.key === 'Enter') {
             onSubmit();

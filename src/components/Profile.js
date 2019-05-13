@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import SubscribeForm from './SubscribeForm'
+import SubscribeForm from '../containers/SubscribeForm'
 import blockchain from '../api/blockchain'
 import { withStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'

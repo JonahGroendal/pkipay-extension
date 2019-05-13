@@ -28,10 +28,7 @@ const mapStateToProps = state => ({
 })
 const mapDispatchToProps = dispatch => ({
   onUnlock: password => dispatch(unlockWallet(password)),
-  onClose: () => {
-    dispatch(closeTx())
-    dispatch(unlockWalletCancel())
-  }
+  onClose: () => dispatch(unlockWalletCancel())
 })
 
 export default connect(
