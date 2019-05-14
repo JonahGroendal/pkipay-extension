@@ -25,7 +25,7 @@ const InputAmount = ({ amount, currencySymbol, onChange, onClick, buttonText, bu
           <Button
             onClick={onClick}
             disabled={buttonDisabled}
-            variant="contained" size="medium" color="primary"
+            variant="contained" size="medium" color="secondary"
           >
             {buttonText}
           </Button>
