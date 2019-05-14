@@ -34,10 +34,11 @@ function SubscribeForm({ subscription, subscribed, subscribedAmount, currency, o
       onSubscribe({
         hostname: subscription.hostname,
         amount: convertToUSD(currency, Number(amount))
+      }).catch(() => {})
+      .then(() => {
+        reset()
+        setTimeout(() => onChangeTab(1), 300)
       })
-      .then(reset)
-      .then(() => setTimeout(() => onChangeTab(1), 400))
-      .catch(() => {})
     }
   }
 

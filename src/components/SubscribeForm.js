@@ -31,7 +31,7 @@ const SubscribeForm = ({ classes, subscribed, expanded, disabled, subscribedAmou
           step: ".000000000000000001"
         }}
       />}
-      <div className={classes.buttonSubscribe}>
+      <div className={classes.button}>
         <Tooltip title={subscribed ? "stop giving "+currencySymbol+subscribedAmount.toString()+" every month" : ""} enterDelay={500}>
           <div>
             <Button
@@ -52,8 +52,8 @@ const SubscribeForm = ({ classes, subscribed, expanded, disabled, subscribedAmou
 )
 
 const styles = theme => ({
-  buttonSubscribe: {
-    alignSelf: 'flex-end'
+  button: {
+    alignSelf: 'flex-end',
   },
   container: {
     display: 'flex',

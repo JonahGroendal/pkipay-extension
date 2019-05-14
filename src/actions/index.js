@@ -16,14 +16,13 @@ export const setTabIndex = (index) => ({
 export const addSubscription = (subscription) => async (dispatch) => {
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
-  console.log(web3js.eth.accounts.wallet.length)
   dispatch({
     type: 'ADD_SUBSCRIPTION',
     subscription
   })
   // Remember token name
   dispatch(addToken(subscription.hostname))
-  dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
+  await dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
 }
 
 export const removeSubscription = (hostname) => (dispatch) => {

@@ -31,32 +31,20 @@ export async function loadState() {
   const storage = await getFromStorage(null)
   const compressedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
   if (compressedState) {
-    const serializedState = zlib.inflateSync(new Buffer(compressedState, 'base64')).toString('utf8')
-    console.log(serializedState)
+    const serializedState = (await inflate(new Buffer(compressedState, 'base64'))).toString('utf8')
     return JSON.parse(serializedState)
   }
   return undefined
 }
 
-export function saveState(state) {
+export async function saveState(state) {
   const serializedState = JSON.stringify(state)
-  const compressedState = zlib.deflateSync(serializedState).toString('base64')
+  const compressedState = (await deflate(serializedState)).toString('base64')
   let chunks = {}
   for (let i=0; i<compressedState.length/2048; i++) {
     chunks['state'+i.toString().padStart(2,'0')] = compressedState.substring(i*2048, i*2048 + 2048)
   }
-  api.storage.sync.set(chunks)
-}
-
-export function getFromStorage(keys) {
-  return new Promise(function(resolve, reject) {
-    api.storage.sync.get(keys, function(result) {
-      if (!api.lastError)
-        resolve(result)
-      else
-        reject(api.lastError)
-    })
-  })
+  await setToStorage(chunks)
 }
 
 export function getUrl() {
@@ -78,4 +66,44 @@ export function getHostname(url) {
       return a.hostname.split('.').slice(-2).join('.')
    }
    return ''
+}
+
+function deflate(buffer) {
+  return new Promise((resolve, reject) => {
+    zlib.deflate(buffer, (err, res) => {
+      if (err) reject(err)
+      else resolve(res)
+    })
+  })
+}
+
+function inflate(buffer) {
+  return new Promise((resolve, reject) => {
+    zlib.inflate(buffer, (err, res) => {
+      if (err) reject(err)
+      else resolve(res)
+    })
+  })
+}
+
+function getFromStorage(keys) {
+  return new Promise(function(resolve, reject) {
+    api.storage.sync.get(keys, function(result) {
+      if (!api.lastError)
+        resolve(result)
+      else
+        reject(api.lastError)
+    })
+  })
+}
+
+function setToStorage(data) {
+  return new Promise(function(resolve, reject) {
+    api.storage.sync.set(data, function(result) {
+      if (!api.lastError)
+        resolve(result)
+      else
+        reject(api.lastError)
+    })
+  })
 }

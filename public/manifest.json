@@ -16,13 +16,9 @@
   "permissions": [
     "alarms",
     "tabs",
-    "webNavigation",
     "notifications",
     "downloads",
     "storage",
-    "unlimitedStorage",
-    "https://rinkeby.infura.io/*",
-    "wss://rinkeby.infura.io/*",
     "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
     "https://min-api.cryptocompare.com/data/*",
     "https://*/apple-touch-icon.png"
