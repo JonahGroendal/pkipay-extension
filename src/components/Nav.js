@@ -12,7 +12,7 @@ const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
     <AppBar position="static" className={classes.appBar}>
       <Toolbar className={classes.toolbar}>
         <Typography variant="h6" color="inherit" className={classes.flex}>
-          Gratiis
+          PkiPay
         </Typography>
         <TransactionScreen />
         <Settings />

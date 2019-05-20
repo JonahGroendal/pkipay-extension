@@ -122,6 +122,7 @@ function Profile({ classes, subscription, currency }) {
   //   siteUrl = hostname.includes("#") ? hostname : parts[parts.length-2]+'.'+parts[parts.length-1]
 
   const faviconUrl = 'https://' + subscription.hostname + '/apple-touch-icon.png'
+  console.log('faviconUrl', faviconUrl)
   const avatarLetter = displayName.charAt(0);
   const currencySymbol = strings.currency[currency]
 

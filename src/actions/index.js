@@ -173,6 +173,7 @@ export const sendTx = (txObject, counterparties) => async (dispatch) => {
     counterparties.forEach(counterparty => dispatch(addToken(counterparty)))
   })
   .once('confirmation', numConfs => {
+    dispatch(confirmTx())
     dispatch(updateScheduledTxs(parseInt(txObject.nonce)+1))
   })
   .catch(txError => {
@@ -181,7 +182,6 @@ export const sendTx = (txObject, counterparties) => async (dispatch) => {
       payload: { txError }
     })
   })
-
 }
 
 export const scheduleTx = (when, txObject, counterparties) => async (dispatch) => {

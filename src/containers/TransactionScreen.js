@@ -30,7 +30,7 @@ function TransactionScreen(props) {
     if (isOpen && !txConfirmed && txHash !== null) {
       const interval = setInterval(() => {
         web3js.eth.getTransactionReceipt(txHash).then(receipt => {
-          if (receipt && receipt.status) onTxConfirmation()
+          if (receipt && receipt.status && !txConfirmed) onTxConfirmation()
         })
       }, 3000)
       return () => clearInterval(interval)
@@ -46,7 +46,7 @@ function TransactionScreen(props) {
     txSent: (txHash !== null || txError !== null),
     txConfirmed,
     txErrored: txError !== null,
-    onClickSend: () => onSend(txObject, counterparties).then(console.log),
+    onClickSend: () => onSend(txObject, counterparties),
     onClickCancel,
     onClickClose,
     onClickOpen,

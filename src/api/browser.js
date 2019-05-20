@@ -29,20 +29,20 @@ export default api
 
 export async function loadState() {
   const storage = await getFromStorage(null)
-  const compressedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
-  if (compressedState) {
-    const serializedState = (await inflate(new Buffer(compressedState, 'base64'))).toString('utf8')
-    return JSON.parse(serializedState)
+  const compressed = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
+  if (compressed) {
+    const serialized = (await inflate(compressed)).toString('utf8')
+    return JSON.parse(serialized)
   }
   return undefined
 }
 
 export async function saveState(state) {
-  const serializedState = JSON.stringify(state)
-  const compressedState = (await deflate(serializedState)).toString('base64')
+  const serialized = JSON.stringify(state)
+  const compressed = await deflate(serialized)
   let chunks = {}
-  for (let i=0; i<compressedState.length/2048; i++) {
-    chunks['state'+i.toString().padStart(2,'0')] = compressedState.substring(i*2048, i*2048 + 2048)
+  for (let i=0; i<compressed.length/2048; i++) {
+    chunks['state'+i.toString().padStart(2,'0')] = compressed.substring(i*2048, i*2048 + 2048)
   }
   await setToStorage(chunks)
 }
@@ -72,14 +72,14 @@ function deflate(buffer) {
   return new Promise((resolve, reject) => {
     zlib.deflate(buffer, (err, res) => {
       if (err) reject(err)
-      else resolve(res)
+      else resolve(res.toString('base64'))
     })
   })
 }
 
 function inflate(buffer) {
   return new Promise((resolve, reject) => {
-    zlib.inflate(buffer, (err, res) => {
+    zlib.inflate(new Buffer(buffer, 'base64'), (err, res) => {
       if (err) reject(err)
       else resolve(res)
     })

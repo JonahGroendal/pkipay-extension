@@ -4,7 +4,7 @@ import UnlockWalletScreen from '../containers/UnlockWalletScreen'
 import Pages from '../containers/Pages'
 import CssBaseline from '@material-ui/core/CssBaseline'
 import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
-import blue from '@material-ui/core/colors/blue'
+import blueGrey from '@material-ui/core/colors/blueGrey'
 import amber from '@material-ui/core/colors/amber';
 
 function App({ themeType }) {
@@ -12,7 +12,7 @@ function App({ themeType }) {
     palette: {
       type: themeType,
       primary: amber,
-      secondary: blue
+      secondary: blueGrey
     },
     typography: {
       useNextVariants: true,
