@@ -6,8 +6,8 @@ import Hodlings from '../containers/Hodlings'
 
 const PageManage = ({ subscription, onChangeIndex }) => (
   <Page>
-    <Subscriptions onChangeIndex={onChangeIndex}/>
     <Balance />
+    <Subscriptions onChangeIndex={onChangeIndex}/>
     <Hodlings />
   </Page>
 )

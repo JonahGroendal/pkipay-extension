@@ -6,7 +6,9 @@ import { getTokenBalances } from '../api/blockchain'
 function Hodlings({ address, tokens, txScreenOpen }) {
   const balances = useBalances(address, tokens, txScreenOpen)
 
-  return React.createElement(PresentationalComponent, { balances })
+  return React.createElement(PresentationalComponent, {
+    balances
+  })
 }
 
 function useBalances(address, tokens, txScreenOpen) {

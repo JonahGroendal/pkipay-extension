@@ -1,6 +1,7 @@
 import web3js from './web3js'
 import abis from './contractABIs.json'
 import namehash from 'eth-ens-namehash'
+import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
 import TokenSaleResolver from 'pkipay-blockchain/build/contracts/TokenSaleResolver.json'
 import TokenBuyer from 'pkipay-blockchain/build/contracts/TokenBuyer.json'
 import ERC20 from 'pkipay-blockchain/build/contracts/ERC20.json'
@@ -8,8 +9,8 @@ import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
 
 export default {
   createTxBuyThx,
-  getEthBalance,
-  getCurrencyBalance,
+  getBalanceETH,
+  getBalanceERC20,
   subscribeToDaiTransfer,
   getTotalDonations,
   getTotalDonationsFromOneMonth
@@ -69,6 +70,28 @@ export async function createTxBuyThx(address, hostnames, values) {
     data: abi
   }
 }
+
+// export async function addCertToTree(address, { cert, parentId }) {
+//   //addCert(bytes memory cert, bytes32 parentId, bool cshx)
+//   // Make sure it works
+//   await X509Forest.methods.addCert(cert, parentId, false).call({from: address})
+//   // Then send
+//   return await X509Forest.methods.addCert(cert, parentId, false).send({from: address})
+// }
+//
+// export async function getCertChallengeText(address) {
+//   // signThis() external view returns (bytes memory, uint)
+//   return await x509Forest.methods.signThis().call({ from: address })
+// }
+//
+// export async function submitProofOfCertOwnership(address, { certId, signature, blockNumber }) {
+//   const sha256WithRSAEncryption = "0x2a864886f70d01010b0000000000000000000000000000000000000000000000"
+//   // proveOwnership(bytes32 certId, bytes calldata signature, uint blockNumber, bytes32 sigAlg) external returns (bool)
+//   const authenticated = await x509Forest.methods.proveOwnership(certId, signature, blockNumber, sha256WithRSAEncryption).call({ from: address })
+//   if (!authenticated)
+//     return false
+//   return await x509Forest.methods.proveOwnership(certId, signature, blockNumber, sha256WithRSAEncryption).send({ from: address })
+// }
 
 export async function approveTokenBuyer(address) {
   console.log('approveTokenBuyer')
@@ -179,14 +202,14 @@ export async function approveTokenBuyer(address) {
 //   }
 // }
 
-export async function getEthBalance(address) {
-  console.log('getEthBalance')
+export async function getBalanceETH(address) {
+  console.log('getBalanceETH')
   const weiBalance = await web3js.eth.getBalance(address)
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
 
-export async function getCurrencyBalance(address) {
-  console.log('getCurrencyBalance')
+export async function getBalanceERC20(address) {
+  console.log('getBalanceERC20')
   const weiBalance = await currency.methods.balanceOf(address).call()
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
@@ -259,7 +282,7 @@ export async function subscribeToDaiTransfer(address, onTransfer) {
     filter: [{to: address}, {from: address}],
     fromBlock: currentBlock,
   }).on('data', function(event) {
-    getCurrencyBalance(address).then(onTransfer)
+    getBalanceERC20(address).then(onTransfer)
   })
   return subscription.unsubscribe;
 }
@@ -276,6 +299,16 @@ export async function getTotalDonations(hostname, fromBlock = 0) {
   const totalRefunds = pastRefunds.reduce((acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1].toString())), 0);
 
   return totalBuys - totalRefunds;
+}
+
+export async function getDomainOwner(hostname) {
+  console.log('getDomainOwner')
+  const ensNode = namehash.hash(hostname);
+  const address = await resolver.methods.addr(ensNode).call();
+  if (address === "0x0000000000000000000000000000000000000000")
+    return null;
+  const ts = new web3js.eth.Contract(TokenSale.abi, address);
+  return await ts.methods.owner().call();
 }
 
 export async function getTotalDonationsFromOneMonth(hostname) {

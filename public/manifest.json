@@ -21,7 +21,9 @@
     "storage",
     "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
     "https://min-api.cryptocompare.com/data/*",
-    "https://*/apple-touch-icon.png"
+    "https://*/apple-touch-icon.png",
+    "https://acme-v02.api.letsencrypt.org/*",
+    "https://acme-staging-v02.api.letsencrypt.org/*"
   ],
   "content_security_policy": "script-src 'self' 'unsafe-eval' 'sha256-5As4+3YpY62+l38PsxCEkjB1R4YtyktBtRScTJ3fyLU='; object-src 'self'"
 }

@@ -12,7 +12,7 @@ function Balance({ address, currency, txScreenOpen }) {
 
   React.useEffect(() => {
     if (address && !txScreenOpen)
-      blockchain.getCurrencyBalance(address).then(setBalance);
+      blockchain.getBalanceERC20(address).then(setBalance);
   }, [address, txScreenOpen]);
 
   return React.createElement(PresentationalComponent, {

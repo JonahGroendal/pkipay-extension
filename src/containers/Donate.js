@@ -15,7 +15,7 @@ function Donate({ donate, currency, address, subscription }) {
     currencySymbol: strings.currency[currency],
     onChange: e => setAmount(e.target.value),
     onClick: () => donate(address, convertToUSD(currency, amount)),
-    buttonText: "Give",
+    buttonText: "Donate Once",
     buttonDisabled: subscription.hostname === '',
     tooltip: "buy tokens from " + subscription.hostname,
   })

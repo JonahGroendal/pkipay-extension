@@ -4,7 +4,9 @@ import PresentationalComponent from '../components/App'
 
 function App({ themeType }) {
 
-  return React.createElement(PresentationalComponent, { themeType })
+  return React.createElement(PresentationalComponent, {
+    themeType
+  })
 }
 
 const mapStateToProps = state => ({
