@@ -1,12 +1,6 @@
 //@ts-check
 
-import jws from 'jws'
-import { ec as EC } from 'elliptic'
 import forge from 'node-forge'
-import asn1js from 'asn1.js'
-import BN from 'bn.js'
-import crypto from 'crypto'
-import { deflateRaw } from 'zlib';
 
 let directory
 let nonce
