@@ -6,145 +6,52 @@ import forge from 'node-forge'
 import asn1js from 'asn1.js'
 import BN from 'bn.js'
 import crypto from 'crypto'
+import { deflateRaw } from 'zlib';
 
 let directory
 let nonce
 
-// const privKey = "-----BEGIN EC PRIVATE KEY-----MHcCAQEEICn8T44YIJvW8YijgGfzjAjPpNKoVToBUyqL/DfdqG9joAoGCCqGSM49AwEHoUQDQgAEe7R8OKtsZREJGOzvNi9woyzyVSgBEe8fQFrNabzOMBwmyyPjq21zBBV6Xac4HrQYrWwfLsqXWOVxN2BY3HU1oA==-----END EC PRIVATE KEY-----"
-// function privKeyToPem(privKeyBytes) {
-//   const asn1 = forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.SEQUENCE, true, [
-//     forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.INTEGER, false, (new Number(1)).toString(16)),
-//     forge.asn1.create(forge.asn1.Class.UNIVERSAL, forge.asn1.Type.OCTETSTRING, false, privKeyBytes)
-//   ])
-//   const der = forge.asn1.toDer(asn1).getBytes()
-//   //return '-----BEGIN EC PRIVATE KEY-----'+forge.util.encode64(der)+'-----END EC PRIVATE KEY-----'
-//   return forge.util.encode64(der)
-// }
-// function keyToPem(ecdh) {
-//   let ECPrivateKey = asn1js.define('ECPrivateKey', function() {
-//     this.seq().obj(
-//       this.key('version').int(),
-//       this.key('privateKey').octstr(),
-//       this.key('parameters').explicit(0).objid().optional(),
-//       this.key('publicKey').explicit(1).bitstr().optional()
-//     );
-//   });
-//   return ECPrivateKey.encode({
-//       version: new BN(1),
-//       privateKey: ecdh.getPrivateKey(), // A Buffer
-//       parameters: '1.2.840.10045.3.1.7'.split('.').map((s) => parseInt(s, 10))
-//     },
-//     'pem',
-//     { label: "EC PRIVATE KEY" }
-//   )
-// }
-
-export async function getNewNonce() {
-  if (!directory)
-    directory = await getDirectory()
-  const res = await fetch(directory.newNonce, {
-    method: "HEAD"
-  })
-  return res.headers.get('Replay-Nonce')
+export default {
+  generateJwk,
+  postNewAccount,
+  postNewOrder,
+  postOrderChallenge,
+  getOrderAuthorization,
+  postOrderFinalize
 }
 
-export async function postNewAccount() {
-  // function base64Url(buf) {
-  //   return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  // }
-
-  // let ec = new EC('p256');
-  // let key = ec.genKeyPair();
-  // console.log(key);
-  // let pemKey = keyToPem(key.getPrivate().toString(16))
-  // console.log(pemKey)
-
-  // let ecdh = crypto.createECDH('p256')
-  // ecdh.generateKeys()
-  // console.log(ecdh)
-  // let pemKey = keyToPem(ecdh)
-  // console.log(ecdh.getPublicKey())
-  // console.log(ecdh.keys.pub.x.toArrayLike(Buffer, 'be'))
-  // console.log(base64Url(ecdh.keys.pub.x.toArrayLike(Buffer, 'be')))
-  // console.log(ecdh.getPublicKey('hex'))
-  // const jwk = {
-  //   "crv":"P-256",
-  //   "kty":"EC",
-  //   "x": base64Url(ecdh.keys.pub.x.toArrayLike(Buffer, 'le')),
-  //   "y": base64Url(ecdh.keys.pub.y.toArrayLike(Buffer, 'le')),
-  // }
-  // console.log(jwk)
-
-  if (!nonce)
-    nonce = await getNewNonce()
-  if (!directory)
-    directory = await getDirectory()
-
-  const privJwk = await generateJwk()
+async function thumbprint(jwk) {
   const pubJwk = {
-    "crv": privJwk.crv,
-    "kty": privJwk.kty,
-    "x": privJwk.x,
-    "y": privJwk.y,
+    crv: jwk.crv,
+    kty: jwk.kty,
+    x: jwk.x,
+    y: jwk.y
   }
-  const header = {
-    nonce: nonce,
-    url: directory.newAccount,
-    alg: 'ES256',
-    jwk: pubJwk
-  }
-  const payload = {
-    termsOfServiceAgreed: true
-  }
+  const hash = await window.crypto.subtle.digest(
+    { name: "SHA-256" },
+    (new TextEncoder()).encode(JSON.stringify(pubJwk))
+  )
 
-  const jwt = await jwtFromJson(privJwk, header, payload)
-  const jwtParts = jwt.split('.')
-  const parsedJwt = {
-    protected: jwtParts[0],
-    payload: jwtParts[1],
-    signature: jwtParts[2]
-  }
-  console.log(jwt)
-
-  // const encoded = jws.sign({
-  //   header: {
-  //     nonce: nonce,
-  //     url: directory.newAccount,
-  //     alg: 'ES256',
-  //     jwk: jwk
-  //   },
-  //   payload: {
-  //     termsOfServiceAgreed: true,
-  //   },
-  //   privateKey: pemKey
-  // })
-  // console.log(encoded)
-  // const parts = encoded.split('.')
-  // console.log(jws.decode(encoded).signature === parts[2])
-  const res = await fetch(directory.newAccount, {
-    mode: "cors",
-    method: "POST",
-    headers: { "Content-Type": "application/jose+json" },
-    body: JSON.stringify(parsedJwt)
-  })
-  res.json().then(console.log)
-  nonce = res.headers.get('Replay-Nonce');
-  let accountId = res.headers.get('Location');
-  console.log('Next nonce:', nonce);
-  console.log('Location/kid:', accountId);
-}
-
-async function postNewOrder() {
-    
+  return arrayBufferToBase64Url(hash);
 }
 
 async function getDirectory() {
   // production url: https://acme-v02.api.letsencrypt.org
   const res = await fetch('https://acme-staging-v02.api.letsencrypt.org/directory')
-  return await res.json()
+  directory = await res.json()
+  console.log(directory)
 }
 
-async function generateJwk() {
+async function getNewNonce() {
+  if (!directory) await getDirectory()
+  const res = await fetch(directory.newNonce, {
+    method: "HEAD"
+  })
+  console.log("nonce: "+res.headers.get('Replay-Nonce'))
+  nonce = res.headers.get('Replay-Nonce')
+}
+
+export async function generateJwk() {
   const keyPair = await window.crypto.subtle.generateKey(
     { name: "ECDSA", namedCurve: "P-256" },
     true,
@@ -153,21 +60,239 @@ async function generateJwk() {
   return await window.crypto.subtle.exportKey('jwk', keyPair.privateKey)
 }
 
-async function jwtFromJson(jwk, header, payload) {
-  function jsonToBase64Url(json) {
-    return window.btoa(JSON.stringify(json)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+export async function getOrderAuthorization(jwk, accountUrl, order) {
+  if (!nonce) await getNewNonce()
+
+  const header = {
+    alg: "ES256",
+    kid: accountUrl,
+    nonce: nonce,
+    url: order.authorizations[0]
   }
-  const privateKey = await window.crypto.subtle.importKey('jwk', jwk, { name: "ECDSA", namedCurve: "P-256"}, false, ['sign'])
+  const payload = ""
+
+  const jwt = await jwtFromJson(jwk, header, payload)
+
+  const res = await fetch(order.authorizations[0], {
+    method: "POST", // A POST-AS-GET request
+    headers: { "Content-Type": "application/jose+json" },
+    body: JSON.stringify(parseJwt(jwt))
+  })
+  nonce = res.headers.get('Replay-Nonce');
+  
+  const authorization = await res.json()
+  console.log("authorization:", authorization)
+  return authorization
+}
+
+
+export async function postNewAccount(jwk, options={ onlyReturnExisting: false }) {
+  // function base64Url(buf) {
+  //   return buf.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  // }
+
+  if (!nonce) await getNewNonce()
+
+  const pubJwk = {
+    "crv": jwk.crv,
+    "kty": jwk.kty,
+    "x": jwk.x,
+    "y": jwk.y,
+  }
+  const header = {
+    nonce: nonce,
+    url: directory.newAccount,
+    alg: 'ES256',
+    jwk: pubJwk
+  }
+  const payload = {
+    termsOfServiceAgreed: true,
+    onlyReturnExisting: options.onlyReturnExisting
+  }
+  const jwt = await jwtFromJson(jwk, header, payload)
+
+  const res = await fetch(directory.newAccount, {
+    mode: "cors",
+    method: "POST",
+    headers: { "Content-Type": "application/jose+json" },
+    body: JSON.stringify(parseJwt(jwt))
+  })
+  nonce = res.headers.get('Replay-Nonce');
+
+  const accountUrl = res.headers.get('Location');
+
+  console.log(await res.json())
+  console.log("accountUrl: "+accountUrl)
+  console.log("nonce: "+nonce)
+
+  return accountUrl
+}
+
+
+export async function postNewOrder(jwk, domainName, accountUrl='') {
+  console.log(jwk, domainName, accountUrl)
+  if (!nonce) await getNewNonce()
+  if (!accountUrl)
+    accountUrl = await postNewAccount(jwk, { onlyReturnExisting: true })
+
+  const header = {
+    alg: "ES256",
+    kid: accountUrl,
+    nonce: nonce,
+    url: directory.newOrder
+  }
+  const payload = {
+    identifiers: [{ "type": "dns", "value": domainName }]
+  }
+  const jwt = await jwtFromJson(jwk, header, payload)
+  
+  let res = await fetch(directory.newOrder, {
+    method: "POST",
+    headers: { "Content-Type": "application/jose+json" },
+    body: JSON.stringify(parseJwt(jwt))
+  })
+  nonce = res.headers.get('Replay-Nonce');
+  
+  const order = await res.json()
+  console.log("order:", order)
+  const challenge = (await getOrderAuthorization(jwk, accountUrl, order)).challenges.filter(c => c.type === "dns-01")[0]
+  
+  const keyAuthorization = challenge.token + '.' + (await thumbprint(jwk))
+  const hash = await window.crypto.subtle.digest(
+		{ name: "SHA-256", },
+	  (new TextEncoder()).encode(keyAuthorization)
+  )
+  const txtRecord = arrayBufferToBase64Url(hash)
+  console.log("recordName: "+'_acme-challenge.' + domainName)
+  console.log("recordTxt: "+txtRecord)
+
+  return {
+    recordName: '_acme-challenge.' + domainName,
+    recordTxt: txtRecord,
+    order
+  }
+}
+
+
+export async function postOrderChallenge(jwk, order) {
+  if (!nonce) await getNewNonce()
+  const accountUrl = await postNewAccount(jwk, { onlyReturnExisting: true })
+  const challenge = (await getOrderAuthorization(jwk, accountUrl, order)).challenges.filter(c => c.type === "dns-01")[0]
+  const header = {
+    alg: 'ES256',
+    kid: accountUrl,
+    nonce: nonce,
+    url: challenge.url
+  }
+  const payload = {}
+
+  const jwt = await jwtFromJson(jwk, header, payload)
+  
+  let res = await fetch(challenge.url, {
+    method: "POST",
+    headers: { "Content-Type": "application/jose+json" },
+    body: JSON.stringify(parseJwt(jwt))
+  })
+  nonce = res.headers.get('Replay-Nonce');
+  console.log(await res.json())
+}
+
+
+export async function postOrderFinalize(jwk, order) {
+  if (!nonce) await getNewNonce()
+  const accountUrl = await postNewAccount(jwk, { onlyReturnExisting: true })
+  const domainName = (await getOrderAuthorization(jwk, accountUrl, order)).identifier.value
+  const header = {
+    alg: "ES256",
+    kid: accountUrl,
+    nonce: nonce,
+    url: order.finalize
+  }
+  const payload = {
+    csr: generateCsr(domainName)
+  }
+  const jwt = await jwtFromJson(jwk, header, payload)
+  
+  const res = await fetch(order.finalize, {
+    method: "POST",
+    headers: { "Content-Type": "application/jose+json" },
+    body: JSON.stringify(parseJwt(jwt))
+  })
+  nonce = res.headers.get('Replay-Nonce');
+  const body = await res.json()
+  console.log(body)
+  return body.certificate
+}
+
+function generateCsr(domainName) {
+  let keys = forge.pki.rsa.generateKeyPair(2048);
+ 
+  let csr = forge.pki.createCertificationRequest();
+  csr.publicKey = keys.publicKey;
+  csr.setSubject([{
+    name: 'commonName',
+    value: domainName
+  }]);
+  csr.setAttributes([{
+    name: 'extensionRequest',
+    extensions: [{
+      name: 'subjectAltName',
+      altNames: [{
+        // 2 is DNS type
+        type: 2,
+        value: domainName
+      }]
+    }]
+  }])
+  csr.sign(keys.privateKey, forge.md.sha256.create())
+  const base64UrlDer = forge.pki.certificationRequestToPem(csr).split(/\r\n|\r|\n/)
+    .slice(1, -2)
+    .join('')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
+  // const der = forge.asn1.toDer(forge.pki.certificationRequestToAsn1(csr))
+  // const base64UrlDer2 = arrayBufferToBase64Url(Buffer.from(der.toHex(), 'hex').buffer)
+  return base64UrlDer
+}
+
+async function jwtFromJson(jwk, header, payload) {
+  const privateKey = await window.crypto.subtle.importKey(
+    'jwk', jwk, { name: "ECDSA", namedCurve: "P-256"}, false, ['sign']
+  )
   const base64Header = jsonToBase64Url(header)
-  const base64Payload = jsonToBase64Url(payload)
-  const sig = await window.crypto.subtle.sign(
+  const base64Payload = payload === '' ? "" : jsonToBase64Url(payload)
+  const base64Signature = arrayBufferToBase64Url(await window.crypto.subtle.sign(
     { name: "ECDSA", hash: { name: "SHA-256" } },
     privateKey,
     (new TextEncoder()).encode(base64Header + '.' + base64Payload)
-  )
-  const base64Signature = window.btoa(Array.prototype.map.call(new Uint8Array(sig), function (ch) {
-    return String.fromCharCode(ch);
-  }).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  ))
 
   return base64Header + '.' + base64Payload + '.' + base64Signature
+}
+
+function parseJwt(jwt) {
+  const jwtParts = jwt.split('.')
+  return {
+    protected: jwtParts[0],
+    payload: jwtParts[1],
+    signature: jwtParts[2]
+  }
+}
+
+function jsonToBase64Url(json) {
+  return window.btoa(JSON.stringify(json))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
+}
+
+function arrayBufferToBase64Url(buf) {
+  return window.btoa(Array.prototype.map.call(
+    new Uint8Array(buf),
+    (ch) => String.fromCharCode(ch)
+  ).join(''))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
 }

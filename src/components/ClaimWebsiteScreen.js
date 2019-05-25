@@ -3,15 +3,15 @@ import FullScreenDialog from './FullScreenDialog'
 import Typography from '@material-ui/core/Typography'
 import TextField from '@material-ui/core/TextField'
 import Button from '@material-ui/core/Button'
-import { getNewNonce, postNewAccount } from '../api/acme'
+import acme from '../api/acme'
 
 function ClaimWebsiteScreen({ open, onClose }) {
-  const [certText, setCertText] = React.useState('')
-  const [keyText, setKeyText] = React.useState('')
+  const [serializedJwk, setSerializedJwk] = React.useState('')
+  const [serializedOrder, setSerializedOrder] = React.useState('')
 
-  // React.useEffect(() => {
-  //   newNonce().then(console.log)
-  // }, [])
+  function jwk() {
+    return JSON.parse(serializedJwk)
+  }
 
   return (
     <FullScreenDialog
@@ -20,30 +20,20 @@ function ClaimWebsiteScreen({ open, onClose }) {
       onClose={onClose}
     >
       <div>
-        <Typography type="subtitle1">
-          Claim your website.
-        </Typography>
-        <Typography type="subtitle1">
-          1. Obtain an SSL Certificate from LetsEncrypt
-            a) If you have server access:
-              i. Install LetsEncrypt's Certbot tool on your server https://certbot.eff.org
-          https://certbot.eff.org/docs/using.html#getting-certificates-and-choosing-plugins
-        </Typography>
-
-        <TextField
-          label="Certificate Data"
-          multiline={true}
-          rows={5}
-          onChange={(e) => setCertText(e.target.value)}
-        />
-        <TextField
-          label="Key Data"
-          multiline={true}
-          rows={5}
-          onChange={(e) => setKeyText(e.target.value)}
-        />
-        <Button onClick={() => postNewAccount()}>
-          Get nonce
+        <Button onClick={() => acme.generateJwk().then(jwk => setSerializedJwk(JSON.stringify(jwk)))}>
+          generateJwk
+        </Button>
+        <Button onClick={() => console.log(jwk())}>
+          check jwk
+        </Button>
+        <Button onClick={() => acme.postNewAccount(jwk()).then(a => acme.postNewOrder(jwk(), 'pkipay.net', a)).then(v => setSerializedOrder(JSON.stringify(v.order)))}>
+          postNewAccount then postNewOrder
+        </Button>
+        <Button onClick={() => acme.postOrderChallenge(jwk(), JSON.parse(serializedOrder))}>
+          postOrderChallenge
+        </Button>
+        <Button onClick={() => acme.postOrderFinalize(jwk(), JSON.parse(serializedOrder))}>
+          postOrderFinalize
         </Button>
       </div>
     </FullScreenDialog>
