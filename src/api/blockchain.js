@@ -3,9 +3,15 @@ import abis from './contractABIs.json'
 import namehash from 'eth-ens-namehash'
 import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
 import TokenSaleResolver from 'pkipay-blockchain/build/contracts/TokenSaleResolver.json'
+import DNSRegistrar from 'dns-on-ens/build/contracts/DNSRegistrar.json'
 import TokenBuyer from 'pkipay-blockchain/build/contracts/TokenBuyer.json'
 import ERC20 from 'pkipay-blockchain/build/contracts/ERC20.json'
 import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
+import X509ForestOfTrust from 'x509-forest-of-trust/build/contracts/X509ForestOfTrust.json'
+import ENSRegistry from '@ensdomains/ens/build/contracts/ENSRegistry.json'
+
+import forge from 'node-forge'
+import NodeRSA from 'node-rsa'
 
 export default {
   createTxBuyThx,
@@ -16,24 +22,29 @@ export default {
   getTotalDonationsFromOneMonth
 }
 
-const getAddress = (artifact, nodeEnv) => {
-  switch (nodeEnv) {
+const addressOf = (artifact) => {
+  switch (process.env.NODE_ENV) {
     case 'development':
       if (artifact.contractName === 'ERC20Mock')
         return '0xC4375B7De8af5a38a93548eb8453a498222C4fF2' // Kovan DAI address
       return artifact.networks[42].address;
     case 'test':
-      const chainId = Object.keys(artifact.networks).sort((a, b) => b - a)[0];
+      const chainId = Object.keys(artifact.networks).sort((a, b) => b - a)[0]; // sort descending
       return artifact.networks[chainId].address;
-    default:
+    default:                                                                                          // <= remember to change this
       if (artifact.contractName === 'ERC20Mock')
         return '0xC4375B7De8af5a38a93548eb8453a498222C4fF2' // Kovan DAI address
       return artifact.networks[42].address;
   }
 }
-const resolver = new web3js.eth.Contract(TokenSaleResolver.abi, getAddress(TokenSaleResolver, process.env.NODE_ENV));
-const currency = new web3js.eth.Contract(ERC20.abi, getAddress(ERC20Mock, process.env.NODE_ENV));
-const tokenBuyer = new web3js.eth.Contract(TokenBuyer.abi, getAddress(TokenBuyer, process.env.NODE_ENV));
+const resolver = new web3js.eth.Contract(TokenSaleResolver.abi, addressOf(TokenSaleResolver));
+const registrar = new web3js.eth.Contract(DNSRegistrar.abi, addressOf(DNSRegistrar));
+const currency = new web3js.eth.Contract(ERC20.abi, addressOf(ERC20Mock));
+const tokenBuyer = new web3js.eth.Contract(TokenBuyer.abi, addressOf(TokenBuyer));
+const x509Forest = new web3js.eth.Contract(X509ForestOfTrust.abi, addressOf(X509ForestOfTrust));
+const ens = new web3js.eth.Contract(ENSRegistry.abi, addressOf(ENSRegistry));
+
+const dnsRootEnsAddress = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? 'dnsroot.test' : 'dnsroot.eth'
 
 export async function createTxBuyThx(address, hostnames, values) {
   console.log('createTxBuyThx')
@@ -45,8 +56,7 @@ export async function createTxBuyThx(address, hostnames, values) {
   if (values.length !== hostnames.length)
     throw new Error("Invalid length of values")
   for (let hostname of hostnames) {
-    if (hostname.split('.').length !== 2)
-      throw new Error("Invalid hostname: "+hostname+" is not of the form domain.tld")
+    validateHostname(hostname)
   }
   let saleAddrs = []
   let labelHashes = []
@@ -71,27 +81,87 @@ export async function createTxBuyThx(address, hostnames, values) {
   }
 }
 
-// export async function addCertToTree(address, { cert, parentId }) {
-//   //addCert(bytes memory cert, bytes32 parentId, bool cshx)
-//   // Make sure it works
-//   await X509Forest.methods.addCert(cert, parentId, false).call({from: address})
-//   // Then send
-//   return await X509Forest.methods.addCert(cert, parentId, false).send({from: address})
-// }
-//
-// export async function getCertChallengeText(address) {
-//   // signThis() external view returns (bytes memory, uint)
-//   return await x509Forest.methods.signThis().call({ from: address })
-// }
-//
-// export async function submitProofOfCertOwnership(address, { certId, signature, blockNumber }) {
-//   const sha256WithRSAEncryption = "0x2a864886f70d01010b0000000000000000000000000000000000000000000000"
-//   // proveOwnership(bytes32 certId, bytes calldata signature, uint blockNumber, bytes32 sigAlg) external returns (bool)
-//   const authenticated = await x509Forest.methods.proveOwnership(certId, signature, blockNumber, sha256WithRSAEncryption).call({ from: address })
-//   if (!authenticated)
-//     return false
-//   return await x509Forest.methods.proveOwnership(certId, signature, blockNumber, sha256WithRSAEncryption).send({ from: address })
-// }
+export async function uploadCertAndProveOwnership(address, pemCertChain, pkcs8Key) {
+  let pemPubKeys = []
+  let certIds = []
+  let pubKey;
+  pemCertChain.forEach(pem => {
+    pubKey = forge.pki.certificateFromPem(pem).publicKey
+    pemPubKeys.push(forge.pki.publicKeyToPem(pubKey))
+    certIds.push(web3js.utils.sha3('0x' + forge.asn1.toDer(forge.pki.publicKeyToAsn1(pubKey)).toHex()))
+  })
+
+  for (let i=0; i<pemCertChain.length; i++) {
+    if (parseInt(await x509Forest.methods.validNotAfter(certIds[i]).call()) === 0)
+      await uploadCertificate(address, pemCertChain[i], pemPubKeys[Math.max(i - 1, 0)])
+  }
+  const { challengeBytes, blockNum } = await getCertChallengeBytes(address)
+
+  await signAndSubmitCertChallengeBytes(address, challengeBytes, pkcs8Key, pemPubKeys[pemPubKeys.length-1], blockNum)
+}
+
+export async function uploadCertificate(address, pemCert, pemParentPubKey) {
+  console.log('uploadCertificate')
+  const cert = forge.pki.certificateFromPem(pemCert)
+  const parentPubKey = forge.pki.publicKeyFromPem(pemParentPubKey)
+  const certBytes = '0x' + forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).toHex()
+  const parentPubKeyBytes = '0x' + forge.asn1.toDer(forge.pki.publicKeyToAsn1(parentPubKey)).toHex()
+
+  // addCert(bytes memory cert, bytes memory parentPubKey)
+  const tx = x509Forest.methods.addCert(certBytes, parentPubKeyBytes)
+  const options = { from: address, gas: 2000000 }
+  // Make sure it works
+    await tx.call(options)
+  // Then send
+  await tx.send(options)
+}
+
+export async function getCertChallengeBytes(address) {
+  console.log("getCertChallengeText")
+  // signThis() external view returns (bytes memory, uint)
+  const res = await x509Forest.methods.signThis().call({ from: address })
+  return {
+    challengeBytes: res[0].slice(2), // remove "0x"
+    blockNum: parseInt(res[1].toString())
+  }
+}
+
+export async function signAndSubmitCertChallengeBytes(address, challengeBytes, pkcs8Key, pemPubKey, blockNum) {
+  console.log('signAndSubmitCertChallengeBytes')
+  let pubKey = forge.pki.publicKeyFromPem(pemPubKey)
+  let pubKeyBytes = '0x' + forge.asn1.toDer(forge.pki.publicKeyToAsn1(pubKey)).toHex()
+  // Calculate signature
+  let key = new NodeRSA(pkcs8Key, 'pkcs8')
+  let signed = key.sign(challengeBytes, 'hex', 'hex')
+
+  const sha256WithRSAEncryption = "0x2a864886f70d01010b0000000000000000000000000000000000000000000000"
+  const tx = x509Forest.methods.proveOwnership(pubKeyBytes, "0x"+signed, blockNum, sha256WithRSAEncryption)
+  const options = { from: address, gas: 200000 }
+  // Make sure it wont revert
+  await tx.call(options)
+  // Then do it for real
+  await tx.send(options)
+}
+
+export async function registerAsDomainOwner(address, hostname) {
+  console.log('registerAsDomainOwner')
+  validateHostname(hostname)
+  const labelHashes = hostname.split('.').reverse().map(web3js.utils.sha3)
+  // register(bytes32 tld, bytes32 domain, address owner)
+  const tx = registrar.methods.register(labelHashes[0], labelHashes[1], address)
+  const options = { from: address, gas: 1000000 }
+  // first make sure it works
+  await tx.call(options)
+  await tx.send(options)
+}
+
+export async function pointEnsNodeToTokenSaleResolver(address, hostname) {
+  console.log('pointEnsNodeToTokenSaleResolver')
+  validateHostname(hostname)
+  const node = namehash.hash(hostname + '.' + dnsRootEnsAddress) // domain.tld.dnsroot.eth
+  // setResolver(bytes32 node, address resolver)
+  await ens.methods.setResolver(node, resolver.address).send({ from: address, gas: 100000 })
+}
 
 export async function approveTokenBuyer(address) {
   console.log('approveTokenBuyer')
@@ -303,10 +373,14 @@ export async function getTotalDonations(hostname, fromBlock = 0) {
 
 export async function getDomainOwner(hostname) {
   console.log('getDomainOwner')
+  console.log(hostname)
+  validateHostname(hostname)
   const ensNode = namehash.hash(hostname);
   const address = await resolver.methods.addr(ensNode).call();
-  if (address === "0x0000000000000000000000000000000000000000")
-    return null;
+  if (address === "0x0000000000000000000000000000000000000000") {
+    const ensDnsNode = namehash.hash(hostname + '.' + dnsRootEnsAddress)
+    return await ens.methods.owner(ensDnsNode).call();
+  }
   const ts = new web3js.eth.Contract(TokenSale.abi, address);
   return await ts.methods.owner().call();
 }
@@ -325,4 +399,9 @@ export async function getTotalDonationsFromOneMonth(hostname) {
   }
   return await getTotalDonations(hostname, 0);
 
+}
+
+function validateHostname(hostname) {
+  if (hostname.split('.').length !== 2)
+    throw new Error("Invalid hostname: '"+hostname+"' is not of the form domain.tld")
 }

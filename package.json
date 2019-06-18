@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@babel/runtime": "^7.3.4",
+    "@ensdomains/ens": "github:JonahGroendal/ens",
     "@material-ui/core": "^3.9.2",
     "@material-ui/icons": "^3.0.2",
     "ajv": "^6.10.0",
@@ -13,12 +14,14 @@
     "classnames": "^2.2.6",
     "create-react-app": "^1.5.2",
     "cryptocompare": "^0.7.2",
+    "dns-on-ens": "github:JonahGroendal/dns-on-ens",
     "ecb-currency-converter": "^1.0.0",
     "eth-ens-namehash": "^2.0.8",
     "get-pixels": "^3.3.2",
     "lodash": "^4.17.11",
     "meteor-node-stubs": "^0.4.1",
     "node-forge": "^0.8.2",
+    "node-rsa": "^1.0.5",
     "pkipay-blockchain": "github:JonahGroendal/pkipay-blockchain",
     "prop-types": "^15.7.2",
     "react": "^16.8.4",
@@ -33,7 +36,8 @@
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "typeface-roboto": "0.0.54",
-    "web3": "^1.0.0-beta.55"
+    "web3": "^1.0.0-beta.55",
+    "x509-forest-of-trust": "github:JonahGroendal/x509-forest-of-trust"
   },
   "scripts": {
     "start": "react-scripts start",

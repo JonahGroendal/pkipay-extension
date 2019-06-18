@@ -1,6 +1,6 @@
 import React from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import ClaimWebsiteScreen from './ClaimWebsiteScreen'
+import DnsChallengeScreen from '../containers/DnsChallengeScreen'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button'
@@ -28,9 +28,10 @@ function ClaimWebsiteCard({ classes }) {
           </Tooltip>
         </div>
       </Paper>
-      <ClaimWebsiteScreen
+      <DnsChallengeScreen
         open={screenOpen}
         onClose={() => setScreenOpen(false)}
+        onOpen={() => setScreenOpen(true)}
       />
     </div>
   )

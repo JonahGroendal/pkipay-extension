@@ -2,6 +2,7 @@ import web3js from '../api/web3js'
 import browser from '../api/browser'
 import strings from '../api/strings'
 import { createTxBuyThx, approveTokenBuyer } from '../api/blockchain'
+import AcmeClient from '../api/AcmeClient'
 
 export const setObjectHostname = (hostname) => ({
   type: 'SET_OBJECT_HOSTNAME',
@@ -280,4 +281,35 @@ export const updateScheduledTxs = (nonce=-1) => async (dispatch, getState) => {
     txObjects[i].nonce = nonce + i
     await dispatch(scheduleTx(whens[i], txObjects[i]))
   }
+}
+
+export const updateDnsChallenge = (domainName) => async (dispatch) => {
+  const authority = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? 'letsencrypt-staging' : 'letsencrypt'
+  const ac = await AcmeClient(authority)
+  const jwk = ac.exportJwk()
+  const { recordName, recordText, order } = await ac.requestDnsChallenge(domainName)
+  dispatch({
+    type: 'UPDATE_DNS_CHALLENGE',
+    payload: { jwk, recordName, recordText, order }
+  })
+}
+
+export const cancelDnsChallenge = () => ({
+  type: 'CANCEL_DNS_CHALLENGE'
+})
+
+export const submitDnsChallenge = () => async (dispatch, getState) => {
+  const { jwk, order } = getState().dnsChallenge
+  const authority = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? 'letsencrypt-staging' : 'letsencrypt'
+  const ac = await AcmeClient(authority, jwk)
+  const { certUrl, pkcs8Key } = await ac.submitDnsChallengeAndFinalize(order)
+  if (certUrl) {
+    dispatch({
+      type: 'DNS_CHALLENGE_SUCCESS',
+      payload: { certificate: certUrl }
+   })
+  } else {
+    dispatch({ type: 'DNS_CHALLENGE_ERROR' })
+  }
+  return { certUrl, pkcs8Key }
 }

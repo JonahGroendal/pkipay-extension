@@ -13,7 +13,8 @@ function PageProfile({ subscription, onChangeHostname }) {
   }, [])
 
   React.useEffect(() => {
-    getDomainOwner(subscription.hostname).then(setDomainOwner)
+    if (subscription.hostname)
+      getDomainOwner(subscription.hostname).then(setDomainOwner)
   }, [subscription.hostname])
 
   return React.createElement(PresentationalComponent, {

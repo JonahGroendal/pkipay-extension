@@ -18,7 +18,6 @@ function App({ themeType }) {
       useNextVariants: true,
     },
   })
-  console.log(theme)
   // $primary-color-dark:   #FFA000
   // $primary-color:        #FFC107
   // $primary-color-light:  #FFECB3

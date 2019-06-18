@@ -8,12 +8,12 @@ const PageProfile = ({ subscription, domainOwner }) => (
   <Page>
     <Profile subscription={subscription} />
     <Donate subscription={subscription} />
-    {isZeroOrNull(domainOwner) && <ClaimWebsiteCard />}
+    {isZero(domainOwner) && <ClaimWebsiteCard />}
   </Page>
 )
 
-function isZeroOrNull(address) {
-  return (address === '0x0000000000000000000000000000000000000000' || address === null)
+function isZero(address) {
+  return (address === '0x0000000000000000000000000000000000000000')
 }
 
 export default PageProfile
