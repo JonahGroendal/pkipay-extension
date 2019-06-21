@@ -1,3 +1,5 @@
+'use strict';
+
 import forge from 'node-forge'
 
 const authorities = {
@@ -11,7 +13,9 @@ export default async function AcmeClient(authority, jwk=null) {
   let accountUrl;
   let authorization;
 
-  directory = await (await fetch(authorities[authority.toLowerCase()] + '/directory')).json();
+  if (Object.keys(authorities).includes(authority.toLowerCase()))
+    authority = authorities[authority.toLowerCase()]
+  directory = await (await fetch(authority + '/directory')).json();
   nonce = await getNewNonce(directory);
   if (jwk === null) {
     jwk = await generateJwk();
@@ -74,10 +78,13 @@ async function getOrderAuthorization(nonce, jwk, accountUrl, order) {
     headers: { "Content-Type": "application/jose+json" },
     body: JSON.stringify(parseJwt(jwt))
   })
+  const authorization = await res.json()
+
+  throwIfErrored(authorization)
 
   return {
     nonce: res.headers.get('Replay-Nonce'),
-    authorization: await res.json()
+    authorization
   }
 }
 
@@ -108,11 +115,15 @@ async function postNewAccount(nonce, jwk, directory, options={ onlyReturnExistin
     body: JSON.stringify(parseJwt(jwt))
   })
 
+  throwIfErrored(await res.json())
+
   return {
     nonce: res.headers.get('Replay-Nonce'),
     accountUrl: res.headers.get('Location')
   }
 }
+
+
 
 
 async function postNewOrder(nonce, jwk, directory, accountUrl, domainName) {
@@ -132,10 +143,13 @@ async function postNewOrder(nonce, jwk, directory, accountUrl, domainName) {
     headers: { "Content-Type": "application/jose+json" },
     body: JSON.stringify(parseJwt(jwt))
   })
+  const order = await res.json()
+
+  throwIfErrored(order)
 
   return {
     nonce: res.headers.get('Replay-Nonce'),
-    order: await res.json()
+    order
   }
 }
 
@@ -157,6 +171,8 @@ async function postOrderChallenge(nonce, jwk, directory, accountUrl, challenge, 
     body: JSON.stringify(parseJwt(jwt))
   })
 
+  throwIfErrored(await res.json())
+
   return res.headers.get('Replay-Nonce')
 }
 
@@ -176,10 +192,13 @@ async function postOrderFinalize(nonce, jwk, accountUrl, order, csr) {
     headers: { "Content-Type": "application/jose+json" },
     body: JSON.stringify(parseJwt(jwt))
   })
+  const body = await res.json()
+
+  throwIfErrored(body)
 
   return {
     nonce: res.headers.get('Replay-Nonce'),
-    certUrl: (await res.json()).certificate
+    certUrl: body.certificate
   }
 }
 
@@ -294,4 +313,9 @@ function arrayBufferToBase64Url(buf) {
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/g, '')
+}
+
+function throwIfErrored(resJson) {
+  if (typeof resJson.status === 'number' && resJson.status >= 400)
+    throw new Error(resJson.detail)
 }
