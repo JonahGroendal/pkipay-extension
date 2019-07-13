@@ -99,18 +99,18 @@ const CreateWalletScreen = ({
 
 const styles = theme => ({
   paper: {
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: theme.spacing(2)
   },
   textField: {
-    marginTop: theme.spacing.unit * 2,
+    marginTop: theme.spacing(2),
     marginBottom: 0
   },
   buttonContainer: {
     display: 'flex',
     justifyContent: 'flex-end',
-    marginTop: theme.spacing.unit * 2
+    marginTop: theme.spacing(2)
   }
 })
 

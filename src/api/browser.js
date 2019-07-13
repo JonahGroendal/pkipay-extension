@@ -68,6 +68,33 @@ export function getHostname(url) {
    return ''
 }
 
+export function executeScript(code) {
+  return new Promise((resolve, reject) => {
+    api.tabs.executeScript({ code }, (result) => {
+      if (!api.lastError)
+        resolve(result)
+      else
+        reject(api.lastError)
+    })
+  })
+}
+
+export function navigateTo(url) {
+  return new Promise((resolve, reject) => {
+    api.tabs.update(undefined, { url }, (result) => {
+      if (api.lastError) {
+        reject(result)
+      } else {
+        chrome.tabs.onUpdated.addListener(function (tabId , info) {
+          if (info.status === 'complete') {
+            resolve(result);
+          }
+        });
+      }
+    })
+  })
+}
+
 function deflate(buffer) {
   return new Promise((resolve, reject) => {
     zlib.deflate(buffer, (err, res) => {

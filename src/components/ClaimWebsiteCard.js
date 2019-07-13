@@ -39,10 +39,10 @@ function ClaimWebsiteCard({ classes }) {
 
 const styles = theme => ({
   paper: {
-    paddingTop: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2,
+    paddingTop: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
   },
   container: {
     display: 'flex',
@@ -50,7 +50,7 @@ const styles = theme => ({
     justifyContent: 'space-between'
   },
   textField: {
-    width: theme.spacing.unit * 16
+    width: theme.spacing(16)
   },
 });
 

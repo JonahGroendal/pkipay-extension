@@ -32,7 +32,7 @@ export default async function AcmeClient(authority, jwk=null) {
       ({ nonce, authorization } = await getOrderAuthorization(nonce, jwk, accountUrl, order));
       const challenge = authorization.challenges.filter(c => c.type === "dns-01")[0];
       return {
-        recordName: '_acme-challenge.' + domainName,
+        recordName: '_acme-challenge',
         recordText: await calculateRecordText(challenge.token, jwk),
         order
       };

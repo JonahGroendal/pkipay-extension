@@ -5,8 +5,9 @@
   "dependencies": {
     "@babel/runtime": "^7.3.4",
     "@ensdomains/ens": "github:JonahGroendal/ens",
-    "@material-ui/core": "^3.9.2",
+    "@material-ui/core": "^4.0.0-rc.0",
     "@material-ui/icons": "^3.0.2",
+    "@material-ui/styles": "^4.0.0-rc.0",
     "ajv": "^6.10.0",
     "asn1.js": "github:indutny/asn1.js",
     "bn.js": "^4.11.8",
@@ -24,10 +25,10 @@
     "node-rsa": "^1.0.5",
     "pkipay-blockchain": "github:JonahGroendal/pkipay-blockchain",
     "prop-types": "^15.7.2",
-    "react": "^16.8.4",
+    "react": "^16.8.6",
     "react-chartjs-2": "^2.7.4",
     "react-custom-scrollbars": "^4.2.1",
-    "react-dom": "^16.8.4",
+    "react-dom": "^16.8.6",
     "react-redux": "^6.0.1",
     "react-scripts": "^2.1.8",
     "react-swipeable-views": "^0.12.18",
@@ -40,9 +41,10 @@
     "x509-forest-of-trust": "github:JonahGroendal/x509-forest-of-trust"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --env=jsdom --verbose=false",
+    "start": "REACT_APP_ACTUAL_ENV=development react-scripts start",
+    "build": "REACT_APP_ACTUAL_ENV=production  react-scripts build",
+    "build-dev": "REACT_APP_ACTUAL_ENV=development react-scripts build",
+    "test": "REACT_APP_ACTUAL_ENV=test react-scripts test --env=jsdom --verbose=false",
     "eject": "react-scripts eject"
   },
   "devDependencies": {

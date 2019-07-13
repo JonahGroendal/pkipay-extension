@@ -34,7 +34,7 @@ const styles = theme => ({
     flexGrow: 1,
   },
   toolbar: {
-    minHeight: theme.spacing.unit * 6
+    minHeight: theme.spacing(6)
   },
   flex: {
     flex: 1,

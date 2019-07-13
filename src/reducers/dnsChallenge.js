@@ -1,35 +1,50 @@
 const initState = {
+  ongoing: false,
+  domainName: '',
   recordName: '',
   recordText: '',
   jwk: null,
   order: null,
-  certificates: []
+  certUrl: '',
+  pkcs8Key: null
 }
 
 function dnsChallenge(state=initState, action) {
-    switch (action.type) {
-      case 'UPDATE_DNS_CHALLENGE':
-        return {
-          recordName: action.payload.recordName,
-          recordText: action.payload.recordText,
-          jwk: action.payload.jwk,
-          order: action.payload.order,
-          certificates: state.certificates
-        }
-      case 'CANCEL_DNS_CHALLENGE':
-        return {
-          ...initState,
-          certificates: state.certificates
-        }
-      case 'DNS_CHALLENGE_SUCCESS':
-        state.certificates.push(action.payload.certificate)
-        return {
-          ...initState,
-          certificates: state.certificates
-        }
-      default:
-        return state
-    }
+  switch (action.type) {
+    case 'REQUEST_DNS_CHALLENGE':
+      return {
+        ...initState,
+        ongoing: true,
+        domainName: action.payload.domainName,
+        recordName: action.payload.recordName,
+        recordText: action.payload.recordText,
+        jwk: action.payload.jwk,
+        order: action.payload.order
+      }
+    case 'CANCEL_DNS_CHALLENGE':
+      return {
+        ...initState
+      }
+    case 'DNS_CHALLENGE_SUCCESS':
+      return {
+        ...state,
+        certUrl: action.payload.certUrl,
+        pkcs8Key: action.payload.pkcs8Key
+      }
+    case 'RESET_DNS_CHALLENGE':
+      return {
+        ...initState,
+        ongoing: state.ongoing,
+        domainName: state.domainName
+      }
+    case 'COMPLETE_DNS_CHALLENGE':
+      return {
+        ...initState,
+        domainName: state.domainName
+      }
+    default:
+      return state
   }
-  
-  export default dnsChallenge
+}
+
+export default dnsChallenge

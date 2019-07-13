@@ -11,8 +11,8 @@ import Slide from '@material-ui/core/Slide';
 
 const styles = {
   root: {
-    maxWidth: '350px',
-    maxHeight: '600px',
+    maxWidth: '352px', // theme.spacing(44)
+    maxHeight: '600px', // theme.spacing(75)
   },
   appBar: {
     position: 'relative',

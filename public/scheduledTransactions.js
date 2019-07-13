@@ -31,7 +31,7 @@ api.runtime.onInstalled.addListener(function() {
       chrome.notifications.create(alarm.name, {
         type: 'basic',
         iconUrl: 'favicon.ico',
-        title: 'Grattis: Transaction',
+        title: 'PkiPay: Transaction',
         message: 'Sending scheduled subscriptions payment'
       })
     })

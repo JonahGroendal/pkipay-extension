@@ -23,17 +23,17 @@ export default {
 }
 
 const addressOf = (artifact) => {
-  switch (process.env.NODE_ENV) {
+  switch (process.env.REACT_APP_ACTUAL_ENV) {
     case 'development':
-      if (artifact.contractName === 'ERC20Mock')
+      if (artifact.contractName.includes('ERC20'))
         return '0xC4375B7De8af5a38a93548eb8453a498222C4fF2' // Kovan DAI address
       return artifact.networks[42].address;
     case 'test':
       const chainId = Object.keys(artifact.networks).sort((a, b) => b - a)[0]; // sort descending
       return artifact.networks[chainId].address;
-    default:                                                                                          // <= remember to change this
-      if (artifact.contractName === 'ERC20Mock')
-        return '0xC4375B7De8af5a38a93548eb8453a498222C4fF2' // Kovan DAI address
+    default:
+      if (artifact.contractName.includes('ERC20'))
+        return '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359' // Mainnet DAI address
       return artifact.networks[42].address;
   }
 }
@@ -44,7 +44,9 @@ const tokenBuyer = new web3js.eth.Contract(TokenBuyer.abi, addressOf(TokenBuyer)
 const x509Forest = new web3js.eth.Contract(X509ForestOfTrust.abi, addressOf(X509ForestOfTrust));
 const ens = new web3js.eth.Contract(ENSRegistry.abi, addressOf(ENSRegistry));
 
-const dnsRootEnsAddress = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? 'dnsroot.test' : 'dnsroot.eth'
+const dnsRootEnsAddress = (process.env.REACT_APP_ACTUAL_ENV === 'development' || process.env.REACT_APP_ACTUAL_ENV === 'test')
+  ? 'dnsroot.test'
+  : 'dnsroot.eth'
 
 export async function createTxBuyThx(address, hostnames, values) {
   console.log('createTxBuyThx')
@@ -146,21 +148,27 @@ export async function signAndSubmitCertChallengeBytes(address, challengeBytes, p
 export async function registerAsDomainOwner(address, hostname) {
   console.log('registerAsDomainOwner')
   validateHostname(hostname)
-  const labelHashes = hostname.split('.').reverse().map(web3js.utils.sha3)
-  // register(bytes32 tld, bytes32 domain, address owner)
-  const tx = registrar.methods.register(labelHashes[0], labelHashes[1], address)
-  const options = { from: address, gas: 1000000 }
-  // first make sure it works
-  await tx.call(options)
-  await tx.send(options)
+  const currentOwner = await ens.methods.owner(namehash.hash(hostname)).call();
+  if (currentOwner !== address) {
+    const labelHashes = hostname.split('.').reverse().map(web3js.utils.sha3)
+    // register(bytes32 tld, bytes32 domain, address owner)
+    const tx = registrar.methods.register(labelHashes[0], labelHashes[1], address)
+    const options = { from: address, gas: 1000000 }
+    // first make sure it works
+    await tx.call(options)
+    await tx.send(options)
+  }
 }
 
 export async function pointEnsNodeToTokenSaleResolver(address, hostname) {
   console.log('pointEnsNodeToTokenSaleResolver')
   validateHostname(hostname)
   const node = namehash.hash(hostname + '.' + dnsRootEnsAddress) // domain.tld.dnsroot.eth
-  // setResolver(bytes32 node, address resolver)
-  await ens.methods.setResolver(node, resolver.address).send({ from: address, gas: 100000 })
+  const currentResolver = await ens.methods.resolver(node).call();
+  if (currentResolver !== resolver.address) {
+    // setResolver(bytes32 node, address resolver)
+    await ens.methods.setResolver(node, resolver.address).send({ from: address, gas: 100000 })
+  }
 }
 
 export async function approveTokenBuyer(address) {

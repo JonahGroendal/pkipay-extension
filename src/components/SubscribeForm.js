@@ -69,11 +69,11 @@ const styles = theme => ({
   },
   paperExpanded: {
     width: '100%',
-    padding: theme.spacing.unit * 2,
+    padding: theme.spacing(2),
     justifyContent: 'space-around',
   },
   textField: {
-    marginRight: theme.spacing.unit * 2,
+    marginRight: theme.spacing(2),
   }
 })
 

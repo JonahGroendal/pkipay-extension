@@ -3,7 +3,7 @@ import { withStyles } from '@material-ui/core/styles'
 import { Scrollbars } from 'react-custom-scrollbars'
 
 const Page = ({ classes, children }) => (
-  <Scrollbars autoHide style={{ height: 504 }}>
+  <Scrollbars style={{ height: 504 }}>
     <div className={classes.root}>
       {React.Children.map(children, child => { return (
         <div className={classes.card}>
@@ -16,12 +16,12 @@ const Page = ({ classes, children }) => (
 
 const styles = theme => ({
   root: {
-    paddingLeft: theme.spacing.unit,
-    paddingRight: theme.spacing.unit,
-    paddingBottom: theme.spacing.unit,
+    paddingLeft: theme.spacing(1),
+    paddingRight: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
   card: {
-    marginTop: theme.spacing.unit * 2
+    marginTop: theme.spacing(2)
   }
 })
 

@@ -202,22 +202,22 @@ function mode(array) {
 
 const styles = theme => ({
   paper: {
-    marginTop: theme.spacing.unit * 1,
-    padding: theme.spacing.unit * 2,
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
     display: 'flex',
     flexDirection: 'column',
   },
   paperAvatar: {
     borderRadius: '50%',
-    marginTop: theme.spacing.unit * -3,
+    marginTop: theme.spacing(-3),
   },
   rowAvatar: {
     display: 'flex',
     justifyContent: 'space-between',
   },
   avatar: {
-    width: theme.spacing.unit * 8,
-    height: theme.spacing.unit * 8,
+    width: theme.spacing(8),
+    height: theme.spacing(8),
     justifyContent: 'center'
   },
   infoText: {
@@ -227,7 +227,7 @@ const styles = theme => ({
     alignSelf: 'flex-end'
   },
   subscribeContainer: {
-    marginTop: theme.spacing.unit * 2,
+    marginTop: theme.spacing(2),
   },
   subscribePaper: {
     display: 'flex',

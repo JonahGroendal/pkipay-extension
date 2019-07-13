@@ -16,20 +16,20 @@ import classNames from 'classnames'
 
 const styles = theme => ({
   toolbar: {
-    paddingTop: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2,
-    minHeight:  theme.spacing.unit * 6
+    paddingTop: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
+    minHeight:  theme.spacing(6)
   },
   table: {
     width: '100%',
     tableLayout: 'fixed'
   },
   tableRowHead: {
-    height: theme.spacing.unit * 4
+    height: theme.spacing(4)
   },
   tableRow: {
-    height: theme.spacing.unit * 5
+    height: theme.spacing(5)
   },
   highlighted: {
     animationName: 'highlight',
@@ -42,19 +42,19 @@ const styles = theme => ({
     '100%': {backgroundColor: 'rgba(0, 0 , 0, 0)'}
   },
   tableCell: {
-    paddingLeft: theme.spacing.unit * 2 + ' !important'
+    paddingLeft: theme.spacing(2) + ' !important'
   },
   tableCellNumeric: {
     paddingLeft: '0 !important'
   },
   tableCellLast: {
-    paddingRight: theme.spacing.unit * 2 + ' !important'
+    paddingRight: theme.spacing(2) + ' !important'
   },
   tableCellBody: {
     borderBottom: 0
   },
   pagination: {
-    height: theme.spacing.unit * 6,
+    height: theme.spacing(6),
     minHeight: 0
   }
 })

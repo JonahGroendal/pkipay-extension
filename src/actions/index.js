@@ -3,6 +3,7 @@ import browser from '../api/browser'
 import strings from '../api/strings'
 import { createTxBuyThx, approveTokenBuyer } from '../api/blockchain'
 import AcmeClient from '../api/AcmeClient'
+import { encrypt, decrypt } from '../api/symmetricCrypto'
 
 export const setObjectHostname = (hostname) => ({
   type: 'SET_OBJECT_HOSTNAME',
@@ -72,12 +73,12 @@ export const unlockWallet = (password) => (dispatch, getState) => {
   }
   dispatch({ type: 'UNLOCK_WALLET_SUCCESS' })
   approveTokenBuyer(addresses[defaultAccount])
-  return resolveWalletUnlock()
+  return resolveWalletUnlock(password)
 }
 
 export const unlockWalletCancel = () => (dispatch) => {
   dispatch({ type: 'UNLOCK_WALLET_CANCEL' })
-  return rejectWalletUnlock()
+  return rejectWalletUnlock(new Error('Wallet unlock canceled'))
 }
 
 export const createWallet = (password) => {
@@ -283,14 +284,32 @@ export const updateScheduledTxs = (nonce=-1) => async (dispatch, getState) => {
   }
 }
 
-export const updateDnsChallenge = (domainName) => async (dispatch) => {
-  const authority = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? 'letsencrypt-staging' : 'letsencrypt'
-  const ac = await AcmeClient(authority)
-  const jwk = ac.exportJwk()
-  const { recordName, recordText, order } = await ac.requestDnsChallenge(domainName)
+export const requestDnsChallenge = (password, domainName) => async (dispatch) => {
+  console.log('requestDnsChallenge')
+  const authority = (process.env.REACT_APP_ACTUAL_ENV === 'development' || process.env.REACT_APP_ACTUAL_ENV === 'test')
+    ? 'letsencrypt-staging'
+    : 'letsencrypt'
+  const ac = await AcmeClient(authority);
+  const jwkCiphertextObj = await encrypt(JSON.stringify(ac.exportJwk()), password);
+  let recordName; let recordText; let order;
+  try {
+    ({ recordName, recordText, order } = await ac.requestDnsChallenge(domainName));
+  } catch (error) {
+    dispatch({
+      type: 'REQUEST_DNS_CHALLENGE_ERROR',
+      payload: error.message
+    })
+    throw error;
+  }
   dispatch({
-    type: 'UPDATE_DNS_CHALLENGE',
-    payload: { jwk, recordName, recordText, order }
+    type: 'REQUEST_DNS_CHALLENGE',
+    payload: {
+      domainName,
+      recordName,
+      recordText,
+      order,
+      jwk: jwkCiphertextObj
+    }
   })
 }
 
@@ -298,18 +317,39 @@ export const cancelDnsChallenge = () => ({
   type: 'CANCEL_DNS_CHALLENGE'
 })
 
-export const submitDnsChallenge = () => async (dispatch, getState) => {
-  const { jwk, order } = getState().dnsChallenge
-  const authority = (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test') ? 'letsencrypt-staging' : 'letsencrypt'
+export const submitDnsChallenge = (password) => async (dispatch, getState) => {
+  console.log('submitDnsChallenge')
+  const state = getState().dnsChallenge
+  const order = state.order
+  const jwk = JSON.parse(await decrypt(state.jwk, password))
+  const authority = (process.env.REACT_APP_ACTUAL_ENV === 'development' || process.env.REACT_APP_ACTUAL_ENV === 'test')
+    ? 'letsencrypt-staging'
+    : 'letsencrypt'
   const ac = await AcmeClient(authority, jwk)
-  const { certUrl, pkcs8Key } = await ac.submitDnsChallengeAndFinalize(order)
-  if (certUrl) {
+  let certUrl; let pkcs8Key;
+  try {
+    ({ certUrl, pkcs8Key } = await ac.submitDnsChallengeAndFinalize(order));
+  } catch (error) {
     dispatch({
-      type: 'DNS_CHALLENGE_SUCCESS',
-      payload: { certificate: certUrl }
-   })
-  } else {
-    dispatch({ type: 'DNS_CHALLENGE_ERROR' })
+      type: 'DNS_CHALLENGE_ERROR',
+      payload: error.message
+    })
+    throw error;
   }
+  dispatch({
+    type: 'DNS_CHALLENGE_SUCCESS',
+    payload: {
+      certUrl,
+      pkcs8Key: await encrypt(pkcs8Key, password)
+    }
+  })
   return { certUrl, pkcs8Key }
 }
+
+export const resetDnsChallenge = () => ({
+  type: 'RESET_DNS_CHALLENGE'
+})
+
+export const completeDnsChallenge = () =>({
+  type: 'COMPLETE_DNS_CHALLENGE'
+})

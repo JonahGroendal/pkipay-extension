@@ -177,61 +177,61 @@ const styles = theme => ({
     flexDirection: 'column'
   },
   noTx: {
-    marginLeft: theme.spacing.unit * 2,
-    marginTop: theme.spacing.unit * 2
+    marginLeft: theme.spacing(2),
+    marginTop: theme.spacing(2)
   },
   details: {
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2,
+    paddingTop: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
   },
   statusAndButtons: {
-    paddingTop: theme.spacing.unit * 2,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2,
+    paddingTop: theme.spacing(2),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
   },
   status: {
-    paddingTop: theme.spacing.unit * 4,
+    paddingTop: theme.spacing(4),
     display: 'flex',
     justifyContent: 'space-around'
   },
   summary: {
     display: 'flex',
     flexDirection: 'column',
-    paddingTop: theme.spacing.unit * 1,
-    paddingRight: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2,
+    paddingTop: theme.spacing(1),
+    paddingRight: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
   },
   summaryRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    paddingTop: theme.spacing.unit * 1,
-    paddingRight: theme.spacing.unit * 2,
-    paddingLeft: theme.spacing.unit * 2,
+    paddingTop: theme.spacing(1),
+    paddingRight: theme.spacing(2),
+    paddingLeft: theme.spacing(2),
   },
   buttons: {
     display: 'flex',
     justifyContent: 'space-around',
   },
   badge: {
-    margin: theme.spacing.unit * 2,
+    margin: theme.spacing(2),
   },
   listItemLeft: {
     display: 'flex',
     flexDirection: 'column',
-    width: theme.spacing.unit * 19,
+    width: theme.spacing(19),
   },
   listItemValue: {
     display: 'flex',
     flexDirection: 'row'
   },
   rightIcon: {
-    marginLeft: theme.spacing.unit,
+    marginLeft: theme.spacing(1),
   },
 })
 export default withStyles(styles)(TransactionScreen)
