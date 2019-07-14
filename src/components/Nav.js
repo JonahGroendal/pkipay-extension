@@ -8,14 +8,19 @@ import Typography from '@material-ui/core/Typography'
 import Tabs from '@material-ui/core/Tabs'
 
 const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
-  <div className={classes.root}>
+  <div>
     <AppBar position="static" className={classes.appBar}>
       <Toolbar className={classes.toolbar}>
-        <Typography variant="h6" color="inherit" className={classes.flex}>
-          PkiPay
-        </Typography>
-        <TransactionScreen />
-        <Settings />
+        <div className={classes.titleColumn}>
+          <Typography variant="h6">
+            PkiPay
+          </Typography>
+          <img src="titleEmojis.png" />
+        </div>
+        <div className={classes.titleColumn}>
+          <TransactionScreen />
+          <Settings />
+        </div>
       </Toolbar>
       <Tabs
         value={tabIndex}
@@ -30,19 +35,15 @@ const Nav = ({ tabIndex, children, onChangeTab, classes }) => (
 )
 
 const styles = theme => ({
-  root: {
-    flexGrow: 1,
-  },
   toolbar: {
-    minHeight: theme.spacing(6)
+    minHeight: theme.spacing(6),
+    display: 'flex',
+    justifyContent: 'space-between'
   },
-  flex: {
-    flex: 1,
-  },
-  menuButton: {
-    marginLeft: -12,
-    marginRight: 20,
-  },
+  titleColumn: {
+    display: 'flex',
+    alignItems: 'center'
+  }
 })
 
 export default withStyles(styles)(Nav);
