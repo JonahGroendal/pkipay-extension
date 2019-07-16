@@ -2,6 +2,7 @@ import web3js from './web3js'
 import abis from './contractABIs.json'
 import namehash from 'eth-ens-namehash'
 import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
+import TokenSaleKovan from 'pkipay-blockchain/build/contracts/TokenSaleKovan.json'
 import TokenSaleResolver from 'pkipay-blockchain/build/contracts/TokenSaleResolver.json'
 import DNSRegistrar from 'dns-on-ens/build/contracts/DNSRegistrar.json'
 import TokenBuyer from 'pkipay-blockchain/build/contracts/TokenBuyer.json'
@@ -16,7 +17,7 @@ import NodeRSA from 'node-rsa'
 export default {
   createTxBuyThx,
   getBalanceETH,
-  getBalanceERC20,
+  getBalanceDAI,
   subscribeToDaiTransfer,
   getTotalDonations,
   getTotalDonationsFromOneMonth
@@ -286,8 +287,8 @@ export async function getBalanceETH(address) {
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
 
-export async function getBalanceERC20(address) {
-  console.log('getBalanceERC20')
+export async function getBalanceDAI(address) {
+  console.log('getBalanceDAI')
   const weiBalance = await currency.methods.balanceOf(address).call()
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
@@ -360,7 +361,7 @@ export async function subscribeToDaiTransfer(address, onTransfer) {
     filter: [{to: address}, {from: address}],
     fromBlock: currentBlock,
   }).on('data', function(event) {
-    getBalanceERC20(address).then(onTransfer)
+    getBalanceDAI(address).then(onTransfer)
   })
   return subscription.unsubscribe;
 }
@@ -389,7 +390,10 @@ export async function getDomainOwner(hostname) {
     const ensDnsNode = namehash.hash(hostname + '.' + dnsRootEnsAddress)
     return await ens.methods.owner(ensDnsNode).call();
   }
-  const ts = new web3js.eth.Contract(TokenSale.abi, address);
+  const abi = process.env.REACT_APP_ACTUAL_ENV === 'production'
+    ? TokenSale.abi
+    : TokenSaleKovan.abi
+  const ts = new web3js.eth.Contract(abi, address);
   return await ts.methods.owner().call();
 }
 

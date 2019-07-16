@@ -7,13 +7,13 @@ import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 
 const headerCells = [
-  {label: 'Site', width: '45%', sortable: true, cellProps: {key: 'name', padding: 'default', numeric: false}},
+  {label: 'Name', width: '45%', sortable: true, cellProps: {key: 'name', padding: 'default', numeric: false}},
   {label: 'Balance', width: '22%', sortable: true, cellProps: {key: 'balance', padding: 'none', numeric: true}},
 ]
 
-const Hodlings = ({ balances, classes }) => (
+const Balances = ({ balances, classes }) => (
   <Table
-    title="Token Holdings"
+    title="Balances"
     className={classes.table}
     headerCells={headerCells}
     rowsData={balances}
@@ -28,9 +28,9 @@ const Hodlings = ({ balances, classes }) => (
           </Tooltip>
         </TableCell>
         <TableCell className={classes.tableCell} align="right" padding="none">
-          <Tooltip title={holding.balance + " THX"}>
+          <Tooltip title={holding.balance}>
             <Typography variant="subtitle1">
-              {holding.balance.toFixed(2)}
+              {holding.balance.toFixed(3)}
             </Typography>
           </Tooltip>
         </TableCell>
@@ -51,4 +51,4 @@ const styles = theme => ({
   },
 })
 
-export default withStyles(styles)(Hodlings)
+export default withStyles(styles)(Balances)
