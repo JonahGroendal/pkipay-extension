@@ -1,7 +1,7 @@
 /*global chrome*/
 /*global browser*/
 import mockChrome from './mockChrome'
-var zlib = require('zlib');
+// var zlib = require('zlib');
 
 // if ( (typeof browser === 'undefined' || typeof browser.tabs === 'undefined')
 //   && (typeof chrome === 'undefined' || typeof chrome.tabs === 'undefined') )
@@ -31,7 +31,8 @@ export async function loadState() {
   const storage = await getFromStorage(null)
   const compressed = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
   if (compressed) {
-    const serialized = (await inflate(compressed)).toString('utf8')
+    const serialized = inflateZeros(compressed)
+    // const serialized = (await inflate(compressed)).toString('utf8')
     return JSON.parse(serialized)
   }
   return undefined
@@ -39,7 +40,8 @@ export async function loadState() {
 
 export async function saveState(state) {
   const serialized = JSON.stringify(state)
-  const compressed = await deflate(serialized)
+  const compressed = deflateZeros(serialized)
+  // const compressed = await deflate(serialized)
   let chunks = {}
   for (let i=0; i<compressed.length/2048; i++) {
     chunks['state'+i.toString().padStart(2,'0')] = compressed.substring(i*2048, i*2048 + 2048)
@@ -95,23 +97,62 @@ export function navigateTo(url) {
   })
 }
 
-function deflate(buffer) {
-  return new Promise((resolve, reject) => {
-    zlib.deflate(buffer, (err, res) => {
-      if (err) reject(err)
-      else resolve(res.toString('base64'))
-    })
-  })
+function inflateZeros(str) {
+  let chars = str.split('');
+  let numZeros = 0;
+  let numZerosStr = '';
+  let j;
+  for (let i=0; i<chars.length; i++) {
+    if (chars[i] === '0') {
+      j = i+1;
+      while (chars[j] !== ';') {
+        numZerosStr += chars[j];
+        j++;
+      }
+      numZeros = parseInt(numZerosStr);
+      numZerosStr = '';
+      chars[i] = '0'.repeat(numZeros);
+      chars.splice(i+1, j-i);
+    }
+  }
+  return chars.join('');
 }
 
-function inflate(buffer) {
-  return new Promise((resolve, reject) => {
-    zlib.inflate(new Buffer(buffer, 'base64'), (err, res) => {
-      if (err) reject(err)
-      else resolve(res)
-    })
-  })
+function deflateZeros(str) {
+  let chars = str.split('');
+  let numZeros = 0;
+  let i;
+  for (i=0; i<chars.length; i++) {
+    if (chars[i] === '0') {
+      numZeros++;
+    } else if (numZeros > 0) {
+      chars.splice(i-numZeros, numZeros, '0' + numZeros.toString() + ';');
+      i = i - numZeros;
+      numZeros = 0;
+    }
+  }
+  if (numZeros > 0)
+    chars.splice(i-numZeros, numZeros, '0' + numZeros.toString() + ';');
+  return chars.join('');
 }
+
+// function deflate(buffer) {
+//   return new Promise((resolve, reject) => {
+//     zlib.deflate(buffer, (err, res) => {
+//       if (err) reject(err)
+//       else resolve(res.toString('base64'))
+//     })
+//   })
+// }
+//
+// function inflate(buffer) {
+//   return new Promise((resolve, reject) => {
+//     zlib.inflate(new Buffer(buffer, 'base64'), (err, res) => {
+//       if (err) reject(err)
+//       else resolve(res)
+//     })
+//   })
+// }
 
 function getFromStorage(keys) {
   return new Promise(function(resolve, reject) {
