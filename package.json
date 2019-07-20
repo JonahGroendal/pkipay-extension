@@ -2,6 +2,15 @@
   "name": "gratiis-extension",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "start": "REACT_APP_ACTUAL_ENV=development react-scripts start",
+    "build": "REACT_APP_ACTUAL_ENV=production  react-scripts build",
+    "build-dev": "REACT_APP_ACTUAL_ENV=development react-scripts build",
+    "test": "REACT_APP_ACTUAL_ENV=test react-scripts test --env=jsdom --verbose=false",
+    "start:firefox": "web-ext run --source-dir ./build/",
+    "build-web-ext": "web-ext build --source-dir ./build/ --overwrite-dest",
+    "eject": "react-scripts eject"
+  },
   "dependencies": {
     "@babel/runtime": "^7.3.4",
     "@ensdomains/ens": "github:JonahGroendal/ens",
@@ -39,15 +48,6 @@
     "typeface-roboto": "0.0.54",
     "web3": "^1.0.0-beta.55",
     "x509-forest-of-trust": "github:JonahGroendal/x509-forest-of-trust"
-  },
-  "scripts": {
-    "start": "REACT_APP_ACTUAL_ENV=development react-scripts start",
-    "build": "REACT_APP_ACTUAL_ENV=production  react-scripts build",
-    "build-dev": "REACT_APP_ACTUAL_ENV=development react-scripts build",
-    "test": "REACT_APP_ACTUAL_ENV=test react-scripts test --env=jsdom --verbose=false",
-    "start:firefox": "web-ext run --source-dir ./build/",
-    "build-web-ext": "web-ext build --source-dir ./build/",
-    "eject": "react-scripts eject"
   },
   "devDependencies": {
     "fetch-mock": "^7.3.1",
