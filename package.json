@@ -45,12 +45,15 @@
     "build": "REACT_APP_ACTUAL_ENV=production  react-scripts build",
     "build-dev": "REACT_APP_ACTUAL_ENV=development react-scripts build",
     "test": "REACT_APP_ACTUAL_ENV=test react-scripts test --env=jsdom --verbose=false",
+    "start:firefox": "web-ext run --source-dir ./build/",
+    "build-web-ext": "web-ext build --source-dir ./build/",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
     "fetch-mock": "^7.3.1",
     "ganache-cli": "^6.4.3",
-    "redux-mock-store": "^1.5.3"
+    "redux-mock-store": "^1.5.3",
+    "web-ext": "^3.1.1"
   },
   "browserslist": [
     ">0.2%",

@@ -27,5 +27,11 @@
     "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
     "https://min-api.cryptocompare.com/data/*"
   ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "extension@pkipay.net",
+      "strict_min_version": "42.0"
+    }
+  },
   "content_security_policy": "script-src 'self' 'unsafe-eval' 'sha256-5As4+3YpY62+l38PsxCEkjB1R4YtyktBtRScTJ3fyLU='; object-src 'self'"
 }
