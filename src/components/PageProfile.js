@@ -8,7 +8,7 @@ const PageProfile = ({ subscription, domainOwner }) => (
   <Page>
     <Profile subscription={subscription} />
     <Donate subscription={subscription} />
-    {isZero(domainOwner) && <ClaimWebsiteCard />}
+    {!!subscription.hostname && isZero(domainOwner) && <ClaimWebsiteCard />}
   </Page>
 )
 
