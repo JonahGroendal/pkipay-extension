@@ -35,7 +35,6 @@ const Subscriptions = ({
     headerCells={headerCells}
     rowsData={subscriptions}
     rowsPerPage={4}
-    fixedRows={[0,]}
     highlightedRowIndex={highlightedRowIndex}
   >
     {(subscription, index) => (

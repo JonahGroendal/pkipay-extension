@@ -17,6 +17,7 @@ const Balances = ({ balances, classes }) => (
     className={classes.table}
     headerCells={headerCells}
     rowsData={balances}
+    fixedIndices={[0,1]}
   >
     {(holding, index) => (
       <TableRow className={classes.tableRow} hover key={index}>
