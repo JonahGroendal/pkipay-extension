@@ -65,7 +65,7 @@ function sort(data, order, orderBy, fixedIndices) {
       ? (a, b) => (b[orderBy] < a[orderBy] ? -1 : 1)
       : (a, b) => (a[orderBy] < b[orderBy] ? -1 : 1);
   }
-  let sortedData = data.filter(index => !fixedIndices.includes(index))
+  let sortedData = data.filter((v, index) => !fixedIndices.includes(index))
   sortedData.sort(getSorting(order, orderBy))
   fixedIndices.forEach( index => {sortedData.splice(index, 0, data[index])} )
   return sortedData
