@@ -15,7 +15,6 @@ function TransactionScreen(props) {
     txHash,
     txError,
     txConfirmed,
-    txObject,
     onSend,
     onClickCancel,
     onClickClose,
@@ -23,8 +22,9 @@ function TransactionScreen(props) {
     onTxConfirmation,
     currency,
   } = props
+  let { txObjects } = props;
 
-  const gasValues = useGasValues(txObject)
+  const gasValues = useGasValues(txObjects)
 
   React.useEffect(() => {
     if (isOpen && !txConfirmed && txHash !== null) {
@@ -40,45 +40,54 @@ function TransactionScreen(props) {
   return React.createElement(PresentationalComponent, {
     isOpen,
     counterparties,
-    values: values.map(val => convertFromUSD(currency, web3js.utils.fromWei(val))),
+    values,
     gasValue: convertFromUSD(currency, gasValues.USD),
     gasValueETH: gasValues.ETH,
     txSent: (txHash !== null || txError !== null),
     txConfirmed,
     txErrored: txError !== null,
-    onClickSend: () => onSend(txObject, counterparties),
+    onClickSend: () => onSend(txObjects, counterparties, values),
     onClickCancel,
     onClickClose,
     onClickOpen,
     currencySymbol: strings.currency[currency],
-    badgeInvisible: (txObject === null || txHash !== null),
-    txObjectExists: !!txObject
+    badgeInvisible: (txObjects === null || txHash !== null),
+    txObjectExists: txObjects !== null && txObjects.length > 0
   })
 }
 
-async function getGasPrice(txObject) {
-  if (txObject.gasPrice) return txObject.gasPrice
-  return await web3js.eth.getGasPrice()
-}
-function useGasValues(txObject) {
-  const [gasValues, setGasValues] = React.useState({USD: 0, ETH: 0})
+function useGasValues(txObjects) {
+  const [gasValues, setGasValues] = React.useState({ USD: 0, ETH: 0 })
   React.useEffect(() => {
-    if (txObject !== null) {
-      web3js.eth.estimateGas(txObject)
-      .then(gas => {
+    setGasValues({ USD: 0, ETH: 0 }); // First reset
+    if (txObjects !== null) {
+      Promise.all(txObjects.map(txObject => web3js.eth.estimateGas(txObject)))
+      .then(gasEstimates => {
+        console.log(gasEstimates)
         cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
         cryptoCompare.price('ETH', 'USD')
         .then(currencyPerEth => {
-          getGasPrice(txObject).then(gasPrice => {
-            const gasValueETH = parseFloat(web3js.utils.fromWei(web3js.utils.toBN(gas).mul(web3js.utils.toBN(gasPrice)).toString()))
+          let gasPrice;
+          return Promise.all(txObjects.map(txObject => {
+            if (txObject.gasPrice)
+              return txObject.gasPrice;
+            if (typeof gasPrice === 'undefined')
+              gasPrice = web3js.eth.getGasPrice();
+            return gasPrice;
+          }))
+          .then(gasPrices => {
+            const gasValueETH = gasEstimates.map((ge, i) => parseFloat(web3js.utils.fromWei(web3js.utils.toBN(ge).mul(web3js.utils.toBN(gasPrices[i])).toString()))).reduce((acc, cur) => acc + cur, 0)
             const gasValueUSD = gasValueETH * currencyPerEth['USD']
-            setGasValues({ ETH: gasValueETH, USD: gasValueUSD})
+            setGasValues({
+              ETH: gasValueETH,
+              USD: gasValueUSD
+            })
           })
         })
       })
-      .catch(() => {})
+      .catch(console.log)
     }
-  }, [txObject])
+  }, [txObjects])
 
   return gasValues
 }
@@ -90,12 +99,12 @@ const mapStateToProps = state => ({
   txHash:         state.transactionScreen.txHash,
   txError:        state.transactionScreen.txError,
   txConfirmed:    state.transactionScreen.txConfirmed,
-  txObject:       state.transactionScreen.txObject,
+  txObjects:      state.transactionScreen.txObjects,
   currency:       state.settings.currency,
 })
 
 const mapDispatchToProps = (dispatch, ownProps) => ({
-  onSend: (txObject, counterparties) => dispatch(sendTx(txObject, counterparties)),
+  onSend: (txObjects, counterparties, values) => dispatch(sendTx(txObjects, counterparties, values)),
   onClickCancel: () => dispatch(cancelTx()),
   onClickClose: () => dispatch(closeTx()),
   onClickOpen: () => dispatch(openTx()),

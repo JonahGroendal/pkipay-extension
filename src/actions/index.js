@@ -135,15 +135,14 @@ export const removeToken = (tokenName) => ({
   }
 })
 
-export const reviewTx = (tx) => ({
+export const reviewTx = (txObjects, counterparties, values) => ({
   type: 'REVIEW_TX',
   payload: {
-    txObject: tx.tx,
+    txObjects,
   },
   meta: {
-    title: tx.info.title,
-    counterparties: tx.info.counterparties,
-    values: tx.info.values,
+    counterparties,
+    values,
   }
 })
 
@@ -163,27 +162,48 @@ export const confirmTx = () => ({
   type: 'CONFIRM_TX'
 })
 
-export const sendTx = (txObject, counterparties) => async (dispatch) => {
+export const sendTx = (txObjects, counterparties) => async (dispatch) => {
+  if (!Array.isArray(txObjects))
+    txObjects = [txObjects]
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
-  return web3js.eth.sendTransaction(txObject)
-  .once('transactionHash', txHash => {
-    dispatch({
-      type: 'SEND_TX_SUCCESS',
-      payload: { txHash }
+  let receipts = [];
+  let receipt;
+  for (let i=0; i<txObjects.length-1; i++) {
+    try {
+      // we must await to ensure correct order
+      receipt = await web3js.eth.sendTransaction(txObjects[i])
+    } catch (txError) {
+      dispatch({
+        type: 'SEND_TX_ERROR',
+        payload: { txError }
+      })
+      return null
+    }
+    receipts.push(receipt)
+  }
+  if (txObjects.length > 0) {
+    let lastTx = web3js.eth.sendTransaction(txObjects[txObjects.length-1])
+    .once('transactionHash', txHash => {
+      dispatch({
+        type: 'SEND_TX_SUCCESS',
+        payload: { txHash }
+      })
+      counterparties.forEach(counterparty => dispatch(addToken(counterparty)))
     })
-    counterparties.forEach(counterparty => dispatch(addToken(counterparty)))
-  })
-  .once('confirmation', numConfs => {
-    dispatch(confirmTx())
-    dispatch(updateScheduledTxs(parseInt(txObject.nonce)+1))
-  })
-  .catch(txError => {
-    dispatch({
-      type: 'SEND_TX_ERROR',
-      payload: { txError }
+    .once('confirmation', numConfs => {
+      dispatch(confirmTx())
+      dispatch(updateScheduledTxs(parseInt(txObjects[txObjects.length-1].nonce)+1))
     })
-  })
+    .catch(txError => {
+      dispatch({
+        type: 'SEND_TX_ERROR',
+        payload: { txError }
+      })
+    })
+    receipts.push(lastTx)
+  }
+  return Promise.all(receipts)
 }
 
 export const scheduleTx = (when, txObject, counterparties) => async (dispatch) => {

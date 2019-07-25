@@ -45,9 +45,9 @@ const tokenBuyer = new web3js.eth.Contract(TokenBuyer.abi, addressOf(TokenBuyer)
 const x509Forest = new web3js.eth.Contract(X509ForestOfTrust.abi, addressOf(X509ForestOfTrust));
 const ens = new web3js.eth.Contract(ENSRegistry.abi, addressOf(ENSRegistry));
 
-const dnsRootEnsAddress = (process.env.REACT_APP_ACTUAL_ENV === 'development' || process.env.REACT_APP_ACTUAL_ENV === 'test')
-  ? 'dnsroot.test'
-  : 'dnsroot.eth'
+const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
+  ? 'dnsroot.eth'
+  : 'dnsroot.test'
 
 export async function createTxBuyThx(address, hostnames, values) {
   console.log('createTxBuyThx')
@@ -65,7 +65,6 @@ export async function createTxBuyThx(address, hostnames, values) {
   let labelHashes = []
   for (let hostname of hostnames) {
     const saleAddr = await resolver.methods.addr(namehash.hash(hostname)).call()
-    console.log(saleAddr)
     if (saleAddr === '0x0000000000000000000000000000000000000000') {
       let labels = hostname.split('.').reverse()
       labelHashes = labelHashes.concat(labels.map(web3js.utils.sha3))
@@ -74,13 +73,46 @@ export async function createTxBuyThx(address, hostnames, values) {
     }
   }
   const weiValues = values.map(v => web3js.utils.toWei(v.toString()));
-  console.log(currency.address, saleAddrs, labelHashes, weiValues)
   let abi = tokenBuyer.methods.multiBuy(currency.address, saleAddrs, labelHashes, weiValues).encodeABI()
-  return {
+  return [{
     from: address,
     to: tokenBuyer.address,
     gas: (300000 + (300000 * weiValues.length)).toString(),
     data: abi
+  }]
+}
+
+export async function createTxWithdrawAll(address, domainName) {
+  console.log('withdrawAllEthAndDai')
+  const saleAddr = await resolver.methods.addr(namehash.hash(domainName)).call()
+  if (saleAddr === '0x0000000000000000000000000000000000000000')
+    return { DAI: 0, ETH: 0 };
+  let tokenSale;
+  if (process.env.REACT_APP_ACTUAL_ENV === 'production')
+    tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr)
+  else
+    tokenSale = new web3js.eth.Contract(TokenSaleKovan.abi, saleAddr)
+  const daiValue = (await currency.methods.balanceOf(saleAddr).call()).toString()
+  const ethValue = await web3js.eth.getBalance(saleAddr)
+  let txObjects = [];
+  if (parseInt(daiValue) > 0)
+    txObjects.push({
+      from: address,
+      to: saleAddr,
+      gas: 100000,
+      data: await tokenSale.methods.withdrawDAI(address, daiValue).encodeABI()
+    });
+  if (parseInt(ethValue) > 0)
+    txObjects.push({
+      from: address,
+      to: saleAddr,
+      gas: 100000,
+      data: await tokenSale.methods.withdrawETH(address, ethValue).encodeABI()
+    });
+  return {
+    txObjects,
+    daiValue: parseFloat(web3js.utils.fromWei(daiValue)),
+    ethValue: parseFloat(web3js.utils.fromWei(ethValue))
   }
 }
 

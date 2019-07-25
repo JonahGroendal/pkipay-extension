@@ -1,6 +1,6 @@
 import React from 'react'
+import { makeStyles } from '@material-ui/core/styles'
 import FullScreenDialog from './FullScreenDialog'
-import { withStyles } from '@material-ui/core/styles'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 import IconButton from '@material-ui/core/IconButton'
@@ -19,157 +19,7 @@ import DoneIcon from '@material-ui/icons/Done';
 import ErrorIcon from '@material-ui/icons/Error';
 import Badge from '@material-ui/core/Badge';
 
-function TransactionScreen(props) {
-  const {
-    isOpen,
-    counterparties,
-    values,
-    gasValue,
-    gasValueETH,
-    txSent,
-    txConfirmed,
-    txErrored,
-    onClickSend,
-    onClickCancel,
-    onClickClose,
-    onClickOpen,
-    currencySymbol,
-    badgeInvisible,
-    txObjectExists,
-    classes,
-  } = props;
-
-  const totalAmount = values.reduce( (a, b) => a + b, 0 )
-  return (
-    <div>
-      <IconButton
-        onClick={e => { if (isOpen) onClickClose(); else onClickOpen()}}
-        color="inherit"
-        aria-label="Review Transaction"
-      >
-        <Tooltip title="last transaction" enterDelay={300}>
-          <Badge
-            invisible={badgeInvisible}
-            badgeContent="!" color="secondary"
-          >
-            <PaymentIcon />
-          </Badge>
-        </Tooltip>
-      </IconButton>
-      <FullScreenDialog
-        title={"Review Transaction"}
-        open={isOpen}
-        onClose={onClickClose}
-      >
-        <div className={classes.contentRoot}>
-          <div className={classes.currentTransaction}>
-            <div className={classes.details}>
-              <Typography variant="h6">
-                Details
-              </Typography>
-              {!txObjectExists && <Typography variant="subtitle1"className={classes.noTx}>
-                No transaction
-              </Typography>}
-              <List>
-                {counterparties.map((to, index) => (
-                  <ListItem
-                    key={index}
-                    divider={index !== counterparties.length-1}
-                  >
-                    <div className={classes.listItemLeft}>
-                      <div className={classes.listItemValue}>
-                        <ListItemText primary={currencySymbol + values[index].toFixed(2) + " DAI"} />
-                        <ListItemIcon>
-                          <ArrowForwardIcon />
-                        </ListItemIcon>
-                      </div>
-                      <div className={classes.listItemValue}>
-                        <ListItemText primary={currencySymbol + values[index].toFixed(2) + " THX"} />
-                        <ListItemIcon>
-                          <ArrowBackIcon />
-                        </ListItemIcon>
-                      </div>
-                    </div>
-                    <Tooltip title={to} enterDelay={300}>
-                      <ListItemText primary={Array.from(to.substring(0, 17)).map((c, i) => i!==16 ? c : String.fromCharCode(8230)).join('')} />
-                    </Tooltip>
-                  </ListItem>
-                ))}
-              </List>
-            </div>
-            <Divider />
-            <div className={classes.summary}>
-              <div className={classes.summaryRow}>
-                <Typography variant="subtitle1">
-                  {"Transfers"}
-                </Typography>
-                <Typography variant="subtitle1">
-                  {currencySymbol + totalAmount.toFixed(2)}
-                </Typography>
-              </div>
-              <div className={classes.summaryRow}>
-                <Typography variant="subtitle1">
-                  {"Network fees"}
-                </Typography>
-                <Typography variant="subtitle1">
-                  {(gasValueETH*1000).toFixed(3) + "mETH (" + currencySymbol + gasValue.toFixed(2) + ")"}
-                </Typography>
-              </div>
-              <div className={classes.summaryRow}>
-                <Typography variant="subtitle1">
-                  {"Total:"}
-                </Typography>
-                <Typography variant="subtitle1">
-                  {currencySymbol + (totalAmount + gasValue).toFixed(2)}
-                </Typography>
-              </div>
-            </div>
-            <Divider />
-            <div className={classes.statusAndButtons}>
-              <div className={classes.buttons}>
-                <Button
-                  onClick={onClickCancel}
-                  variant="outlined" size="medium"color="primary"
-                  disabled={txSent && !txErrored}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={onClickSend}
-                  variant="contained" size="medium" color="secondary"
-                  disabled={!txObjectExists || txSent}
-                >
-                  Send
-                  <SendIcon className={classes.rightIcon} />
-                </Button>
-              </div>
-              {txSent && !txConfirmed && !txErrored && <div className={classes.status}>
-                <Typography variant="subtitle1">
-                  {"Transaction pending "}
-                </Typography>
-                <CircularProgress />
-              </div>}
-              {txSent && txConfirmed && <div className={classes.status}>
-                <Typography variant="subtitle1">
-                  {"Transaction confirmed "}
-                </Typography>
-                <DoneIcon />
-              </div>}
-              {txSent && txErrored && <div className={classes.status}>
-                <Typography variant="subtitle1">
-                  {"Transaction errored "}
-                </Typography>
-                <ErrorIcon />
-              </div>}
-            </div>
-          </div>
-        </div>
-      </FullScreenDialog>
-    </div>
-  )
-}
-
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   contentRoot: {},
   currentTransaction: {
     height: '70%',
@@ -232,6 +82,161 @@ const styles = theme => ({
   },
   rightIcon: {
     marginLeft: theme.spacing(1),
-  },
-})
-export default withStyles(styles)(TransactionScreen)
+  }
+}));
+
+function TransactionScreen(props) {
+  const {
+    isOpen,
+    counterparties,
+    values,
+    gasValue,
+    gasValueETH,
+    txSent,
+    txConfirmed,
+    txErrored,
+    onClickSend,
+    onClickCancel,
+    onClickClose,
+    onClickOpen,
+    currencySymbol,
+    badgeInvisible,
+    txObjectExists
+  } = props;
+  const classes = useStyles()
+
+  let balancesChanges = { 'ETH': 0 }
+  values.forEach(valsObj => {
+    Object.keys(valsObj).forEach(tokenLabel => {
+      if (typeof balancesChanges[tokenLabel] !== 'number')
+        balancesChanges[tokenLabel] = 0
+      balancesChanges[tokenLabel] += valsObj[tokenLabel]
+    })
+  })
+  return (
+    <div>
+      <IconButton
+        onClick={e => { if (isOpen) onClickClose(); else onClickOpen()}}
+        color="inherit"
+        aria-label="Review Transaction"
+      >
+        <Tooltip title="last transaction" enterDelay={300}>
+          <Badge
+            invisible={badgeInvisible}
+            badgeContent="!" color="secondary"
+          >
+            <PaymentIcon />
+          </Badge>
+        </Tooltip>
+      </IconButton>
+      <FullScreenDialog
+        title={"Review Transaction"}
+        open={isOpen}
+        onClose={onClickClose}
+      >
+        <div className={classes.contentRoot}>
+          <div className={classes.currentTransaction}>
+            <div className={classes.details}>
+              <Typography variant="h6">
+                Details
+              </Typography>
+              {!txObjectExists && <Typography variant="subtitle1"className={classes.noTx}>
+                No transaction
+              </Typography>}
+              {txObjectExists && <List>
+                {counterparties.map((to, index) => (
+                  <ListItem
+                    key={index}
+                    divider={index !== counterparties.length-1}
+                  >
+                    <div className={classes.listItemLeft}>
+                      {Object.keys(values[index]).map(tokenLabel => (
+                        <div key={tokenLabel} className={classes.listItemValue}>
+                          <ListItemText primary={Math.abs(values[index][tokenLabel]).toFixed(3) + " " + tokenLabel} />
+                          <ListItemIcon>
+                            {values[index][tokenLabel] <= 0
+                              ? <ArrowForwardIcon />
+                              : <ArrowBackIcon />}
+                          </ListItemIcon>
+                        </div>
+                      ))}
+                    </div>
+                    <Tooltip title={to} enterDelay={300}>
+                      <ListItemText primary={Array.from(to.substring(0, 17)).map((c, i) => i!==16 ? c : String.fromCharCode(8230)).join('')} />
+                    </Tooltip>
+                  </ListItem>
+                ))}
+              </List>}
+            </div>
+            <Divider />
+            <div className={classes.summary}>
+              <div className={classes.summaryRow}>
+                <Typography variant="subtitle1">
+                  {"Network fees:"}
+                </Typography>
+                <Typography variant="subtitle1">
+                  {(gasValueETH*1000).toFixed(3) + "mETH (" + currencySymbol + gasValue.toFixed(2) + ")"}
+                </Typography>
+              </div>
+              <div className={classes.summaryRow}>
+                <Typography variant="subtitle1">
+                  {"Total change:"}
+                </Typography>
+                <div>
+                  <Typography variant="subtitle1">
+                    {(balancesChanges['ETH'] - gasValueETH >= 0 ? '+ ' : '– ').concat(Math.abs(balancesChanges['ETH'] - gasValueETH).toFixed(6)).concat(" ETH")}
+                  </Typography>
+                  {Object.keys(balancesChanges).filter(k => k !== 'ETH').map(tokenLabel => (
+                    <Typography key={tokenLabel} variant="subtitle1">
+                      {(balancesChanges[tokenLabel] >= 0 ? '+ ' : '– ').concat(Math.abs(balancesChanges[tokenLabel]).toFixed(6)).concat(" ").concat(tokenLabel)}
+                    </Typography>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <Divider />
+            <div className={classes.statusAndButtons}>
+              <div className={classes.buttons}>
+                <Button
+                  onClick={onClickCancel}
+                  variant="outlined" size="medium"color="primary"
+                  disabled={txSent && !txErrored}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={onClickSend}
+                  variant="contained" size="medium" color="secondary"
+                  disabled={!txObjectExists || txSent}
+                >
+                  Send
+                  <SendIcon className={classes.rightIcon} />
+                </Button>
+              </div>
+              {txSent && !txConfirmed && !txErrored && <div className={classes.status}>
+                <Typography variant="subtitle1">
+                  {"Transaction pending "}
+                </Typography>
+                <CircularProgress />
+              </div>}
+              {txSent && txConfirmed && <div className={classes.status}>
+                <Typography variant="subtitle1">
+                  {"Transaction confirmed "}
+                </Typography>
+                <DoneIcon />
+              </div>}
+              {txSent && txErrored && <div className={classes.status}>
+                <Typography variant="subtitle1">
+                  {"Transaction errored "}
+                </Typography>
+                <ErrorIcon />
+              </div>}
+            </div>
+          </div>
+        </div>
+      </FullScreenDialog>
+    </div>
+  )
+}
+
+export default TransactionScreen

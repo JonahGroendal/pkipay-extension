@@ -4,7 +4,7 @@ const initialState = {
   values: [],
   txHash: null,
   txError: null,
-  txObject: null,
+  txObjects: null,
   txConfirmed: false
 }
 
@@ -16,7 +16,7 @@ function transactionScreen(state=initialState, action) {
         isOpen: true,
         counterparties: action.meta.counterparties,
         values: action.meta.values,
-        txObject: action.payload.txObject,
+        txObjects: action.payload.txObjects,
       };
     case 'SEND_TX_SUCCESS':
       return {

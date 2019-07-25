@@ -277,8 +277,8 @@ export default function DnsChallengeScreen(props) {
                               <MenuItem value="">
                                 <em>None</em>
                               </MenuItem>
-                              {Object.keys(instructions).map(domain => (
-                                <MenuItem value={domain}>{domain}</MenuItem>
+                              {Object.keys(instructions).map((domain, i) => (
+                                <MenuItem key={i} value={domain}>{domain}</MenuItem>
                               ))}
                             </Select>
                             <FormHelperText>Where'd you buy your domain?</FormHelperText>

@@ -29,13 +29,7 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
   donate: (from, amount) => {
     createTxBuyThx(from, ownProps.subscription.hostname, amount)
     .then(tx => {
-      dispatch(reviewTx({
-        tx: tx,
-        info: {
-          counterparties: [ownProps.subscription.hostname],
-          values: [web3js.utils.toWei(amount.toString())],
-        }
-      }))
+      dispatch(reviewTx(tx, [ownProps.subscription.hostname], [{ 'DAI': amount*-1, 'tokens': amount }]))
     })
   }
 })

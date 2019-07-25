@@ -13,6 +13,15 @@ function Balances({ address, tokens, txScreenOpen }) {
   })
 }
 
+const mapStateToProps = state => ({
+  address: state.wallet.addresses[state.wallet.defaultAccount],
+  tokens: state.wallet.tokens,
+  txScreenOpen: state.transactionScreen.isOpen
+})
+
+export default connect(mapStateToProps)(Balances)
+
+
 function useTokenBalances(address, tokens, txScreenOpen) {
   const [tokenBalances, setTokenBalances] = React.useState([])
 
@@ -45,11 +54,3 @@ function useDaiBalance(address, txScreenOpen) {
 
   return daiBalance
 }
-
-const mapStateToProps = state => ({
-  address: state.wallet.addresses[state.wallet.defaultAccount],
-  tokens: state.wallet.tokens,
-  txScreenOpen: state.transactionScreen.isOpen
-})
-
-export default connect(mapStateToProps)(Balances)
