@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import MuiTable from '@material-ui/core/Table'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
@@ -14,7 +14,7 @@ import TableSortLabel from '@material-ui/core/TableSortLabel'
 import Tooltip from '@material-ui/core/Tooltip'
 import classNames from 'classnames'
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   toolbar: {
     paddingTop: theme.spacing(2),
     paddingRight: theme.spacing(2),
@@ -57,7 +57,7 @@ const styles = theme => ({
     height: theme.spacing(6),
     minHeight: 0
   }
-})
+}));
 
 function sort(data, order, orderBy, fixedIndices) {
   function getSorting(order, orderBy) {
@@ -73,7 +73,6 @@ function sort(data, order, orderBy, fixedIndices) {
 
 function Table(props) {
   const {
-    classes,
     children,
     title,
     subtitle,
@@ -83,7 +82,7 @@ function Table(props) {
     rowsPerPage,
     highlightedRowIndex
   } = props
-
+  const classes = useStyles()
   const [order, setOrder] = React.useState(props.initOrder)
   const [orderBy, setOrderBy] = React.useState(props.initOrderBy)
   const rowsDataSorted = sort(rowsData, order, orderBy, fixedIndices)
@@ -198,7 +197,6 @@ function Table(props) {
 }
 
 Table.propTypes = {
-  classes: PropTypes.object.isRequired,
   children: PropTypes.func.isRequired, //render prop
   fixedIndices: PropTypes.array.isRequired,
   headerCells: PropTypes.array.isRequired,
@@ -215,4 +213,4 @@ Table.defaultProps = {
   subtitle: '',
 }
 
-export default withStyles(styles)(Table)
+export default Table

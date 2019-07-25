@@ -1,103 +1,12 @@
 import React from 'react'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import FullScreenDialog from './FullScreenDialog'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
 import Page from './Page'
 import Paper from '@material-ui/core/Paper'
 
-
-const CreateWalletScreen = ({
-  isOpen,
-  pwError,
-  privKeyError,
-  onClickCreate,
-  onClickImport,
-  pw1,
-  onChangePw1,
-  pw2,
-  onChangePw2,
-  privKey,
-  onChangePrivKey,
-  classes
-}) => (
-  <FullScreenDialog
-    title="Create or Import Wallet"
-    open={isOpen}
-    hideClose={true}
-  >
-    <Page>
-      <Paper className={classes.paper}>
-        <TextField
-          className={classes.textField}
-          onChange={onChangePw1}
-          value={pw1}
-          error={pwError}
-          label="Create password"
-          type="password"
-          margin="normal"
-        />
-        <TextField
-          className={classes.textField}
-          onChange={onChangePw2}
-          value={pw2}
-          error={pwError}
-          label="Retype password"
-          type="password"
-          margin="normal"
-        />
-        <div className={classes.buttonContainer}>
-          <Button
-            onClick={onClickCreate}
-            variant="outlined" size="medium" color="secondary"
-          >
-            Create wallet
-          </Button>
-        </div>
-      </Paper>
-      <Paper className={classes.paper}>
-        <TextField
-          className={classes.textField}
-          onChange={onChangePw1}
-          value={pw1}
-          error={pwError}
-          label="Create password"
-          type="password"
-          margin="normal"
-        />
-        <TextField
-          className={classes.textField}
-          onChange={onChangePw2}
-          value={pw2}
-          error={pwError}
-          label="Retype password"
-          type="password"
-          margin="normal"
-        />
-        <TextField
-          className={classes.textField}
-          onChange={onChangePrivKey}
-          value={privKey}
-          error={privKeyError}
-          label="Private key"
-          margin="normal"
-          fullWidth={true}
-        />
-        <div className={classes.buttonContainer}>
-          <Button
-            onClick={onClickImport}
-            variant="outlined" size="medium" color="secondary"
-          >
-            Import wallet
-          </Button>
-        </div>
-      </Paper>
-    </Page>
-  </FullScreenDialog>
-)
-
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
   paper: {
     paddingRight: theme.spacing(2),
     paddingBottom: theme.spacing(2),
@@ -112,6 +21,99 @@ const styles = theme => ({
     justifyContent: 'flex-end',
     marginTop: theme.spacing(2)
   }
-})
+}));
 
-export default withStyles(styles)(CreateWalletScreen)
+function CreateWalletScreen(props) {
+  const {
+    isOpen,
+    pwError,
+    privKeyError,
+    onClickCreate,
+    onClickImport,
+    pw1,
+    onChangePw1,
+    pw2,
+    onChangePw2,
+    privKey,
+    onChangePrivKey
+  } = props
+  const classes = useStyles()
+
+  return (
+    <FullScreenDialog
+      title="Create or Import Wallet"
+      open={isOpen}
+      hideClose={true}
+    >
+      <Page>
+        <Paper className={classes.paper}>
+          <TextField
+            className={classes.textField}
+            onChange={onChangePw1}
+            value={pw1}
+            error={pwError}
+            label="Create password"
+            type="password"
+            margin="normal"
+          />
+          <TextField
+            className={classes.textField}
+            onChange={onChangePw2}
+            value={pw2}
+            error={pwError}
+            label="Retype password"
+            type="password"
+            margin="normal"
+          />
+          <div className={classes.buttonContainer}>
+            <Button
+              onClick={onClickCreate}
+              variant="outlined" size="medium" color="secondary"
+            >
+              Create wallet
+            </Button>
+          </div>
+        </Paper>
+        <Paper className={classes.paper}>
+          <TextField
+            className={classes.textField}
+            onChange={onChangePw1}
+            value={pw1}
+            error={pwError}
+            label="Create password"
+            type="password"
+            margin="normal"
+          />
+          <TextField
+            className={classes.textField}
+            onChange={onChangePw2}
+            value={pw2}
+            error={pwError}
+            label="Retype password"
+            type="password"
+            margin="normal"
+          />
+          <TextField
+            className={classes.textField}
+            onChange={onChangePrivKey}
+            value={privKey}
+            error={privKeyError}
+            label="Private key"
+            margin="normal"
+            fullWidth={true}
+          />
+          <div className={classes.buttonContainer}>
+            <Button
+              onClick={onClickImport}
+              variant="outlined" size="medium" color="secondary"
+            >
+              Import wallet
+            </Button>
+          </div>
+        </Paper>
+      </Page>
+    </FullScreenDialog>
+  )
+}
+
+export default CreateWalletScreen

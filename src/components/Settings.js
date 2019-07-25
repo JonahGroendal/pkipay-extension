@@ -1,7 +1,7 @@
 import React from 'react'
 import FullScreenDialog from './FullScreenDialog'
 import strings from '../api/strings'
-import { withStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/core/styles'
 import IconButton from '@material-ui/core/IconButton'
 import SettingsIcon from '@material-ui/icons/SettingsApplications'
 import Tooltip from '@material-ui/core/Tooltip'
@@ -15,15 +15,22 @@ import MenuItem from '@material-ui/core/MenuItem';
 import { connect } from 'react-redux';
 import { setCurrency, setPaymentSchedule, setThemeType } from '../actions'
 
+const useStyles = makeStyles(theme => ({
+  contentRoot: {
+    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing(2),
+    marginRight: theme.spacing(2)
+  }
+}));
+
 function Settings(props) {
   const {
     settings,
     onChangeCurrency,
     onChangePaymentSchedule,
-    onChangeThemeType,
-    classes
+    onChangeThemeType
   } = props;
-
+  const classes = useStyles()
   const [open, setOpen] = React.useState(false);
 
   const changeSetting = {
@@ -75,14 +82,6 @@ function Settings(props) {
   )
 }
 
-const styles = theme => ({
-  contentRoot: {
-    marginTop: theme.spacing(2),
-    marginLeft: theme.spacing(2),
-    marginRight: theme.spacing(2)
-  }
-})
-
 const mapStateToProps = state => ({
   settings: state.settings
 })
@@ -94,4 +93,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(withStyles(styles)(Settings))
+)(Settings)

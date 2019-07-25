@@ -1,18 +1,64 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import SubscribeForm from '../containers/SubscribeForm'
-import blockchain from '../api/blockchain'
-import { withStyles } from '@material-ui/core/styles'
+import { getTotalDonations, getTotalDonationsFromOneMonth } from '../api/blockchain'
+import { makeStyles } from '@material-ui/core/styles'
 import Paper from '@material-ui/core/Paper'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
-import getPixels from 'get-pixels'
+// import getPixels from 'get-pixels'
 import strings from '../api/strings'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function Profile({ classes, subscription, currency }) {
+const useStyles = makeStyles(theme => ({
+  paper: {
+    marginTop: theme.spacing(1),
+    padding: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  paperAvatar: {
+    borderRadius: '50%',
+    marginTop: theme.spacing(-3),
+  },
+  rowAvatar: {
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  avatar: {
+    width: theme.spacing(8),
+    height: theme.spacing(8),
+    justifyContent: 'center'
+  },
+  infoText: {
+    //marginTop: '2px',
+  },
+  buttonSubscribe: {
+    alignSelf: 'flex-end'
+  },
+  subscribeContainer: {
+    marginTop: theme.spacing(2),
+  },
+  subscribePaper: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    transitionProperty: 'width',
+    transitionDuration: '300ms',
+    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+  subscribeForm: {
+    // transition: 'width 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms'
+    // transitionProperty: 'width',
+  },
+  form: {
+    //backgroundColor: theme.palette.grey['A100']
+  }
+}));
 
+function Profile({ subscription, currency }) {
+  const classes = useStyles()
   const [displayName, setDisplayName] = React.useState(subscription.hostname)
   const [largeFaviconExists, setLargeFaviconExists] = React.useState(false)
   // const [avatarColor, setAvatarColor] = React.useState('')
@@ -25,10 +71,10 @@ function Profile({ classes, subscription, currency }) {
     const { hostname } = subscription
     console.log(hostname)
     if (hostname) {
-      blockchain.getTotalDonations(hostname).then(td => {
+      getTotalDonations(hostname).then(td => {
         setTotalDonations(convertFromUSD(currency, td))
       })
-      blockchain.getTotalDonationsFromOneMonth(hostname).then(td => {
+      getTotalDonationsFromOneMonth(hostname).then(td => {
         setTotalDonationsOneMonth(convertFromUSD(currency, td))
       })
       const faviconUrlLarge = 'https://' + hostname + '/apple-touch-icon.png'
@@ -59,8 +105,8 @@ function Profile({ classes, subscription, currency }) {
   //     setTotalDonations(0)
   //     setTotalDonationsOneMonth(0)
   //     Promise.all([
-  //       blockchain.getTotalDonations(hostname),
-  //       blockchain.getTotalDonationsFromOneMonth(hostname)
+  //       getTotalDonations(hostname),
+  //       getTotalDonationsFromOneMonth(hostname)
   //     ]).then(([totalDonations, totalDonationsOneMonth]) => {
   //       setTotalDonations(convertFromUSD(currency, totalDonations))
   //       setTotalDonationsOneMonth(convertFromUSD(currency, totalDonationsOneMonth))
@@ -200,57 +246,11 @@ function mode(array) {
   return maxEl;
 }
 
-const styles = theme => ({
-  paper: {
-    marginTop: theme.spacing(1),
-    padding: theme.spacing(2),
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  paperAvatar: {
-    borderRadius: '50%',
-    marginTop: theme.spacing(-3),
-  },
-  rowAvatar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-  },
-  avatar: {
-    width: theme.spacing(8),
-    height: theme.spacing(8),
-    justifyContent: 'center'
-  },
-  infoText: {
-    //marginTop: '2px',
-  },
-  buttonSubscribe: {
-    alignSelf: 'flex-end'
-  },
-  subscribeContainer: {
-    marginTop: theme.spacing(2),
-  },
-  subscribePaper: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'flex-end',
-    transitionProperty: 'width',
-    transitionDuration: '300ms',
-    transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-  subscribeForm: {
-    // transition: 'width 225ms cubic-bezier(0.4, 0, 0.2, 1) 0ms'
-    // transitionProperty: 'width',
-  },
-  form: {
-    //backgroundColor: theme.palette.grey['A100']
-  }
-})
-
 const mapStateToProps = state => ({
   currency: state.settings.currency
 })
 
-export default connect(mapStateToProps)(withStyles(styles)(Profile))
+export default connect(mapStateToProps)(Profile)
 
 
 // componentDidUpdate(prevProps, prevState, snapshot) {

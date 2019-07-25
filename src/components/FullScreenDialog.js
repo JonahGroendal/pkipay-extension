@@ -1,6 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles'
 import IconButton from '@material-ui/core/IconButton';
 import Dialog from '@material-ui/core/Dialog';
 import AppBar from '@material-ui/core/AppBar';
@@ -9,7 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import CloseIcon from '@material-ui/icons/Close';
 import Slide from '@material-ui/core/Slide';
 
-const styles = {
+const useStyles = makeStyles(theme => ({
   root: {
     maxWidth: '352px', // theme.spacing(44)
     maxHeight: '600px', // theme.spacing(75)
@@ -19,39 +18,39 @@ const styles = {
   },
   flex: {
     flex: 1,
-  },
-};
+  }
+}));
 
 const Transition = props => {
   return <Slide direction="up" {...props} />;
 }
 
-const FullScreenDialog = ({ classes, title, children, open, onClose, hideClose }) => (
-  <Dialog
-    className={classes.root}
-    fullScreen
-    open={open}
-    onClose={onClose}
-    TransitionComponent={Transition}
-  >
-    <AppBar className={classes.appBar}>
-      <Toolbar>
-        {!hideClose && <IconButton color="inherit" onClick={onClose} aria-label="Close">
-          <CloseIcon />
-        </IconButton>}
-        <Typography variant="h6" color="inherit" className={classes.flex}>
-          {title}
-        </Typography>
-      </Toolbar>
-    </AppBar>
+function FullScreenDialog({ title, children, open, onClose, hideClose }) {
+  const classes = useStyles();
 
-    {children}
+  return (
+    <Dialog
+      className={classes.root}
+      fullScreen
+      open={open}
+      onClose={onClose}
+      TransitionComponent={Transition}
+    >
+      <AppBar className={classes.appBar}>
+        <Toolbar>
+          {!hideClose && <IconButton color="inherit" onClick={onClose} aria-label="Close">
+            <CloseIcon />
+          </IconButton>}
+          <Typography variant="h6" color="inherit" className={classes.flex}>
+            {title}
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-  </Dialog>
-);
+      {children}
 
-FullScreenDialog.propTypes = {
-  classes: PropTypes.object.isRequired,
-};
+    </Dialog>
+  );
+}
 
-export default withStyles(styles)(FullScreenDialog);
+export default FullScreenDialog;
