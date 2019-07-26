@@ -28,17 +28,20 @@ const api = ((typeof browser === 'undefined' || typeof browser.tabs === 'undefin
 export default api
 
 export async function loadState() {
+  const t0 = performance.now();
   const storage = await getFromStorage(null)
   const compressed = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
   if (compressed) {
     const serialized = inflateZeros(compressed)
     // const serialized = (await inflate(compressed)).toString('utf8')
+    console.log('loadState() took '.concat((performance.now() - t0).toString()).concat('ms'))
     return JSON.parse(serialized)
   }
   return undefined
 }
 
 export async function saveState(state) {
+  const t0 = performance.now()
   const serialized = JSON.stringify(state)
   const compressed = deflateZeros(serialized)
   // const compressed = await deflate(serialized)
@@ -47,6 +50,7 @@ export async function saveState(state) {
     chunks['state'+i.toString().padStart(2,'0')] = compressed.substring(i*2048, i*2048 + 2048)
   }
   await setToStorage(chunks)
+  console.log('saveState() took '.concat((performance.now() - t0).toString()).concat('ms'))
 }
 
 export function getUrl() {
