@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom'
 import { createStore, applyMiddleware } from 'redux'
 import { Provider } from 'react-redux'
 import thunkMiddleware from 'redux-thunk'
-import { createLogger } from 'redux-logger'
+import loggerMiddleware from 'redux-logger'
 import App from './containers/App.js'
 import rootReducer from './reducers'
 import { loadState, saveState } from './api/browser'
@@ -13,8 +13,6 @@ import registerServiceWorker from './registerServiceWorker'
 import { throttle, omit } from 'lodash'
 
 loadState().then(persistedState => {
-  const loggerMiddleware = createLogger()
-
   const store = createStore(
     rootReducer,
     persistedState,
