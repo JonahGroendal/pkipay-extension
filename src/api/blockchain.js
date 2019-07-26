@@ -51,16 +51,26 @@ const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
 
 export async function createTxBuyThx(address, hostnames, values) {
   console.log('createTxBuyThx')
-  if (!Array.isArray(hostnames)) hostnames = [hostnames,];
-  if (!Array.isArray(values)) values = [values,];
-  const validHostnames = (e, i) => hostnames[i] && !hostnames[i].includes('#')
-  hostnames = hostnames.filter(validHostnames);
-  values = values.filter(validHostnames);
+  const txObjects = []
+  if (!Array.isArray(hostnames)) hostnames = [hostnames];
+  if (!Array.isArray(values)) values = [values];
   if (values.length !== hostnames.length)
     throw new Error("Invalid length of values")
   for (let hostname of hostnames) {
     validateHostname(hostname)
   }
+  // Create TX to let TokenBuyer contract spend your money
+  const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
+  if (parseInt(allowance.toString()) < 10**36) {
+    const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+    txObjects.push({
+      from: address,
+      to: currency.address,
+      gas: 50000,
+      abi: currency.methods.approve(tokenBuyer.address, maxUint).encodeABI()
+    })
+  }
+  // Now create the buy TX
   let saleAddrs = []
   let labelHashes = []
   for (let hostname of hostnames) {
@@ -73,13 +83,13 @@ export async function createTxBuyThx(address, hostnames, values) {
     }
   }
   const weiValues = values.map(v => web3js.utils.toWei(v.toString()));
-  let abi = tokenBuyer.methods.multiBuy(currency.address, saleAddrs, labelHashes, weiValues).encodeABI()
-  return [{
+  txObjects.push({
     from: address,
     to: tokenBuyer.address,
     gas: (300000 + (300000 * weiValues.length)).toString(),
-    data: abi
-  }]
+    data: tokenBuyer.methods.multiBuy(currency.address, saleAddrs, labelHashes, weiValues).encodeABI()
+  })
+  return txObjects
 }
 
 export async function createTxWithdrawAll(address, domainName) {
@@ -204,18 +214,18 @@ export async function pointEnsNodeToTokenSaleResolver(address, hostname) {
   }
 }
 
-export async function approveTokenBuyer(address) {
-  console.log('approveTokenBuyer')
-  const balance = await currency.methods.balanceOf(address).call()
-  if (balance === "0") return;
-  const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
-  const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-  if (parseInt(allowance.toString()) > 10**36) return;
-  await currency.methods.approve(tokenBuyer.address, maxUint).send({
-    from: address,
-    gas: 50000
-  })
-}
+// export async function approveTokenBuyer(address) {
+//   console.log('approveTokenBuyer')
+//   const balance = await currency.methods.balanceOf(address).call()
+//   if (balance === "0") return;
+//   const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
+//   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+//   if (parseInt(allowance.toString()) > 10**36) return;
+//   await currency.methods.approve(tokenBuyer.address, maxUint).send({
+//     from: address,
+//     gas: 50000
+//   })
+// }
 
 // // Deposit currency tokens into BuyMultipleTokens contract for future transfers
 // export async function depositAllCurrency() {

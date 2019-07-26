@@ -1,7 +1,7 @@
 import web3js from '../api/web3js'
 import browser from '../api/browser'
 import strings from '../api/strings'
-import { createTxBuyThx, approveTokenBuyer } from '../api/blockchain'
+import { createTxBuyThx } from '../api/blockchain'
 import AcmeClient from '../api/AcmeClient'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
 
@@ -65,14 +65,13 @@ export const unlockWalletRequest = () => (dispatch) => {
 
 export const unlockWallet = (password) => (dispatch, getState) => {
   console.log('unlockWallet')
-  const { addresses, keystore, defaultAccount } = getState().wallet
+  const { keystore } = getState().wallet
   try {
     web3js.eth.accounts.wallet.decrypt(keystore, password)
   } catch (error) {
     return dispatch({ type: 'UNLOCK_WALLET_FAILURE' })
   }
   dispatch({ type: 'UNLOCK_WALLET_SUCCESS' })
-  approveTokenBuyer(addresses[defaultAccount])
   return resolveWalletUnlock(password)
 }
 
@@ -107,7 +106,6 @@ export const addAccount = (privateKey, password) => {
   console.log('addAccount')
   const account = web3js.eth.accounts.wallet.add(privateKey)
   const keystore = web3js.eth.accounts.wallet.encrypt(password)
-  approveTokenBuyer(account.address)
   return {
     type: 'ADD_ACCOUNT',
     payload: { address: account.address, keystore }
