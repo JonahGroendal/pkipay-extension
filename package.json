@@ -14,9 +14,9 @@
   "dependencies": {
     "@babel/runtime": "^7.3.4",
     "@ensdomains/ens": "github:JonahGroendal/ens",
-    "@material-ui/core": "^4.0.0-rc.0",
-    "@material-ui/icons": "^3.0.2",
-    "@material-ui/styles": "^4.0.0-rc.0",
+    "@material-ui/core": "^4.2.1",
+    "@material-ui/icons": "^4.2.1",
+    "@material-ui/styles": "^4.2.1",
     "ajv": "^6.10.0",
     "asn1.js": "github:indutny/asn1.js",
     "bn.js": "^4.11.8",

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/styles'
 import TransactionScreen from '../containers/TransactionScreen'
 import Settings from './Settings'
 import AppBar from '@material-ui/core/AppBar'

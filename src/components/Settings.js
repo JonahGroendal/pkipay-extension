@@ -1,7 +1,7 @@
 import React from 'react'
 import FullScreenDialog from './FullScreenDialog'
 import strings from '../api/strings'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/styles'
 import IconButton from '@material-ui/core/IconButton'
 import SettingsIcon from '@material-ui/icons/SettingsApplications'
 import Tooltip from '@material-ui/core/Tooltip'

@@ -1,7 +1,6 @@
 import React from 'react'
 import PresentationalComponent from '../components/SubscribeForm'
 import strings from '../api/strings'
-import { withStyles } from '@material-ui/core/styles'
 import { connect } from 'react-redux'
 import { addSubscription, removeSubscription, setTabIndex } from '../actions'
 import { convertToUSD } from '../api/ECBForexRates'

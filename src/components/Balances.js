@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles'
+import { makeStyles } from '@material-ui/styles'
 import Table from './Table'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
@@ -7,15 +7,15 @@ import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 
 const useStyles = makeStyles(theme => ({
-  paper: {
-    paddingTop: theme.spacing(2),
-    paddingRight: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
-    paddingLeft: theme.spacing(2),
-  },
-  tableRow: {
-    cursor: 'pointer',
-  }
+    paper: {
+      paddingTop: theme.spacing(2),
+      paddingRight: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
+      paddingLeft: theme.spacing(2),
+    },
+    tableRow: {
+      cursor: 'pointer',
+    }
 }));
 
 const headerCells = [

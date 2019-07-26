@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/styles';
 import classNames from 'classnames';
 import FullScreenDialog from './FullScreenDialog'
 import Link from '@material-ui/core/Link';
