@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import PresentationalComponent from '../components/WithdrawDonationsCard'
 import { createTxWithdrawAll } from '../api/blockchain'
 import { reviewTx } from '../actions'
-import web3js from '../api/web3js'
 
 function WithdrawDonationsCard({ subscription, ...mapped }) {
   async function handleWithdrawl() {

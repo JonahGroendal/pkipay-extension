@@ -1,5 +1,3 @@
-'use strict';
-
 import forge from 'node-forge'
 
 const authorities = {
@@ -11,7 +9,6 @@ export default async function AcmeClient(authority, jwk=null) {
   let directory;
   let nonce;
   let accountUrl;
-  let authorization;
 
   if (Object.keys(authorities).includes(authority.toLowerCase()))
     authority = authorities[authority.toLowerCase()]

@@ -30,7 +30,7 @@ function Nav({ tabIndex, children, onChangeTab }) {
             <Typography variant="h6">
               PkiPay
             </Typography>
-            <img src="titleEmojis.png" />
+            <img src="titleEmojis.png" alt="" />
           </div>
           <div className={classes.titleColumn}>
             <TransactionScreen />

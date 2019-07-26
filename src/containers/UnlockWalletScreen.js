@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/UnlockWalletScreen'
-import { unlockWallet, unlockWalletCancel, closeTx } from '../actions'
+import { unlockWallet, unlockWalletCancel } from '../actions'
 
 function UnlockWalletScreen({ isOpen, isError, onUnlock, onClose }) {
   const [value, setValue] = React.useState('')

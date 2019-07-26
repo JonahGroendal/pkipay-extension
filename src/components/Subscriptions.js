@@ -36,7 +36,6 @@ const headerCells = [
 function Subscriptions(props) {
   const {
     subscriptions,
-    highlightedSubscription,
     onUnsubscribe,
     onClickSubscription,
     currency,

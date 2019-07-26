@@ -39,6 +39,8 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
         await pointEnsNodeToTokenSaleResolver(mapped.address, domainName);
         await mapped.onCompleteChallenge();
         break;
+      default:
+        break;
     }
   }
 

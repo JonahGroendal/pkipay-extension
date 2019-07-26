@@ -1,5 +1,3 @@
-'use strict';
-
 export async function encrypt(plaintext, password) {
   const keyDerivationParams = {
     name: "PBKDF2",
