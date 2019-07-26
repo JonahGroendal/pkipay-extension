@@ -9,7 +9,6 @@ import loggerMiddleware from 'redux-logger'
 import App from './containers/App.js'
 import rootReducer from './reducers'
 import { loadState, saveState } from './api/browser'
-import registerServiceWorker from './registerServiceWorker'
 import { throttle, omit } from 'lodash'
 
 loadState().then(persistedState => {
@@ -28,16 +27,8 @@ loadState().then(persistedState => {
     </Provider>,
     document.getElementById('render-target')
   );
-  registerServiceWorker();
 
   store.subscribe(throttle(() => {
-    saveState(omit(store.getState(),['pages']));
+    saveState(omit(store.getState(), ['pages', 'unlockWalletScreen', 'objectHostname']));
   }, 3000));
-
-  // if (store.state.nextPayment <= Date.now())
-  //   const timestamps = Object.keys(store.state.schuledTxs).sort((a, b) => a - b)
-  //   timestamps.forEach(timestamp => {
-  //
-  //   })
-  //   store.dispatch(sendSignedTx( ))
 })
