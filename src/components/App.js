@@ -3,7 +3,7 @@ import { ThemeProvider } from '@material-ui/styles'
 import { createMuiTheme } from '@material-ui/core/styles'
 import blueGrey from '@material-ui/core/colors/blueGrey'
 import amber from '@material-ui/core/colors/amber'
-import CreateWalletScreen from '../containers/CreateWalletScreen'
+import CreatePasswordScreen from '../containers/CreatePasswordScreen'
 import UnlockWalletScreen from '../containers/UnlockWalletScreen'
 import Pages from '../containers/Pages'
 import CssBaseline from '@material-ui/core/CssBaseline'
@@ -22,7 +22,7 @@ function App({ themeType }) {
     <ThemeProvider theme={theme}>
       <div >
         <CssBaseline />
-        <CreateWalletScreen />
+        <CreatePasswordScreen />
         <UnlockWalletScreen />
         <Pages />
       </div>
