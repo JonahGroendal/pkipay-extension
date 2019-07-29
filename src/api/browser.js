@@ -49,6 +49,7 @@ export async function saveState(state) {
   for (let i=0; i<compressed.length/2048; i++) {
     chunks['state'+i.toString().padStart(2,'0')] = compressed.substring(i*2048, i*2048 + 2048)
   }
+  await clearStorage()
   await setToStorage(chunks)
   console.log('saveState() took '.concat((performance.now() - t0).toString()).concat('ms'))
 }
@@ -172,6 +173,17 @@ function getFromStorage(keys) {
 function setToStorage(data) {
   return new Promise(function(resolve, reject) {
     api.storage.sync.set(data, function(result) {
+      if (!api.lastError)
+        resolve(result)
+      else
+        reject(api.lastError)
+    })
+  })
+}
+
+function clearStorage() {
+  return new Promise((resolve, reject) => {
+    api.storage.sync.clear(function(result) {
       if (!api.lastError)
         resolve(result)
       else
