@@ -3,14 +3,14 @@ import { connect } from 'react-redux'
 import InputAmount from '../components/InputAmount'
 import { buyTHX } from '../api/blockchain'
 import web3js from '../api/web3js'
-import strings from '../api/strings'
+import currencySymbols from '../api/currencySymbols'
 import { reviewTx } from '../actions'
 import { createTxBuyThx } from '../api/blockchain'
 
 function Subscribe({ subscribe, currency, address, subscription }) {
   const [amount, setAmount] = React.useState(2.0);
 
-  const currencySymbol = strings.currency[currency];
+  const currencySymbol = currencySymbols[currency];
   const onChange = e => setAmount(e.target.value)
   const onClick = () => subscribe(amount)
 
@@ -27,7 +27,7 @@ function Subscribe({ subscribe, currency, address, subscription }) {
 }
 
 const mapStateToProps = state => ({
-  currency: state.settings.currency,
+  currency: state.settings['Currency'],
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = (dispatch, ownProps) => ({

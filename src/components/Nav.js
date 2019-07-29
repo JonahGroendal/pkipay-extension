@@ -1,7 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles'
+import Settings from '../containers/Settings'
 import TransactionScreen from '../containers/TransactionScreen'
-import Settings from './Settings'
 import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'

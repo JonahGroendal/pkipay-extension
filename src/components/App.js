@@ -8,10 +8,10 @@ import UnlockWalletScreen from '../containers/UnlockWalletScreen'
 import Pages from '../containers/Pages'
 import CssBaseline from '@material-ui/core/CssBaseline'
 
-function App({ themeType }) {
+function App({ darkMode }) {
   const theme = createMuiTheme({
     palette: {
-      type: themeType,
+      type: darkMode ? 'dark' : 'light',
       primary: amber,
       secondary: blueGrey
     }

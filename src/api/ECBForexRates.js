@@ -28,3 +28,5 @@ export function convertFromUSD(to, value) {
 export function convertToUSD(from, value) {
   return value / rates[from]
 }
+
+export const supportedCurrencies = Object.keys(rates)

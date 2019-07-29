@@ -1,6 +1,6 @@
 import React from 'react'
 import PresentationalComponent from '../components/SubscribeForm'
-import strings from '../api/strings'
+import currencySymbols from '../api/currencySymbols'
 import { connect } from 'react-redux'
 import { addSubscription, removeSubscription, setTabIndex } from '../actions'
 import { convertToUSD } from '../api/ECBForexRates'
@@ -46,7 +46,7 @@ function SubscribeForm({ subscription, subscribed, subscribedAmount, currency, o
     expanded,
     disabled,
     subscribedAmount,
-    currencySymbol: strings.currency[currency],
+    currencySymbol: currencySymbols[currency],
     inputError,
     onChangeAmount: setAmount,
     onClickSubscribe: handleClickSubscribe
@@ -62,7 +62,7 @@ function getSubscribedAmount(subscriptions, subscription) {
 const mapStateToProps = (state, ownProps) => ({
   subscribed: -1 !== state.subscriptions.findIndex(sub => sub.hostname === ownProps.subscription.hostname),
   subscribedAmount: getSubscribedAmount(state.subscriptions, ownProps.subscription),
-  currency: state.settings.currency,
+  currency: state.settings['Currency'],
 })
 const mapDispatchToProps = dispatch => ({
   onSubscribe: sub => dispatch(addSubscription(sub)),

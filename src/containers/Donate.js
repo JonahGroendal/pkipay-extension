@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import InputAmount from '../components/InputAmount'
-import strings from '../api/strings'
+import currencySymbols from '../api/currencySymbols'
 import { reviewTx } from '../actions'
 import { createTxBuyThx } from '../api/blockchain'
 import { convertToUSD } from '../api/ECBForexRates'
@@ -11,7 +11,7 @@ function Donate({ donate, currency, address, subscription }) {
 
   return React.createElement(InputAmount, {
     amount,
-    currencySymbol: strings.currency[currency],
+    currencySymbol: currencySymbols[currency],
     onChange: e => setAmount(e.target.value),
     onClick: () => donate(address, convertToUSD(currency, amount)),
     buttonText: "Donate Once",
@@ -21,7 +21,7 @@ function Donate({ donate, currency, address, subscription }) {
 }
 
 const mapStateToProps = state => ({
-  currency: state.settings.currency,
+  currency: state.settings['Currency'],
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = (dispatch, ownProps) => ({

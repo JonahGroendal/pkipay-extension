@@ -1,7 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Subscriptions'
-import strings from '../api/strings'
+import currencySymbols from '../api/currencySymbols'
+import datetimeCalculators from '../api/datetimeCalculators'
 import { removeSubscription, setObjectHostname } from '../actions'
 import { convertFromUSD } from '../api/ECBForexRates'
 
@@ -28,8 +29,8 @@ function Subscriptions(props) {
     onUnsubscribe,
     onClickSubscription: sub => {setObject(sub.hostname); onChangeIndex(0)},
     currency,
-    currencySymbol: strings.currency[currency],
-    nextPayment: strings.paymentSchedule[paymentSchedule](Date.now())
+    currencySymbol: currencySymbols[currency],
+    nextPayment: datetimeCalculators[paymentSchedule](Date.now())
   })
 }
 
@@ -38,8 +39,8 @@ const notInView = (prevProps, nextProps) => nextProps.tabIndex !== 1
 
 const mapStateToProps = state => ({
   subscriptions: state.subscriptions,
-  currency: state.settings.currency,
-  paymentSchedule: state.settings.paymentSchedule,
+  currency: state.settings['Currency'],
+  paymentSchedule: state.settings['Payment schedule'],
   tabIndex: state.pages.tabIndex
 });
 const mapDispatchToProps = dispatch => ({

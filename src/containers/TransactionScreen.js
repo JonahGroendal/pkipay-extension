@@ -5,7 +5,7 @@ import { sendTx, cancelTx, closeTx, openTx, confirmTx } from '../actions'
 import { convertFromUSD } from '../api/ECBForexRates'
 import cryptoCompare from 'cryptocompare'
 import web3js from '../api/web3js'
-import strings from '../api/strings'
+import currencySymbols from '../api/currencySymbols'
 
 function TransactionScreen(props) {
   const {
@@ -50,7 +50,7 @@ function TransactionScreen(props) {
     onClickCancel,
     onClickClose,
     onClickOpen,
-    currencySymbol: strings.currency[currency],
+    currencySymbol: currencySymbols[currency],
     badgeInvisible: (txObjects === null || txHash !== null),
     txObjectExists: txObjects !== null && txObjects.length > 0
   })
@@ -104,7 +104,7 @@ const mapStateToProps = state => ({
   txError:        state.transactionScreen.txError,
   txConfirmed:    state.transactionScreen.txConfirmed,
   txObjects:      state.transactionScreen.txObjects,
-  currency:       state.settings.currency,
+  currency:       state.settings['Currency'],
 })
 
 const mapDispatchToProps = (dispatch, ownProps) => ({

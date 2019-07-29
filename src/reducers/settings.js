@@ -1,26 +1,16 @@
 const initialState = {
-  currency: "USD",
-  paymentSchedule: 'firstOfTheMonth',
-  themeType: 'light',
+  "Currency": "USD",
+  "Payment schedule": "First of the month",
+  "Dark mode": false,
 };
 
 const settings = (state=initialState, action) => {
   switch (action.type) {
-    case 'SET_CURRENCY':
+    case 'CHANGE_SETTING':
       return {
         ...state,
-        currency: action.currency
-      };
-    case 'SET_PAYMENT_SCHEDULE':
-      return {
-        ...state,
-        paymentSchedule: action.paymentSchedule
-      };
-    case 'SET_THEME_TYPE':
-      return {
-        ...state,
-        themeType: action.themeType
-      };
+        [action.payload.name]: action.payload.value
+      }
     default:
       return state;
   }

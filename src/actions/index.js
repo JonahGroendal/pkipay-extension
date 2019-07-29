@@ -1,6 +1,6 @@
 import web3js from '../api/web3js'
 import browser from '../api/browser'
-import strings from '../api/strings'
+import datetimeCalculators from '../api/datetimeCalculators'
 import { createTxBuyThx } from '../api/blockchain'
 import AcmeClient from '../api/AcmeClient'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
@@ -35,20 +35,13 @@ export const removeSubscription = (hostname) => (dispatch) => {
   dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
 }
 
-export const setCurrency = (currency) => ({
-  type: 'SET_CURRENCY',
-  currency
-});
-
-export const setPaymentSchedule = (paymentSchedule) => ({
-  type: 'SET_PAYMENT_SCHEDULE',
-  paymentSchedule
-});
-
-export const setThemeType = (themeType) => ({
-  type: 'SET_THEME_TYPE',
-  themeType
-});
+export const changeSetting = (name, value) => ({
+  type: 'CHANGE_SETTING',
+  payload: {
+    name,
+    value
+  }
+})
 
 let resolveWalletUnlock;
 let rejectWalletUnlock;
@@ -261,7 +254,7 @@ export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) 
   // Schedule transactions
   const nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
   const txObject = await createTxBuyThx(wallet.addresses[wallet.defaultAccount], hostnames, amounts)
-  const calcWhen = now => strings.paymentSchedule[settings.paymentSchedule](now).valueOf()
+  const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
   let monthIndex = (new Date(now)).getMonth()
   let year = (new Date(now)).getFullYear()
   let when

@@ -8,7 +8,7 @@ import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 // import getPixels from 'get-pixels'
-import strings from '../api/strings'
+import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
 
 const useStyles = makeStyles(theme => ({
@@ -170,7 +170,7 @@ function Profile({ subscription, currency }) {
   const faviconUrl = 'https://' + subscription.hostname + '/apple-touch-icon.png'
   console.log('faviconUrl', faviconUrl)
   const avatarLetter = displayName.charAt(0);
-  const currencySymbol = strings.currency[currency]
+  const currencySymbol = currencySymbols[currency]
 
   const truncate = (str, len) => Array.from(str.substring(0, len)).map((c, i) => i!==len-1 ? c : String.fromCharCode(8230)).join('')
 
@@ -247,7 +247,7 @@ function Profile({ subscription, currency }) {
 // }
 
 const mapStateToProps = state => ({
-  currency: state.settings.currency
+  currency: state.settings['Currency']
 })
 
 export default connect(mapStateToProps)(Profile)

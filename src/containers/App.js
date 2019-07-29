@@ -2,15 +2,15 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/App'
 
-function App({ themeType }) {
+function App({ darkMode }) {
 
   return React.createElement(PresentationalComponent, {
-    themeType
+    darkMode
   })
 }
 
 const mapStateToProps = state => ({
-  themeType: state.settings.themeType
+  darkMode: state.settings['Dark mode']
 })
 
 export default connect(mapStateToProps)(App)
