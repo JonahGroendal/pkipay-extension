@@ -3,8 +3,6 @@ import { makeStyles } from '@material-ui/styles'
 import FullScreenDialog from './FullScreenDialog'
 import Button from '@material-ui/core/Button'
 import TextField from '@material-ui/core/TextField'
-import Page from './Page'
-import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles(theme => ({
