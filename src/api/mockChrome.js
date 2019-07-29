@@ -69,6 +69,9 @@ let mockChrome = {
           mockChrome.storage.local.data[key] = JSON.parse(JSON.stringify(obj[key]))
         }
       },
+      clear: function() {
+        mockChrome.storage.sync.data = {}
+      },
       data: {}
     },
     sync: {
@@ -96,6 +99,9 @@ let mockChrome = {
         for (key in obj) {
           mockChrome.storage.sync.data[key] = JSON.parse(JSON.stringify(obj[key]))
         }
+      },
+      clear: function() {
+        mockChrome.storage.sync.data = {}
       },
       data: {}
     }
