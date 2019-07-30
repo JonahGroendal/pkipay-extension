@@ -4,9 +4,9 @@ import PresentationalComponent from '../components/WithdrawDonationsCard'
 import { createTxWithdrawAll } from '../api/blockchain'
 import { reviewTx } from '../actions'
 
-function WithdrawDonationsCard({ subscription, ...mapped }) {
+function WithdrawDonationsCard({ domainName, ...mapped }) {
   async function handleWithdrawl() {
-    const { txObjects, daiValue, ethValue } = await createTxWithdrawAll(mapped.address, subscription.hostname)
+    const { txObjects, daiValue, ethValue } = await createTxWithdrawAll(mapped.address, domainName)
     const value = {}
     if (daiValue > 0)
       value.DAI = daiValue
@@ -14,7 +14,7 @@ function WithdrawDonationsCard({ subscription, ...mapped }) {
       value.ETH = ethValue
     mapped.onReviewTx(
       txObjects,
-      [subscription.hostname],
+      [domainName],
       [value]
     )
   }

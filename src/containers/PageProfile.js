@@ -5,7 +5,8 @@ import { getUrl, getHostname } from '../api/browser'
 import { getDomainOwner } from '../api/blockchain'
 import { setObjectHostname } from '../actions'
 
-function PageProfile({ subscription, dnsChallengeChanged, address, onChangeHostname }) {
+function PageProfile({ hostname, dnsChallengeChanged, address, onChangeHostname }) {
+  const domainName = hostname.split('.').slice(-2).join('.')
   const [domainOwner, setDomainOwner] = React.useState('0x0000000000000000000000000000000000000000')
 
   React.useEffect(() => {
@@ -13,19 +14,21 @@ function PageProfile({ subscription, dnsChallengeChanged, address, onChangeHostn
   }, [])
 
   React.useEffect(() => {
-    if (subscription.hostname)
-      getDomainOwner(subscription.hostname).then(setDomainOwner)
-  }, [subscription.hostname, dnsChallengeChanged])
+    if (domainName) {
+      getDomainOwner(domainName).then(setDomainOwner)
+    }
+  }, [domainName, dnsChallengeChanged])
 
   return React.createElement(PresentationalComponent, {
-    subscription,
+    hostname,
+    domainName,
     domainOwner,
     address
   })
 }
 
 const mapStateToProps = state => ({
-  subscription: { hostname: state.objectHostname },
+  hostname: state.objectHostname,
   dnsChallengeChanged: state.dnsChallenge.recordName === '',
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })

@@ -10,10 +10,13 @@ const subscriptions = (state = initialState, action) => {
     case 'ADD_SUBSCRIPTION':
       return [
         ...state,
-        { hostname: action.subscription.hostname, amount: action.subscription.amount }
+        {
+          domainName: action.payload.domainName,
+          amount: action.payload.amount
+        }
       ];
     case 'REMOVE_SUBSCRIPTION':
-      return state.filter(sub => sub.hostname !== action.hostname || sub.permanent);
+      return state.filter(sub => sub.domainName !== action.payload.domainName || sub.permanent);
     default:
       return state;
   }

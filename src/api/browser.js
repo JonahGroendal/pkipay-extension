@@ -70,7 +70,7 @@ export function getHostname(url) {
       var a = document.createElement("a");
       a.href = url;
 
-      return a.hostname.split('.').slice(-2).join('.')
+      return a.hostname
    }
    return ''
 }

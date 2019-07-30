@@ -7,7 +7,7 @@ import currencySymbols from '../api/currencySymbols'
 import { reviewTx } from '../actions'
 import { createTxBuyThx } from '../api/blockchain'
 
-function Subscribe({ subscribe, currency, address, subscription }) {
+function Subscribe({ subscribe, currency, address, domainName }) {
   const [amount, setAmount] = React.useState(2.0);
 
   const currencySymbol = currencySymbols[currency];
@@ -22,7 +22,7 @@ function Subscribe({ subscribe, currency, address, subscription }) {
     onChange,
     onClick,
     buttonText: "Give",
-    tooltip: "buy tokens from " + subscription.hostname,
+    tooltip: "buy tokens from " + domainName,
   })
 }
 

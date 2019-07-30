@@ -15,24 +15,27 @@ export const setTabIndex = (index) => ({
   tabIndex: index
 })
 
-export const addSubscription = (subscription) => async (dispatch) => {
+export const addSubscription = (domainName, amount) => async (dispatch) => {
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
   dispatch({
     type: 'ADD_SUBSCRIPTION',
-    subscription
+    payload: {
+      domainName,
+      amount
+    }
   })
   // Remember token name
-  dispatch(addToken(subscription.hostname))
-  await dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
+  dispatch(addToken(domainName))
+  await dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
 }
 
-export const removeSubscription = (hostname) => (dispatch) => {
+export const removeSubscription = (domainName) => (dispatch) => {
   dispatch({
     type: 'REMOVE_SUBSCRIPTION',
-    hostname
+    payload: { domainName }
   })
-  dispatch(rescheduleSubscriptionsPayments()).catch(() => {})
+  dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
 }
 
 export const changeSetting = (name, value) => ({
@@ -247,13 +250,12 @@ export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) 
   for (let i=0; i<keys.length; i++) {
     await dispatch(unscheduleTx(keys[i]))
   }
-  const hasValidHostname = sub => !sub.hostname.includes('#')
-  const hostnames = subscriptions.filter(hasValidHostname).map(sub => sub.hostname)
-  const amounts = subscriptions.filter(hasValidHostname).map(sub => sub.amount)
-  if (hostnames.length === 0) return;
+  const domainNames = subscriptions.map(sub => sub.domainName)
+  const amounts = subscriptions.map(sub => sub.amount)
+  if (domainNames.length === 0) return;
   // Schedule transactions
   const nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
-  const txObject = await createTxBuyThx(wallet.addresses[wallet.defaultAccount], hostnames, amounts)
+  const txObject = await createTxBuyThx(wallet.addresses[wallet.defaultAccount], domainNames, amounts)
   const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
   let monthIndex = (new Date(now)).getMonth()
   let year = (new Date(now)).getFullYear()

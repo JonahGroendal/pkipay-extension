@@ -6,7 +6,7 @@ import { reviewTx } from '../actions'
 import { createTxBuyThx } from '../api/blockchain'
 import { convertToUSD } from '../api/ECBForexRates'
 
-function Donate({ donate, currency, address, subscription }) {
+function Donate({ donate, currency, address, domainName }) {
   const [amount, setAmount] = React.useState(2.0)
 
   return React.createElement(InputAmount, {
@@ -15,8 +15,8 @@ function Donate({ donate, currency, address, subscription }) {
     onChange: e => setAmount(e.target.value),
     onClick: () => donate(address, convertToUSD(currency, amount)),
     buttonText: "Donate Once",
-    buttonDisabled: subscription.hostname === '',
-    tooltip: "buy tokens from " + subscription.hostname,
+    buttonDisabled: domainName === '',
+    tooltip: "buy tokens from " + domainName,
   })
 }
 
@@ -26,9 +26,9 @@ const mapStateToProps = state => ({
 })
 const mapDispatchToProps = (dispatch, ownProps) => ({
   donate: (from, amount) => {
-    createTxBuyThx(from, ownProps.subscription.hostname, amount)
+    createTxBuyThx(from, ownProps.domainName, amount)
     .then(tx => {
-      dispatch(reviewTx(tx, [ownProps.subscription.hostname], [{ 'DAI': amount*-1, 'tokens': amount }]))
+      dispatch(reviewTx([tx], [ownProps.domainName], [{ 'DAI': amount*-1, 'tokens': amount }]))
     })
   }
 })

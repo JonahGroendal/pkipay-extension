@@ -49,47 +49,36 @@ const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
   ? 'dnsroot.eth'
   : 'dnsroot.test'
 
-export async function createTxBuyThx(address, hostnames, values) {
+export async function createTxBuyThx(address, domainNames, values) {
   console.log('createTxBuyThx')
-  const txObjects = []
-  if (!Array.isArray(hostnames)) hostnames = [hostnames];
+  if (!Array.isArray(domainNames)) domainNames = [domainNames];
   if (!Array.isArray(values)) values = [values];
-  if (values.length !== hostnames.length)
+  if (values.length !== domainNames.length)
     throw new Error("Invalid length of values")
-  for (let hostname of hostnames) {
-    validateHostname(hostname)
+  for (let domainName of domainNames) {
+    validateDomainName(domainName)
   }
-  // Create TX to let TokenBuyer contract spend your money
-  const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
-  if (parseInt(allowance.toString()) < 10**36) {
-    const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-    txObjects.push({
-      from: address,
-      to: currency.address,
-      gas: 50000,
-      abi: currency.methods.approve(tokenBuyer.address, maxUint).encodeABI()
-    })
-  }
-  // Now create the buy TX
+  // Send TX to approve TokenBuyer contract if not alleady done
+  approveTokenBuyer(address)
+
   let saleAddrs = []
   let labelHashes = []
-  for (let hostname of hostnames) {
-    const saleAddr = await resolver.methods.addr(namehash.hash(hostname)).call()
+  for (let domainName of domainNames) {
+    const saleAddr = await resolver.methods.addr(namehash.hash(domainName)).call()
     if (saleAddr === '0x0000000000000000000000000000000000000000') {
-      let labels = hostname.split('.').reverse()
+      let labels = domainName.split('.').reverse()
       labelHashes = labelHashes.concat(labels.map(web3js.utils.sha3))
     } else {
       saleAddrs.push(saleAddr)
     }
   }
   const weiValues = values.map(v => web3js.utils.toWei(v.toString()));
-  txObjects.push({
+  return {
     from: address,
     to: tokenBuyer.address,
     gas: (300000 + (300000 * weiValues.length)).toString(),
     data: tokenBuyer.methods.multiBuy(currency.address, saleAddrs, labelHashes, weiValues).encodeABI()
-  })
-  return txObjects
+  }
 }
 
 export async function createTxWithdrawAll(address, domainName) {
@@ -188,12 +177,12 @@ export async function signAndSubmitCertChallengeBytes(address, challengeBytes, p
   await tx.send(options)
 }
 
-export async function registerAsDomainOwner(address, hostname) {
+export async function registerAsDomainOwner(address, domainName) {
   console.log('registerAsDomainOwner')
-  validateHostname(hostname)
-  const currentOwner = await ens.methods.owner(namehash.hash(hostname)).call();
+  validateDomainName(domainName)
+  const currentOwner = await ens.methods.owner(namehash.hash(domainName)).call();
   if (currentOwner !== address) {
-    const labelHashes = hostname.split('.').reverse().map(web3js.utils.sha3)
+    const labelHashes = domainName.split('.').reverse().map(web3js.utils.sha3)
     // register(bytes32 tld, bytes32 domain, address owner)
     const tx = registrar.methods.register(labelHashes[0], labelHashes[1], address)
     const options = { from: address, gas: 1000000 }
@@ -203,10 +192,10 @@ export async function registerAsDomainOwner(address, hostname) {
   }
 }
 
-export async function pointEnsNodeToTokenSaleResolver(address, hostname) {
+export async function pointEnsNodeToTokenSaleResolver(address, domainName) {
   console.log('pointEnsNodeToTokenSaleResolver')
-  validateHostname(hostname)
-  const node = namehash.hash(hostname + '.' + dnsRootEnsAddress) // domain.tld.dnsroot.eth
+  validateDomainName(domainName)
+  const node = namehash.hash(domainName + '.' + dnsRootEnsAddress) // domain.tld.dnsroot.eth
   const currentResolver = await ens.methods.resolver(node).call();
   if (currentResolver !== resolver.address) {
     // setResolver(bytes32 node, address resolver)
@@ -214,18 +203,18 @@ export async function pointEnsNodeToTokenSaleResolver(address, hostname) {
   }
 }
 
-// export async function approveTokenBuyer(address) {
-//   console.log('approveTokenBuyer')
-//   const balance = await currency.methods.balanceOf(address).call()
-//   if (balance === "0") return;
-//   const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
-//   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-//   if (parseInt(allowance.toString()) > 10**36) return;
-//   await currency.methods.approve(tokenBuyer.address, maxUint).send({
-//     from: address,
-//     gas: 50000
-//   })
-// }
+export async function approveTokenBuyer(address) {
+  console.log('approveTokenBuyer')
+  const balance = await currency.methods.balanceOf(address).call()
+  if (balance === "0") return;
+  const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
+  const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+  if (parseInt(allowance.toString()) > 10**36) return;
+  await currency.methods.approve(tokenBuyer.address, maxUint).send({
+    from: address,
+    gas: 50000
+  })
+}
 
 // // Deposit currency tokens into BuyMultipleTokens contract for future transfers
 // export async function depositAllCurrency() {
@@ -408,9 +397,9 @@ export async function subscribeToDaiTransfer(address, onTransfer) {
   return subscription.unsubscribe;
 }
 
-export async function getTotalDonations(hostname, fromBlock = 0) {
+export async function getTotalDonations(domainName, fromBlock = 0) {
   console.log('getTotalDonations')
-  const ensNode = namehash.hash(hostname);
+  const ensNode = namehash.hash(domainName);
   //const address = await resolverOld.methods.tokens(ensNode).call();
   const address = await resolver.methods.addr(ensNode).call();
   const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
@@ -422,14 +411,14 @@ export async function getTotalDonations(hostname, fromBlock = 0) {
   return totalBuys - totalRefunds;
 }
 
-export async function getDomainOwner(hostname) {
+export async function getDomainOwner(domainName) {
   console.log('getDomainOwner')
-  console.log(hostname)
-  validateHostname(hostname)
-  const ensNode = namehash.hash(hostname);
+  console.log(domainName)
+  validateDomainName(domainName)
+  const ensNode = namehash.hash(domainName);
   const address = await resolver.methods.addr(ensNode).call();
   if (address === "0x0000000000000000000000000000000000000000") {
-    const ensDnsNode = namehash.hash(hostname + '.' + dnsRootEnsAddress)
+    const ensDnsNode = namehash.hash(domainName + '.' + dnsRootEnsAddress)
     return await ens.methods.owner(ensDnsNode).call();
   }
   const abi = process.env.REACT_APP_ACTUAL_ENV === 'production'
@@ -439,7 +428,7 @@ export async function getDomainOwner(hostname) {
   return await ts.methods.owner().call();
 }
 
-export async function getTotalDonationsFromOneMonth(hostname) {
+export async function getTotalDonationsFromOneMonth(domainName) {
   console.log('getTotalDonationsFromOneMonth')
   const currentTimestamp = Date.now()/1000;
   const currentBlockNum = await web3js.eth.getBlockNumber()
@@ -449,13 +438,13 @@ export async function getTotalDonationsFromOneMonth(hostname) {
     const secondsPerBlock = (currentTimestamp - estFromBlockTimestamp) / ((60*60*24*30)/15);
     let fromBlock = Math.floor(currentBlockNum - 60*60*24*30/secondsPerBlock);
     if (fromBlock < 0) fromBlock = 0;
-    return await getTotalDonations(hostname, fromBlock);
+    return await getTotalDonations(domainName, fromBlock);
   }
-  return await getTotalDonations(hostname, 0);
+  return await getTotalDonations(domainName, 0);
 
 }
 
-function validateHostname(hostname) {
-  if (hostname.split('.').length !== 2)
-    throw new Error("Invalid hostname: '"+hostname+"' is not of the form domain.tld")
+function validateDomainName(domainName) {
+  if (domainName.split('.').length !== 2)
+    throw new Error("Invalid domain name: '"+domainName+"' is not of the form domain.tld")
 }

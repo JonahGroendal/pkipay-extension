@@ -15,7 +15,6 @@ function Subscriptions(props) {
     setObject,
     onChangeIndex,
   } = props
-
   const [newRowIndex, setNewRowIndex] = React.useState(-1)
 
   React.useEffect(() => {
@@ -27,7 +26,7 @@ function Subscriptions(props) {
     subscriptions: subscriptions.map(sub => ({ ...sub, amount: convertFromUSD(currency, sub.amount)})),
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
-    onClickSubscription: sub => {setObject(sub.hostname); onChangeIndex(0)},
+    onClickSubscription: sub => {setObject(sub.domainName); onChangeIndex(0)},
     currency,
     currencySymbol: currencySymbols[currency],
     nextPayment: datetimeCalculators[paymentSchedule](Date.now())
@@ -44,7 +43,7 @@ const mapStateToProps = state => ({
   tabIndex: state.pages.tabIndex
 });
 const mapDispatchToProps = dispatch => ({
-  onUnsubscribe: hostname => dispatch(removeSubscription(hostname)),
+  onUnsubscribe: domainName => dispatch(removeSubscription(domainName)),
   setObject: hostname => dispatch(setObjectHostname(hostname))
 })
 
