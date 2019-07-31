@@ -157,10 +157,15 @@ export const confirmTx = () => ({
 })
 
 export const sendTx = (txObjects, counterparties) => async (dispatch) => {
+  console.log('sendTx')
   if (!Array.isArray(txObjects))
     txObjects = [txObjects]
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
+  if (typeof txObjects[0].nonce === 'undefined') {
+    const nonce = parseInt(await web3js.eth.getTransactionCount(txObjects[0].from, 'pending'))
+    txObjects.forEach((v, i) => txObjects[i].nonce = nonce + i)
+  }
   let receipts = [];
   let receipt;
   for (let i=0; i<txObjects.length-1; i++) {
@@ -187,7 +192,7 @@ export const sendTx = (txObjects, counterparties) => async (dispatch) => {
     })
     .once('confirmation', numConfs => {
       dispatch(confirmTx())
-      dispatch(updateScheduledTxs(parseInt(txObjects[txObjects.length-1].nonce)+1))
+      dispatch(rescheduleSubscriptionsPayments(parseInt(txObjects[txObjects.length-1].nonce)+1))
     })
     .catch(txError => {
       dispatch({
@@ -249,7 +254,7 @@ export const unscheduleTx = (id) => (dispatch) => {
   })
 }
 
-export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) => {
+export const rescheduleSubscriptionsPayments = (nonce=-1) => async (dispatch, getState) => {
   console.log('rescheduleSubscriptionsPayments')
   let { scheduledTXs, settings, subscriptions, wallet } = getState()
   const now = Date.now()
@@ -263,7 +268,8 @@ export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) 
   if (domainNames.length === 0) return;
   // Schedule transactions
   const address = wallet.addresses[wallet.defaultAccount]
-  let nonce = await web3js.eth.getTransactionCount(address, 'pending')
+  if (nonce === -1)
+    nonce = await web3js.eth.getTransactionCount(address, 'pending')
   const approved = await tokenBuyerApproved(address)
   const txObject = createTxBuyThx(address, domainNames, amounts)
   const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
@@ -288,31 +294,31 @@ export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) 
   }
 }
 
-export const updateScheduledTxs = (nonce=-1) => async (dispatch, getState) => {
-  console.log('updateScheduledTxs')
-  let { scheduledTXs, wallet } = getState()
-  const now = Date.now()
-  const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
-  if (keys.length === 0) return;
-  if (nonce === -1)
-    nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
-  // Check if nonces need to be updated
-  let id = keys[0]
-  if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;
-  // update nonces
-  let txObjects = []
-  let whens = []
-  for (let i=0; i<keys.length; i++) {
-    id = keys[i]
-    txObjects.push(scheduledTXs[id].txObject)
-    whens.push(scheduledTXs[id].when)
-    await dispatch(unscheduleTx(id))
-  }
-  for (let i=0; i<txObjects.length; i++) {
-    txObjects[i].nonce = nonce + i
-    await dispatch(scheduleTx(whens[i], txObjects[i]))
-  }
-}
+// export const updateScheduledTxs = (nonce=-1) => async (dispatch, getState) => {
+//   console.log('updateScheduledTxs')
+//   let { scheduledTXs, wallet } = getState()
+//   const now = Date.now()
+//   const keys = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
+//   if (keys.length === 0) return;
+//   if (nonce === -1)
+//     nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
+//   // Check if nonces need to be updated
+//   let id = keys[0]
+//   if (parseInt(scheduledTXs[id].txObject.nonce) === nonce) return;
+//   // update nonces
+//   let txObjects = []
+//   let whens = []
+//   for (let i=0; i<keys.length; i++) {
+//     id = keys[i]
+//     txObjects.push(scheduledTXs[id].txObject)
+//     whens.push(scheduledTXs[id].when)
+//     await dispatch(unscheduleTx(id))
+//   }
+//   for (let i=0; i<txObjects.length; i++) {
+//     txObjects[i].nonce = nonce + i
+//     await dispatch(scheduleTx(whens[i], txObjects[i]))
+//   }
+// }
 
 export const requestDnsChallenge = (password, domainName) => async (dispatch) => {
   console.log('requestDnsChallenge')
