@@ -62,9 +62,9 @@ export function createTxBuyThx(address, domainNames, values) {
   const weiValues = values.map(v => web3js.utils.toWei(v.toString()));
   return {
     from: address,
-    to: tokenBuyer.address,
+    to: tokenBuyer.options.address,
     gas: (300000 + (300000 * weiValues.length)).toString(),
-    data: tokenBuyer.methods.multiBuy(currency.address, labelHashes, weiValues).encodeABI()
+    data: tokenBuyer.methods.multiBuy(currency.options.address, labelHashes, weiValues).encodeABI()
   }
 }
 
@@ -184,24 +184,24 @@ export async function pointEnsNodeToTokenSaleResolver(address, domainName) {
   validateDomainName(domainName)
   const node = namehash.hash(domainName + '.' + dnsRootEnsAddress) // domain.tld.dnsroot.eth
   const currentResolver = await ens.methods.resolver(node).call();
-  if (currentResolver !== resolver.address) {
+  if (currentResolver !== resolver.options.address) {
     // setResolver(bytes32 node, address resolver)
-    await ens.methods.setResolver(node, resolver.address).send({ from: address, gas: 100000 })
+    await ens.methods.setResolver(node, resolver.options.address).send({ from: address, gas: 100000 })
   }
 }
 
 export async function tokenBuyerApproved(address) {
-  const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
+  const allowance = await currency.methods.allowance(address, tokenBuyer.options.address).call()
   return parseInt(allowance.toString()) > 10**36
 }
 
 export function createTxApproveTokenBuyer(address) {
   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
   return {
-    to: currency.address,
+    to: currency.options.address,
     from: address,
     gas: 50000,
-    data: currency.methods.approve(tokenBuyer.address, maxUint).encodeABI()
+    data: currency.methods.approve(tokenBuyer.options.address, maxUint).encodeABI()
   }
 }
 
@@ -209,10 +209,10 @@ export function createTxApproveTokenBuyer(address) {
 //   console.log('approveTokenBuyer')
 //   const balance = await currency.methods.balanceOf(address).call()
 //   if (balance === "0") return;
-//   const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
+//   const allowance = await currency.methods.allowance(address, tokenBuyer.options.address).call()
 //   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
 //   if (parseInt(allowance.toString()) > 10**36) return;
-//   await currency.methods.approve(tokenBuyer.address, maxUint).send({
+//   await currency.methods.approve(tokenBuyer.options.address, maxUint).send({
 //     from: address,
 //     gas: 50000
 //   })
