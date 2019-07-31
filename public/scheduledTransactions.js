@@ -8,39 +8,54 @@ api.runtime.onInstalled.addListener(function() {
     api.storage.sync.get(null, function(storage) {
       if (api.lastError) return;
       // Piece together chunks of stringified state
-      let serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('')
+      let serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('');
       if (!serializedState) return;
       // Get scheduledTx
       serializedState = inflateZeros(serializedState);
-      const tx = JSON.parse(serializedState).scheduledTXs[alarm.name]
-      const rpcEndpoint = parseInt(tx.txObject.chainId) === 1
-        ? "https://mainnet.infura.io/v3/48899b10645a48e189e345be4be19ece"
-        : "https://kovan.infura.io/v3/48899b10645a48e189e345be4be19ece"
-      if (Date.now() - tx.when > 604800000) return;
-      // Send TX
-      let oReq = new XMLHttpRequest();
-      oReq.addEventListener('load', function() {
-        console.log(oReq.response)
-      })
-      oReq.open("POST", rpcEndpoint);
-      oReq.setRequestHeader("Content-Type", "application/json");
-      oReq.send(JSON.stringify({
-        "jsonrpc": "2.0",
-        "method": "eth_sendRawTransaction",
-        "params": [tx.rawTransaction],
-        "id": 1
-      }));
-
+      const scheduledTx = JSON.parse(serializedState).scheduledTXs[alarm.name];
+      if (Date.now() - scheduledTx.when > 604800000) return;
+      sendAll(scheduledTx.txs);
       // Notify user
       chrome.notifications.create(alarm.name, {
         type: 'basic',
         iconUrl: 'icon16.png',
         title: 'PkiPay: Transaction',
         message: 'Sending scheduled subscriptions payment'
-      })
-    })
+      });
+    });
+  });
+});
+
+// recursively loop through txs and send them
+function sendAll(txs, i=0) {
+  send(txs[i])
+  .then((response) => {
+    console.log(response);
+    if (i+1 < txs.length)
+      sendAll(txs, i+1);
   })
-})
+}
+
+function send(tx) {
+  return new Promise((resolve, reject) => {
+    const rpcEndpoint = parseInt(tx.txObject.chainId) === 1
+      ? "https://mainnet.infura.io/v3/48899b10645a48e189e345be4be19ece"
+      : "https://kovan.infura.io/v3/48899b10645a48e189e345be4be19ece"
+    // Send TX
+    let oReq = new XMLHttpRequest();
+    oReq.addEventListener('load', function() {
+      resolve(oReq.response);
+    })
+    oReq.open("POST", rpcEndpoint);
+    oReq.setRequestHeader("Content-Type", "application/json");
+    oReq.send(JSON.stringify({
+      "jsonrpc": "2.0",
+      "method": "eth_sendRawTransaction",
+      "params": [tx.rawTransaction],
+      "id": 1
+    }));
+  })
+}
 
 // Same function as in project_root/src/api/browser.js
 function inflateZeros(str) {

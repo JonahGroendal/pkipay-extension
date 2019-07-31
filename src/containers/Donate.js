@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import InputAmount from '../components/InputAmount'
 import currencySymbols from '../api/currencySymbols'
 import { reviewTx } from '../actions'
-import { createTxBuyThx } from '../api/blockchain'
+import { createTxBuyThx, tokenBuyerApproved, createTxApproveTokenBuyer } from '../api/blockchain'
 import { convertToUSD } from '../api/ECBForexRates'
 
 function Donate({ donate, currency, address, domainName }) {
@@ -25,11 +25,13 @@ const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = (dispatch, ownProps) => ({
-  donate: (from, amount) => {
-    createTxBuyThx(from, ownProps.domainName, amount)
-    .then(tx => {
-      dispatch(reviewTx([tx], [ownProps.domainName], [{ 'DAI': amount*-1, 'tokens': amount }]))
-    })
+  donate: async (from, amount) => {
+    const txs = []
+    const approved = await tokenBuyerApproved(from)
+    if (!approved)
+      txs.push(createTxApproveTokenBuyer(from))
+    txs.push(createTxBuyThx(from, ownProps.domainName, amount))
+    dispatch(reviewTx(txs, [ownProps.domainName], [{ 'DAI': amount*-1, 'tokens': amount }]))
   }
 })
 

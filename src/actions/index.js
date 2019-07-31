@@ -1,7 +1,7 @@
 import web3js from '../api/web3js'
 import browser from '../api/browser'
 import datetimeCalculators from '../api/datetimeCalculators'
-import { createTxBuyThx } from '../api/blockchain'
+import { createTxBuyThx, tokenBuyerApproved, createTxApproveTokenBuyer } from '../api/blockchain'
 import AcmeClient from '../api/AcmeClient'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
 
@@ -200,28 +200,36 @@ export const sendTx = (txObjects, counterparties) => async (dispatch) => {
   return Promise.all(receipts)
 }
 
-export const scheduleTx = (when, txObject, counterparties) => async (dispatch) => {
+export const scheduleTx = (when, txObjects, counterparties) => async (dispatch) => {
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
-  const pk = web3js.eth.accounts.wallet[txObject.from].privateKey
-  let id; let signedTx;
+  if (!Array.isArray(txObjects))
+    txObjects = [txObjects]
+  const txs = []
+  let id
   try {
-    signedTx = await web3js.eth.accounts.signTransaction(txObject, pk)
-    id = "TX" + parseInt(txObject.nonce).toString().padStart(8, '0')
+    for (let i=0; i<txObjects.length; i++) {
+      const tx = {}
+      tx.txObject = txObjects[i]
+      const pk = web3js.eth.accounts.wallet[txObjects[i].from].privateKey
+      const signed = await web3js.eth.accounts.signTransaction(txObjects[i], pk)
+      tx.rawTransaction = signed.rawTransaction
+      tx.txHash = signed.transactionHash
+      txs.push(tx)
+    }
+    id = "TX" + parseInt(txObjects[0].nonce).toString().padStart(8, '0')
     browser.alarms.create(id, { when })
   } catch(error) {
     dispatch({
       type: 'SCHEDULE_TX_ERROR',
       payload: { txError: error }
     })
-    throw error;
+    throw error
   }
   dispatch({
     type: 'SCHEDULE_TX',
     payload: {
-      id, txObject, when,
-      rawTransaction: signedTx.rawTransaction,
-      txHash: signedTx.transactionHash
+      id, when, txs
     }
   })
 }
@@ -254,18 +262,27 @@ export const rescheduleSubscriptionsPayments = () => async (dispatch, getState) 
   const amounts = subscriptions.map(sub => sub.amount)
   if (domainNames.length === 0) return;
   // Schedule transactions
-  const nonce = await web3js.eth.getTransactionCount(wallet.addresses[wallet.defaultAccount], 'pending')
-  const txObject = await createTxBuyThx(wallet.addresses[wallet.defaultAccount], domainNames, amounts)
+  const address = wallet.addresses[wallet.defaultAccount]
+  let nonce = await web3js.eth.getTransactionCount(address, 'pending')
+  const approved = await tokenBuyerApproved(address)
+  const txObject = createTxBuyThx(address, domainNames, amounts)
   const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
   let monthIndex = (new Date(now)).getMonth()
   let year = (new Date(now)).getFullYear()
   let when
   for (let i=0; i<6; i++) {
     when = calcWhen((new Date(year, monthIndex)).valueOf())
-    await dispatch(scheduleTx(when, { ...txObject, nonce: nonce + i }))
-    monthIndex += 1
+    const txs = []
+    if (i === 0 && !approved) {
+      txs.push({ ...createTxApproveTokenBuyer(address), nonce })
+      nonce++
+    }
+    txs.push({ ...txObject, nonce })
+    await dispatch(scheduleTx(when, txs))
+    nonce++
+    monthIndex++
     if (monthIndex === 12) {
-      year += 1
+      year++
       monthIndex = 0
     }
   }

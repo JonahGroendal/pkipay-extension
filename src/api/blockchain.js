@@ -49,35 +49,22 @@ const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
   ? 'dnsroot.eth'
   : 'dnsroot.test'
 
-export async function createTxBuyThx(address, domainNames, values) {
-  console.log('createTxBuyThx')
+export function createTxBuyThx(address, domainNames, values) {
+  console.log('createTxBuyThx');
   if (!Array.isArray(domainNames)) domainNames = [domainNames];
   if (!Array.isArray(values)) values = [values];
   if (values.length !== domainNames.length)
     throw new Error("Invalid length of values")
   for (let domainName of domainNames) {
-    validateDomainName(domainName)
+    validateDomainName(domainName);
   }
-  // Send TX to approve TokenBuyer contract if not alleady done
-  approveTokenBuyer(address)
-
-  let saleAddrs = []
-  let labelHashes = []
-  for (let domainName of domainNames) {
-    const saleAddr = await resolver.methods.addr(namehash.hash(domainName)).call()
-    if (saleAddr === '0x0000000000000000000000000000000000000000') {
-      let labels = domainName.split('.').reverse()
-      labelHashes = labelHashes.concat(labels.map(web3js.utils.sha3))
-    } else {
-      saleAddrs.push(saleAddr)
-    }
-  }
+  const labelHashes = domainNames.map(dn => dn.split('.').reverse().map(web3js.utils.sha3)).flat();
   const weiValues = values.map(v => web3js.utils.toWei(v.toString()));
   return {
     from: address,
     to: tokenBuyer.address,
     gas: (300000 + (300000 * weiValues.length)).toString(),
-    data: tokenBuyer.methods.multiBuy(currency.address, saleAddrs, labelHashes, weiValues).encodeABI()
+    data: tokenBuyer.methods.multiBuy(currency.address, labelHashes, weiValues).encodeABI()
   }
 }
 
@@ -203,18 +190,33 @@ export async function pointEnsNodeToTokenSaleResolver(address, domainName) {
   }
 }
 
-export async function approveTokenBuyer(address) {
-  console.log('approveTokenBuyer')
-  const balance = await currency.methods.balanceOf(address).call()
-  if (balance === "0") return;
+export async function tokenBuyerApproved(address) {
   const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
-  const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-  if (parseInt(allowance.toString()) > 10**36) return;
-  await currency.methods.approve(tokenBuyer.address, maxUint).send({
-    from: address,
-    gas: 50000
-  })
+  return parseInt(allowance.toString()) > 10**36
 }
+
+export function createTxApproveTokenBuyer(address) {
+  const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+  return {
+    to: currency.address,
+    from: address,
+    gas: 50000,
+    data: currency.methods.approve(tokenBuyer.address, maxUint).encodeABI()
+  }
+}
+
+// export async function approveTokenBuyer(address) {
+//   console.log('approveTokenBuyer')
+//   const balance = await currency.methods.balanceOf(address).call()
+//   if (balance === "0") return;
+//   const allowance = await currency.methods.allowance(address, tokenBuyer.address).call()
+//   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+//   if (parseInt(allowance.toString()) > 10**36) return;
+//   await currency.methods.approve(tokenBuyer.address, maxUint).send({
+//     from: address,
+//     gas: 50000
+//   })
+// }
 
 // // Deposit currency tokens into BuyMultipleTokens contract for future transfers
 // export async function depositAllCurrency() {

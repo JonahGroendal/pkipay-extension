@@ -4,9 +4,7 @@ function scheduledTXs(state={}, action) {
       return {
         ...state,
         [action.payload.id]: {
-          txObject: action.payload.txObject,
-          rawTransaction: action.payload.rawTransaction,
-          txHash: action.payload.txHash,
+          txs: action.payload.txs,
           when: action.payload.when
         }
       };
