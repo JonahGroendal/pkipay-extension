@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { requestDnsChallenge, submitDnsChallenge, cancelDnsChallenge, unlockWalletRequest, resetDnsChallenge, completeDnsChallenge } from '../actions'
-import { uploadCertAndProveOwnership, registerAsDomainOwner, pointEnsNodeToTokenSaleResolver } from '../api/blockchain'
+import { uploadCertAndProveOwnership, registerAsDomainOwner, pointEnsNodeToResolver } from '../api/blockchain'
 import { navigateTo } from '../api/browser'
 import { decrypt } from '../api/symmetricCrypto'
 import PresentationalComponent from '../components/DnsChallengeScreen'
@@ -36,7 +36,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
         const certChain = await getCertChain(mapped.certUrl);
         await uploadCertAndProveOwnership(mapped.address, certChain, await decrypt(mapped.pkcs8Key, password));
         await registerAsDomainOwner(mapped.address, domainName);
-        await pointEnsNodeToTokenSaleResolver(mapped.address, domainName);
+        await pointEnsNodeToResolver(mapped.address, domainName);
         await mapped.onCompleteChallenge();
         break;
       default:

@@ -2,10 +2,10 @@ import web3js from './web3js'
 import abis from './contractABIs.json'
 import namehash from 'eth-ens-namehash'
 import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
-import TokenSaleKovan from 'pkipay-blockchain/build/contracts/TokenSaleKovan.json'
-import TokenSaleResolver from 'pkipay-blockchain/build/contracts/TokenSaleResolver.json'
+import TokenResolver from 'pkipay-blockchain/build/contracts/TokenResolver.json'
 import DNSRegistrar from 'dns-on-ens/build/contracts/DNSRegistrar.json'
 import TokenBuyer from 'pkipay-blockchain/build/contracts/TokenBuyer.json'
+import OwnedByENSNode from 'pkipay-blockchain/build/contracts/OwnedByENSNode.json'
 import ERC20 from 'pkipay-blockchain/build/contracts/ERC20.json'
 import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
 import X509ForestOfTrust from 'x509-forest-of-trust/build/contracts/X509ForestOfTrust.json'
@@ -13,15 +13,6 @@ import ENSRegistry from '@ensdomains/ens/build/contracts/ENSRegistry.json'
 
 import forge from 'node-forge'
 import NodeRSA from 'node-rsa'
-
-export default {
-  createTxBuyThx,
-  getBalanceETH,
-  getBalanceDAI,
-  subscribeToDaiTransfer,
-  getTotalDonations,
-  getTotalDonationsFromOneMonth
-}
 
 const addressOf = (artifact) => {
   switch (process.env.REACT_APP_ACTUAL_ENV) {
@@ -38,7 +29,7 @@ const addressOf = (artifact) => {
       return artifact.networks[42].address;
   }
 }
-const resolver = new web3js.eth.Contract(TokenSaleResolver.abi, addressOf(TokenSaleResolver));
+const resolver = new web3js.eth.Contract(TokenResolver.abi, addressOf(TokenResolver));
 const registrar = new web3js.eth.Contract(DNSRegistrar.abi, addressOf(DNSRegistrar));
 const currency = new web3js.eth.Contract(ERC20.abi, addressOf(ERC20Mock));
 const tokenBuyer = new web3js.eth.Contract(TokenBuyer.abi, addressOf(TokenBuyer));
@@ -58,26 +49,22 @@ export function createTxBuyThx(address, domainNames, values) {
   for (let domainName of domainNames) {
     validateDomainName(domainName);
   }
-  const labelHashes = domainNames.map(dn => dn.split('.').reverse().map(web3js.utils.sha3)).flat();
+  const ensNodes = domainNames.map(namehash.hash)
   const weiValues = values.map(v => web3js.utils.toWei(v.toString()));
   return {
     from: address,
     to: tokenBuyer.options.address,
     gas: (300000 + (300000 * weiValues.length)).toString(),
-    data: tokenBuyer.methods.multiBuy(currency.options.address, labelHashes, weiValues).encodeABI()
+    data: tokenBuyer.methods.multiBuy(currency.options.address, ensNodes, weiValues).encodeABI()
   }
 }
 
 export async function createTxWithdrawAll(address, domainName) {
   console.log('withdrawAllEthAndDai')
-  const saleAddr = await resolver.methods.addr(namehash.hash(domainName)).call()
+  const saleAddr = await resolver.methods.tokenSale(namehash.hash(domainName)).call()
   if (saleAddr === '0x0000000000000000000000000000000000000000')
-    return { DAI: 0, ETH: 0 };
-  let tokenSale;
-  if (process.env.REACT_APP_ACTUAL_ENV === 'production')
-    tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr)
-  else
-    tokenSale = new web3js.eth.Contract(TokenSaleKovan.abi, saleAddr)
+    throw new Error('Token sale does not exist');
+  let tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr);
   const daiValue = (await currency.methods.balanceOf(saleAddr).call()).toString()
   const ethValue = await web3js.eth.getBalance(saleAddr)
   let txObjects = [];
@@ -179,8 +166,8 @@ export async function registerAsDomainOwner(address, domainName) {
   }
 }
 
-export async function pointEnsNodeToTokenSaleResolver(address, domainName) {
-  console.log('pointEnsNodeToTokenSaleResolver')
+export async function pointEnsNodeToResolver(address, domainName) {
+  console.log('pointEnsNodeToResolver')
   validateDomainName(domainName)
   const node = namehash.hash(domainName + '.' + dnsRootEnsAddress) // domain.tld.dnsroot.eth
   const currentResolver = await ens.methods.resolver(node).call();
@@ -374,7 +361,7 @@ export async function getTokenBalances(address, tokenNames) {
     throw new Error("Invalid address")
   let balances = []
   for (let name of tokenNames) {
-    const tokenAddr = await resolver.methods.addr(namehash.hash(name)).call()
+    const tokenAddr = await resolver.methods.token(namehash.hash(name)).call()
     if (tokenAddr !== '0x0000000000000000000000000000000000000000') {
       const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
       const weiBalance = await token.methods.balanceOf(address).call()
@@ -403,31 +390,15 @@ export async function getTotalDonations(domainName, fromBlock = 0) {
   console.log('getTotalDonations')
   const ensNode = namehash.hash(domainName);
   //const address = await resolverOld.methods.tokens(ensNode).call();
-  const address = await resolver.methods.addr(ensNode).call();
-  const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
-  const pastBuys = await thxToken.getPastEvents('Buy', { fromBlock: fromBlock })
-  const pastRefunds = await thxToken.getPastEvents('Refund', { fromBlock: 0 })
-  const totalBuys = pastBuys.reduce((acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1].toString())), 0);
-  const totalRefunds = pastRefunds.reduce((acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1].toString())), 0);
+  const address = await resolver.methods.tokenSale(ensNode).call();
+  const tokenSale = new web3js.eth.Contract(TokenSale.abi, address);
+  const pastBuys = await tokenSale.getPastEvents('Buy', { fromBlock })
+  const pastSells = await tokenSale.getPastEvents('Sell', { fromBlock })
+  const sumTotal = (acc, cur) => acc + parseFloat(web3js.utils.fromWei(cur.returnValues[1].toString()))
+  const totalBuys = pastBuys.reduce(sumTotal, 0);
+  const totalSells = pastSells.reduce(sumTotal, 0);
 
-  return totalBuys - totalRefunds;
-}
-
-export async function getDomainOwner(domainName) {
-  console.log('getDomainOwner')
-  console.log(domainName)
-  validateDomainName(domainName)
-  const ensNode = namehash.hash(domainName);
-  const address = await resolver.methods.addr(ensNode).call();
-  if (address === "0x0000000000000000000000000000000000000000") {
-    const ensDnsNode = namehash.hash(domainName + '.' + dnsRootEnsAddress)
-    return await ens.methods.owner(ensDnsNode).call();
-  }
-  const abi = process.env.REACT_APP_ACTUAL_ENV === 'production'
-    ? TokenSale.abi
-    : TokenSaleKovan.abi
-  const ts = new web3js.eth.Contract(abi, address);
-  return await ts.methods.owner().call();
+  return totalBuys - totalSells;
 }
 
 export async function getTotalDonationsFromOneMonth(domainName) {
@@ -444,6 +415,20 @@ export async function getTotalDonationsFromOneMonth(domainName) {
   }
   return await getTotalDonations(domainName, 0);
 
+}
+
+export async function getDomainOwner(domainName) {
+  console.log('getDomainOwner')
+  console.log(domainName)
+  validateDomainName(domainName)
+  const ensNode = namehash.hash(domainName);
+  const address = await resolver.methods.token(ensNode).call();
+  if (address === "0x0000000000000000000000000000000000000000") {
+    const ensDnsNode = namehash.hash(domainName + '.' + dnsRootEnsAddress)
+    return await ens.methods.owner(ensDnsNode).call();
+  }
+  const ownedContract = new web3js.eth.Contract(OwnedByENSNode.abi, address);
+  return await ownedContract.methods.owner().call();
 }
 
 function validateDomainName(domainName) {
