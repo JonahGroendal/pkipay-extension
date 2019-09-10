@@ -47,7 +47,7 @@ function Subscriptions(props) {
   return (
     <Table
       title="Monthly Subscriptions"
-      subtitle={"next payment on " + nextPayment.toLocaleDateString()}
+      subtitle={"next token purchase on " + nextPayment.toLocaleDateString()}
       headerCells={headerCells}
       rowsData={subscriptions}
       rowsPerPage={4}

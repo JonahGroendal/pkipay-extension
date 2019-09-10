@@ -3,7 +3,7 @@ import thunk from 'redux-thunk'
 import * as actions from './index'
 // import fetchMock from 'fetch-mock'
 import expect from 'expect'
-import { createTxBuyThx } from '../api/blockchain'
+import { createTxBuyTokens } from '../api/blockchain'
 import browser from '../api/browser'
 import web3js from '../api/web3js'
 
@@ -42,7 +42,7 @@ describe('actions', () => {
   })
 
   // it('should schedule TX for one min from now', async () => {
-  //   let txObj = await createTxBuyThx(
+  //   let txObj = await createTxBuyTokens(
   //     '0x969cb31d3633ed0ffd65957fd28e4b2551bf7286',
   //     'wikipedia.org',
   //     5
@@ -91,7 +91,7 @@ describe('actions', () => {
   //     }
   //   }
 
-  //   let txObj = await createTxBuyThx(
+  //   let txObj = await createTxBuyTokens(
   //     '0x969cb31d3633ed0ffd65957fd28e4b2551bf7286',
   //     'wikipedia.org',
   //     5

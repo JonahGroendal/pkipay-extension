@@ -1,16 +1,16 @@
 import React from 'react'
 import Page from './Page'
 import ProfileCard from '../containers/ProfileCard'
+import Token from '../containers/Token'
 import Donate from '../containers/Donate'
 import ClaimWebsiteCard from './ClaimWebsiteCard'
-import WithdrawDonationsCard from '../containers/WithdrawDonationsCard'
 
 const PageProfile = ({ hostname, domainName, domainOwner, address }) => (
   <Page>
     <ProfileCard hostname={hostname} />
-    <Donate domainName={domainName} />
     {!!domainName && isZero(domainOwner) && <ClaimWebsiteCard />}
-    {domainOwner === address && <WithdrawDonationsCard domainName={domainName} />}
+    <Token domainName={domainName} adminViewEnabled={domainOwner === address}/>
+    <Donate domainName={domainName} />
   </Page>
 )
 

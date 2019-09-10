@@ -1,13 +1,29 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { requestDnsChallenge, submitDnsChallenge, cancelDnsChallenge, unlockWalletRequest, resetDnsChallenge, completeDnsChallenge } from '../actions'
-import { uploadCertAndProveOwnership, registerAsDomainOwner, pointEnsNodeToResolver } from '../api/blockchain'
+import {
+  requestDnsChallenge,
+  submitDnsChallenge,
+  cancelDnsChallenge,
+  unlockWalletRequest,
+  resetDnsChallenge,
+  completeDnsChallenge
+} from '../actions'
+import {
+  uploadCertAndProveOwnership,
+  registerAsDomainOwner,
+  pointEnsNodeToResolver,
+  pointResolverAddrToTokenSale
+} from '../api/blockchain'
 import { navigateTo } from '../api/browser'
 import { decrypt } from '../api/symmetricCrypto'
 import PresentationalComponent from '../components/DnsChallengeScreen'
 
 function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
-  const domainName = mapped.ongoing ? mapped.domainName : mapped.objectHostname
+  const [activeStep, setActiveStep] = React.useState(getInitStepIndex(mapped.recordText, mapped.certUrl));
+  const domainName = activeStep === 0 ? mapped.objectHostname.split('.').slice(-2).join('.') : mapped.domainName
+  // const domainName = (mapped.ongoing || activeStep > 0) ? mapped.domainName : mapped.objectHostname.split('.').slice(-2).join('.')
+  console.log(getInitStepIndex(mapped.recordText, mapped.certUrl))
+  console.log(domainName)
 
   React.useEffect(() => {
     if (mapped.ongoing)
@@ -37,6 +53,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
         await uploadCertAndProveOwnership(mapped.address, certChain, await decrypt(mapped.pkcs8Key, password));
         await registerAsDomainOwner(mapped.address, domainName);
         await pointEnsNodeToResolver(mapped.address, domainName);
+        await pointResolverAddrToTokenSale(mapped.address, domainName);
         await mapped.onCompleteChallenge();
         break;
       default:
@@ -56,25 +73,18 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
     navigator.clipboard.writeText(text)
   }
 
-  function getInitStepIndex() {
-    if (mapped.certUrl)
-      return 2;
-    if (mapped.recordText)
-      return 1;
-    return 0;
-  }
-
   return React.createElement(PresentationalComponent, {
     open,
     onClose: handleClose,
+    activeStep,
+    setActiveStep,
     onStepComplete: handleStepComplete,
     onClickLink: handleClickLink,
     onCopy: handleCopy,
     recordName: mapped.recordName,
     recordText: mapped.recordText,
     domainName: domainName,
-    onReset: handleReset,
-    initStepIndex: getInitStepIndex()
+    onReset: handleReset
   })
 }
 
@@ -99,6 +109,14 @@ const mapDispatchToProps = dispatch => ({
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(DnsChallengeScreen)
+
+function getInitStepIndex(recordText, certUrl) {
+  if (certUrl)
+    return 2;
+  if (recordText)
+    return 1;
+  return 0;
+}
 
 /**
  * @returns an array of PEM-encoded certificates starting at root

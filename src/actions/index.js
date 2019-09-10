@@ -1,7 +1,7 @@
 import web3js from '../api/web3js'
 import browser from '../api/browser'
 import datetimeCalculators from '../api/datetimeCalculators'
-import { createTxBuyThx, tokenBuyerApproved, createTxApproveTokenBuyer } from '../api/blockchain'
+import { createTxBuyTokens, tokenBuyerApproved, createTxApproveTokenBuyer } from '../api/blockchain'
 import AcmeClient from '../api/AcmeClient'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
 
@@ -30,12 +30,13 @@ export const addSubscription = (domainName, amount) => async (dispatch) => {
   await dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
 }
 
-export const removeSubscription = (domainName) => (dispatch) => {
+export const removeSubscription = (domainName, reschedule=true) => (dispatch) => {
   dispatch({
     type: 'REMOVE_SUBSCRIPTION',
     payload: { domainName }
   })
-  dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
+  if (reschedule)
+    dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
 }
 
 export const changeSetting = (name, value) => ({
@@ -271,7 +272,7 @@ export const rescheduleSubscriptionsPayments = (nonce=-1) => async (dispatch, ge
   if (nonce === -1)
     nonce = await web3js.eth.getTransactionCount(address, 'pending')
   const approved = await tokenBuyerApproved(address)
-  const txObject = createTxBuyThx(address, domainNames, amounts)
+  const txObject = createTxBuyTokens(address, domainNames, amounts)
   const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
   let monthIndex = (new Date(now)).getMonth()
   let year = (new Date(now)).getFullYear()

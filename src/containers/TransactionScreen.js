@@ -43,6 +43,7 @@ function TransactionScreen(props) {
     values,
     gasValue: convertFromUSD(currency, gasValues.USD),
     gasValueETH: gasValues.ETH,
+    gasValueIsApproximation: gasValues.isApproximation,
     txSent: (txHash !== null || txError !== null),
     txConfirmed,
     txErrored: txError !== null,
@@ -57,13 +58,18 @@ function TransactionScreen(props) {
 }
 
 function useGasValues(txObjects) {
-  const [gasValues, setGasValues] = React.useState({ USD: 0, ETH: 0 })
+  const init = { USD: 0, ETH: 0 }
+  const [gasValues, setGasValues] = React.useState(init)
   React.useEffect(() => {
     if (txObjects === null) {
-      setGasValues({ USD: 0, ETH: 0 });
+      setGasValues(init);
       return;
     }
-    Promise.all(txObjects.map(txObject => web3js.eth.estimateGas(txObject)))
+    let isApproximation = false
+    Promise.all(txObjects.map(txObject => web3js.eth.estimateGas(txObject).catch(() => {
+      isApproximation = true;
+      return Number(txObject.gas)
+    })))
     .then(gasEstimates => {
       console.log(gasEstimates)
       cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
@@ -82,14 +88,15 @@ function useGasValues(txObjects) {
           const gasValueUSD = gasValueETH * currencyPerEth['USD']
           setGasValues({
             ETH: gasValueETH,
-            USD: gasValueUSD
+            USD: gasValueUSD,
+            isApproximation
           })
         })
       })
     })
     .catch(error => {
-      setGasValues({ USD: 0, ETH: 0 });
-      console.log(error);
+      setGasValues(init);
+      console.error(error);
     })
   }, [txObjects])
 

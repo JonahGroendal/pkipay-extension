@@ -127,14 +127,13 @@ const steps = [{
 export default function DnsChallengeScreen(props) {
   const {
     open, domainName, recordName, recordText,
-    initStepIndex, onClose, onReset,
+    onClose, onReset, activeStep, setActiveStep,
     onStepComplete: handleStepComplete,
     onClickLink: handleClickLink,
     onCopy: handleCopy,
   } = props;
   const classes = useStyles();
-  const [activeStep, setActiveStep] = React.useState(initStepIndex);
-  const [numCompletedSteps, setNumCompletedSteps] = React.useState(initStepIndex);
+  const [numCompletedSteps, setNumCompletedSteps] = React.useState(activeStep);
   const [errorIndex, setErrorIndex] = React.useState(-1);
   const [errorMsg, setErrorMsg] = React.useState('');
   const [loading, setLoading] = React.useState(false);

@@ -17,7 +17,7 @@ function Page({ children }) {
   const classes = useStyles()
 
   return (
-    <Scrollbars style={{ height: 504 }}>
+    <Scrollbars style={{ height: 600-96 }}>
       <div className={classes.root}>
         {React.Children.map(children, child => { return (
           <div className={classes.card}>

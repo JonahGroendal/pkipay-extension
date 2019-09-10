@@ -5,6 +5,7 @@ import Button from '@material-ui/core/Button'
 import Tooltip from '@material-ui/core/Tooltip'
 import TextField from '@material-ui/core/TextField'
 import InputAdornment from '@material-ui/core/InputAdornment'
+import MenuItem from '@material-ui/core/MenuItem'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -15,20 +16,29 @@ const useStyles = makeStyles(theme => ({
   },
   container: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     justifyContent: 'space-between'
   },
+  inputContainer: {
+    display: 'flex',
+    alignItems: 'flex-end'
+  },
+  selectField: {
+    marginLeft: theme.spacing(1)
+  },
   textField: {
-    width: theme.spacing(16)
+    width: theme.spacing(14)
   }
 }));
 
-function InputAmount(props) {
+function InputTokenAmount(props) {
   const {
     amount,
-    currencySymbol,
-    onChange,
-    onClick,
+    onChangeAmount,
+    token,
+    tokenOptions,
+    onChangeToken,
+    onClickButton,
     buttonText,
     buttonDisabled,
     tooltip
@@ -38,21 +48,30 @@ function InputAmount(props) {
   return (
     <Paper className={classes.paper}>
       <div className={classes.container}>
-        <TextField
-          className={classes.textField}
-          label="amount"
-          onChange={onChange}
-          value={amount}
-          InputProps={{
-            startAdornment: <InputAdornment position="start">{currencySymbol}</InputAdornment>,
-            type: "number",
-            step: ".01"
-          }}
-        />
+        <div className={classes.inputContainer}>
+          <TextField
+            className={classes.textField}
+            label={"Amount"}
+            onChange={event => onChangeAmount(event.target.value)}
+            value={amount}
+          />
+          <TextField
+            className={classes.selectField}
+            select
+            value={token}
+            onChange={event => onChangeToken(event.target.value)}
+          >
+            {tokenOptions.map((symbol, i) => (
+              <MenuItem key={i} value={symbol}>
+                {symbol}
+              </MenuItem>
+            ))}
+          </TextField>
+        </div>
         <Tooltip title={tooltip} enterDelay={300}>
-          <div>
+          <div className={classes.button}>
             <Button
-              onClick={onClick}
+              onClick={onClickButton}
               disabled={buttonDisabled}
               variant="contained" size="medium" color="secondary"
             >
@@ -65,4 +84,4 @@ function InputAmount(props) {
   )
 }
 
-export default InputAmount;
+export default InputTokenAmount;

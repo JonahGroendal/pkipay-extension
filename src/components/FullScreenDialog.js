@@ -10,7 +10,7 @@ import Slide from '@material-ui/core/Slide';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    maxWidth: '352px', // theme.spacing(44)
+    maxWidth: '360px', // theme.spacing(45)
     maxHeight: '600px', // theme.spacing(75)
   },
   appBar: {

@@ -92,6 +92,7 @@ function TransactionScreen(props) {
     values,
     gasValue,
     gasValueETH,
+    gasValueIsApproximation,
     txSent,
     txConfirmed,
     txErrored,
@@ -175,7 +176,7 @@ function TransactionScreen(props) {
                   {"Network fees:"}
                 </Typography>
                 <Typography variant="subtitle1">
-                  {(gasValueETH*1000).toFixed(3) + "mETH (" + currencySymbol + gasValue.toFixed(2) + ")"}
+                  {(gasValueIsApproximation ? "~" : "") + (gasValueETH*1000).toFixed(3) + "mETH (" + currencySymbol + gasValue.toFixed(2) + ")"}
                 </Typography>
               </div>
               <div className={classes.summaryRow}>
@@ -184,11 +185,11 @@ function TransactionScreen(props) {
                 </Typography>
                 <div>
                   <Typography variant="subtitle1">
-                    {(balancesChanges['ETH'] - gasValueETH >= 0 ? '+ ' : '– ').concat(Math.abs(balancesChanges['ETH'] - gasValueETH).toFixed(6)).concat(" ETH")}
+                    {(balancesChanges['ETH'] - gasValueETH >= 0 ? '+ ' : '– ').concat(Math.abs(balancesChanges['ETH'] - gasValueETH).toFixed(6), " ETH")}
                   </Typography>
                   {Object.keys(balancesChanges).filter(k => k !== 'ETH').map(tokenLabel => (
                     <Typography key={tokenLabel} variant="subtitle1">
-                      {(balancesChanges[tokenLabel] >= 0 ? '+ ' : '– ').concat(Math.abs(balancesChanges[tokenLabel]).toFixed(6)).concat(" ").concat(tokenLabel)}
+                      {(balancesChanges[tokenLabel] >= 0 ? '+ ' : '– ').concat(Math.abs(balancesChanges[tokenLabel]).toFixed(6), " ", tokenLabel)}
                     </Typography>
                   ))}
                 </div>
