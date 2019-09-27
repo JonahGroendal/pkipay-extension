@@ -1,7 +1,6 @@
 /* global BigInt */
 
 import web3js from './web3js'
-import abis from './contractABIs.json'
 import namehash from 'eth-ens-namehash'
 import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
 import TokenResolver from 'pkipay-blockchain/build/contracts/TokenResolver.json'
@@ -267,6 +266,16 @@ export async function resolveAddress(ensAddress) {
   return await ensResolver.methods.addr(ensNode).call()
 }
 
+export async function resolveToken(ensAddress) {
+  console.log('resolveToken')
+  const ensNode = namehash.hash(ensAddress)
+  const ensResolverAddr = await ens.methods.resolver(ensNode).call()
+  if (ensResolverAddr === '0x0000000000000000000000000000000000000000')
+    throw new Error('Resolver is not set for "'.concat(ensAddress, '"'))
+  const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
+  return await ensResolver.methods.token(ensNode).call()
+}
+
 export async function getDomainOwner(domainName) {
   console.log('getDomainOwner')
   validateDomainName(domainName)
@@ -410,9 +419,9 @@ export async function getTokenInfo(domainName) {
   validateDomainName(domainName)
   let totalSupply = 0
   const node = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
-  const tokenAddr = await resolver.methods.token(node).call()
-  if (tokenAddr !== '0x0000000000000000000000000000000000000000') {
-    const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+  const address = await resolver.methods.token(node).call()
+  if (address !== '0x0000000000000000000000000000000000000000') {
+    const token = new web3js.eth.Contract(ERC20.abi, address)
     totalSupply = parseFloat(web3js.utils.fromWei(await token.methods.totalSupply().call()))
   }
   return { totalSupply }
@@ -536,6 +545,12 @@ export async function getBalanceETH(from) {
 export async function getBalanceDAI(from) {
   console.log('getBalanceDAI')
   const weiBalance = await currency.methods.balanceOf(from).call()
+  return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
+}
+
+export async function getBalanceERC20(from, tokenAddr) {
+  const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+  const weiBalance = await token.methods.balanceOf(from).call()
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
 

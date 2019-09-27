@@ -1,21 +1,21 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import InputTokenAmount from '../components/InputTokenAmount'
-import currencySymbols from '../api/currencySymbols'
 import { reviewTx } from '../actions'
-import { createTxTransfer, createTxTransferETH, addresses, resolveAddress, domainNameToEnsAddr } from '../api/blockchain'
-import { convertToUSD } from '../api/ECBForexRates'
+import { createTxTransfer, createTxTransferETH, addresses, domainNameToEnsAddr, resolveAddress, resolveToken } from '../api/blockchain'
 
-const tokenOptions = ['DAI', 'ETH']
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
+const tokenOptions = ['DAI', 'ETH', 'tokens']
 
 function Donate({ domainName, ...mapped }) {
   const [token, setToken] = React.useState(tokenOptions[0])
   const [amount, setAmount] = React.useState('')
-  const address = useEnsResolver(domainName)
   const parsedAmount = isNaN(amount)
     ? 0
     : Number(amount)
-
+  const address = useEnsResolver(domainName)
+  const tokenAddress = useEnsTokenResolver(domainName, token)
 
   function handleChangeAmount(amount) {
     if (amount === '.' || !isNaN(amount))
@@ -23,10 +23,14 @@ function Donate({ domainName, ...mapped }) {
   }
 
   function handleClickButton() {
-    if (token === 'ETH')
-      mapped.onTransferETH(mapped.address, domainName, parsedAmount)
-    else
-      mapped.onTransfer(mapped.address, domainName, addresses[token], parsedAmount, token)
+    switch (token) {
+      case 'ETH':
+        return mapped.onTransferETH(mapped.address, domainName, parsedAmount)
+      case 'tokens':
+        return mapped.onTransfer(mapped.address, domainName, tokenAddress, parsedAmount, token)
+      default:
+        return mapped.onTransfer(mapped.address, domainName, addresses[token], parsedAmount, token)
+    }
   }
 
   return React.createElement(InputTokenAmount, {
@@ -37,13 +41,13 @@ function Donate({ domainName, ...mapped }) {
     onChangeToken: setToken,
     onClickButton: handleClickButton,
     buttonText: "Donate",
-    buttonDisabled: domainName === '' || parsedAmount <= 0 || address === '0x0000000000000000000000000000000000000000',
-    tooltip: "Donate to " + domainName,
+    buttonDisabled: address === ZERO_ADDRESS || parsedAmount <= 0 || (token === 'tokens' && tokenAddress === ZERO_ADDRESS),
+    tooltip: address !== ZERO_ADDRESS ? "Donate to ".concat(domainName) : domainName.concat(" isn't signed up yet"),
   })
 }
 
 function useEnsResolver(domainName) {
-  const [address, setAddress] = React.useState('0x0000000000000000000000000000000000000000')
+  const [address, setAddress] = React.useState(ZERO_ADDRESS)
   React.useEffect(() => {
     if (domainName) {
       domainNameToEnsAddr(domainName)
@@ -51,10 +55,26 @@ function useEnsResolver(domainName) {
       .then(setAddress)
       .catch(() => { /* Ignore "no resolver" error */ })
     } else {
-      setAddress('0x0000000000000000000000000000000000000000')
+      setAddress(ZERO_ADDRESS)
     }
   }, [domainName])
   return address
+}
+
+function useEnsTokenResolver(domainName, token) {
+  const [tokenAddress, setTokenAddress] = React.useState(ZERO_ADDRESS)
+  React.useEffect(() => {
+    if (domainName && token === 'tokens') {
+      domainNameToEnsAddr(domainName)
+      .then(resolveToken)
+      .then(setTokenAddress)
+      .catch(() => {
+        // No resolver set
+        setTokenAddress(ZERO_ADDRESS)
+      })
+    }
+  }, [domainName, token])
+  return tokenAddress
 }
 
 const mapStateToProps = state => ({
@@ -62,8 +82,8 @@ const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = (dispatch) => ({
-  onTransfer: async (from, domainName, tokenAddr, amount, tokenSymbol) => {
-    const tx = await createTxTransfer(from, domainName, tokenAddr, amount)
+  onTransfer: async (from, domainName, tokenAddress, amount, tokenSymbol) => {
+    const tx = await createTxTransfer(from, domainName, tokenAddress, amount)
     dispatch(reviewTx([tx], [domainName], [{ [tokenSymbol]: amount*-1 }]))
   },
   onTransferETH: async (from, domainName, amount) => {

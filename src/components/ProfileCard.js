@@ -5,30 +5,40 @@ import Paper from '@material-ui/core/Paper'
 import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
+import Switch from '@material-ui/core/Switch'
 // import getPixels from 'get-pixels'
 
 const useStyles = makeStyles(theme => ({
   paper: {
-    marginTop: theme.spacing(1),
     padding: theme.spacing(2),
     display: 'flex',
     flexDirection: 'column',
   },
+  adminViewSwitch: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center'
+  },
   paperAvatar: {
     borderRadius: '50%',
-    marginTop: theme.spacing(-3),
+    // marginTop: theme.spacing(-3),
   },
   rowAvatar: {
     display: 'flex',
     justifyContent: 'space-between',
   },
+  columnAvatar: {
+    paddingRight: theme.spacing(2),
+    display: 'flex',
+    alignItems: 'center'
+  },
+  columnInfo: {
+    flexGrow: 1
+  },
   avatar: {
     width: theme.spacing(8),
     height: theme.spacing(8),
     justifyContent: 'center'
-  },
-  infoText: {
-    //marginTop: '2px',
   },
   buttonSubscribe: {
     alignSelf: 'flex-end'
@@ -57,48 +67,65 @@ function ProfileCard(props) {
   const classes = useStyles()
 
   return (
-    <Paper className={classes.paper}>
-      <div className={classes.rowAvatar}>
-        <Paper className={classes.paperAvatar}>
-          {props.largeFaviconExists ? <Avatar
-            src={props.faviconUrl}
-            className={classes.avatar}
-            imgProps={{
-              height: "57",
-              width: "57",
-              onError: () => props.setLargeFaviconExists(false)
-            }}
-          >
-          </Avatar> :
-          <Avatar style={{ height: 57, width: 57 }}>
-            { props.avatarLetter }
-          </Avatar>
-          /*<svg height="57" width="57">
-            <style>
-              .heavy { font: 50px roboto; }
-            </style>
-            <circle cx="28" cy="28" r="28" fill="red" />
-            <text text-anchor="middle" x="28" y="46" fill="white" class="heavy">
-              { avatarLetter }
-            </text>
-          </svg>*/}
-        </Paper>
-      </div>
-      <Tooltip title={props.hostname} enterDelay={300}>
-        <Typography variant="h5">
-          { props.displayName || String.fromCharCode('&nbsp') }
-        </Typography>
-      </Tooltip>
-      <div>
-        <Typography variant="body2" className={classes.infoText}>
-          {props.currencySymbol + props.totalDonations.toFixed(2) + ' in total contributions'}
-        </Typography>
-        <Typography variant="body2" className={classes.infoText}>
-          {props.currencySymbol + props.totalDonationsOneMonth.toFixed(2) + ' last month'}
-        </Typography>
-      </div>
-      <div className={classes.subscribeContainer}>
-        <SubscribeForm domainName={props.domainName} />
+    <Paper square={props.square} elevation={3}>
+      {props.showAdminViewOption && (
+        <div className={classes.adminViewSwitch}>
+          <Typography>
+            Administrative view
+          </Typography>
+          <Switch
+            checked={props.adminViewEnabled}
+            onChange={props.onChangeAdminViewEnabled}
+          />
+        </div>
+      )}
+      <div className={classes.paper}>
+        <div className={classes.rowAvatar}>
+          <div className={classes.columnAvatar}>
+            <Paper className={classes.paperAvatar}>
+              {props.largeFaviconExists ? <Avatar
+                src={props.faviconUrl}
+                className={classes.avatar}
+                imgProps={{
+                  height: "57",
+                  width: "57",
+                  onError: () => props.setLargeFaviconExists(false)
+                }}
+              >
+              </Avatar> :
+              <Avatar style={{ height: 57, width: 57 }}>
+                { props.avatarLetter }
+              </Avatar>
+              /*<svg height="57" width="57">
+                <style>
+                  .heavy { font: 50px roboto; }
+                </style>
+                <circle cx="28" cy="28" r="28" fill="red" />
+                <text text-anchor="middle" x="28" y="46" fill="white" class="heavy">
+                  { avatarLetter }
+                </text>
+              </svg>*/}
+            </Paper>
+          </div>
+          <div className={classes.columnInfo}>
+            <Tooltip title={props.hostname} enterDelay={300}>
+              <Typography variant="h5">
+                { props.displayName || String.fromCharCode('&nbsp') }
+              </Typography>
+            </Tooltip>
+            <div>
+              <Typography variant="body2">
+                {props.currencySymbol + props.totalDonations.toFixed(2) + ' in total contributions'}
+              </Typography>
+              <Typography variant="body2">
+                {props.currencySymbol + props.totalDonationsOneMonth.toFixed(2) + ' last month'}
+              </Typography>
+            </div>
+          </div>
+        </div>
+        {!props.adminViewEnabled && <div className={classes.subscribeContainer}>
+          <SubscribeForm domainName={props.domainName} />
+        </div>}
       </div>
     </Paper>
   )

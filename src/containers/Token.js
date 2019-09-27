@@ -79,10 +79,23 @@ function Token(props) {
   return React.createElement(PresentationalComponent, {
     adminViewEnabled,
     title: "Token",
-    totalSupply: totalSupply.toFixed(2),
-    totalReserves: Object.keys(reserves).map((symbol, i) => reserves[symbol].toFixed(symbol === 'DAI' ? 2 : 3).concat(" ", symbol)).join(' + '),
-    buyPrice: buyPrice.toFixed(2).concat(' DAI/token'),
-    sellPrice: sellPrice.toFixed(2).concat(' DAI/token'),
+    subtitle: "A stablecoin backed by the credit of ".concat(domainName, ". All purchases are 100% refundable."),
+    contract: `This is a vehicle for charitable investment, and, as such,
+               will not yield a positive return on investment. The token issuer, the registrant of ${domainName},
+               promises to repurchase all tokens on-demand at a price no less
+               than the nominal repurchase price offered at the time of
+               purchase. In other words, reserves must never run out, and, over
+               time, the nominal sell price must either remain constant or
+               monotonically increase. An inability or unwillingness to
+               repurchase under these conditions should be reguarded
+               as a failure of credit on the part of the issuer (the borrower). The details of all
+               purchases and repurchases are immutably recorded on the
+               Ethereum blockchain and contribute to the issuer's credit
+               history.`,
+    totalSupplyText: totalSupply.toFixed(2),
+    totalReservesText: Object.keys(reserves).map((symbol, i) => reserves[symbol].toFixed(symbol === 'DAI' ? 2 : 3).concat(" ", symbol)).join(' + '),
+    buyPriceText: buyPrice.toFixed(2).concat(' DAI/token'),
+    sellPriceText: sellPrice.toFixed(2).concat(' DAI/token'),
     inputLabel: "Amount",
     amount,
     onChangeAmount: handleChangeAmount,

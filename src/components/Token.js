@@ -16,6 +16,9 @@ const useStyles = makeStyles(theme => ({
       paddingBottom: theme.spacing(2),
       paddingLeft: theme.spacing(2),
     },
+    details: {
+      paddingTop: theme.spacing(1)
+    },
     rowContainer: {
       display: 'flex',
       alignItems: 'flex-end',
@@ -57,9 +60,10 @@ function Token(props) {
     submitOrderButtonDisabled,
     submitOrderButtonLoading,
     onClickSubmitOrder,
-    totalSupply,
-    totalReserves,
-    buyPrice, sellPrice,
+    subtitle,
+    totalSupplyText,
+    totalReservesText,
+    buyPriceText, sellPriceText,
     withdrawAmount,
     onChangeWithdrawAmount,
     tokenOptions,
@@ -76,18 +80,23 @@ function Token(props) {
       <Typography variant="h6">
         {title}
       </Typography>
-      <Typography>
-        {"Total supply: ".concat(totalSupply)}
+      <Typography variant="body2">
+        {subtitle}
       </Typography>
-      <Typography>
-        {"Total reserves: ".concat(totalReserves)}
-      </Typography>
-      <Typography>
-        {"Buy price: ".concat(buyPrice)}
-      </Typography>
-      <Typography>
-        {"Sell price: ".concat(sellPrice)}
-      </Typography>
+      <div className={classes.details}>
+        <Typography>
+          {"Total supply: ".concat(totalSupplyText)}
+        </Typography>
+        <Typography>
+          {"Total reserves: ".concat(totalReservesText)}
+        </Typography>
+        <Typography>
+          {"Buy price: ".concat(buyPriceText)}
+        </Typography>
+        <Typography>
+          {"Sell price: ".concat(sellPriceText)}
+        </Typography>
+      </div>
       {!adminViewEnabled && <div className={classes.rowContainer}>
         <TextField
           className={classes.typeField}

@@ -5,7 +5,7 @@ import { getTotalDonations, getTotalDonationsFromOneMonth } from '../api/blockch
 import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function ProfileCard({ hostname, currency }) {
+function ProfileCard({ hostname, currency, showAdminViewOption, adminViewEnabled, onChangeAdminViewEnabled, square }) {
   const domainName = hostname.split('.').slice(-2).join('.')
   const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
   const [largeFaviconExists, setLargeFaviconExists] = React.useState(false)
@@ -108,9 +108,13 @@ function ProfileCard({ hostname, currency }) {
   const truncate = (str, len) => Array.from(str.substring(0, len)).map((c, i) => i!==len-1 ? c : String.fromCharCode(8230)).join('')
 
   return React.createElement(PresentationalComponent, {
+    hostname,
+    showAdminViewOption,
+    adminViewEnabled,
+    onChangeAdminViewEnabled,
+    square,
     largeFaviconExists,
     setLargeFaviconExists,
-    hostname,
     domainName,
     totalDonations,
     totalDonationsOneMonth,

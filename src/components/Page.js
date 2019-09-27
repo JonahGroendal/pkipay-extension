@@ -13,11 +13,12 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Page({ children }) {
+function Page({ children, height, titleCard }) {
   const classes = useStyles()
 
   return (
-    <Scrollbars style={{ height: 600-96 }}>
+    <Scrollbars style={{ height }}>
+      { titleCard }
       <div className={classes.root}>
         {React.Children.map(children, child => { return (
           <div className={classes.card}>
