@@ -14,6 +14,13 @@ function App({ darkMode }) {
       type: darkMode ? 'dark' : 'light',
       primary: amber,
       secondary: blueGrey
+    },
+    overrides: {
+      MuiTooltip: {
+        tooltip: {
+          fontSize: "1em"
+        }
+      }
     }
   })
   console.log('theme:', theme)
