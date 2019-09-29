@@ -27,7 +27,7 @@ function Token(props) {
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [token, setToken] = React.useState(tokenOptions[0]);
   const [totalSupply] = useTokenInfo(domainName, mapped.txScreenOpen);
-  const [buyPrice, sellPrice, reservesDAI, reservesETH] = useTokenSaleInfo(domainName, mapped.txScreenOpen);
+  const [buyPrice, sellPrice, reservesDAI/*, reservesETH*/] = useTokenSaleInfo(domainName, mapped.txScreenOpen);
 
   const prices = {
     'Buy': buyPrice,
@@ -36,7 +36,7 @@ function Token(props) {
   }
   const reserves = {
     'DAI': reservesDAI,
-    'ETH': reservesETH
+    // 'ETH': reservesETH
   }
 
   function handleChangeAmount(amount) {
@@ -76,6 +76,8 @@ function Token(props) {
       await mapped.onWithdraw(mapped.address, domainName, addresses[token], amount, token)
   }
 
+
+
   return React.createElement(PresentationalComponent, {
     adminViewEnabled,
     title: "Token",
@@ -94,8 +96,7 @@ function Token(props) {
                history.`,
     totalSupplyText: totalSupply.toFixed(2),
     totalReservesText: Object.keys(reserves).map((symbol, i) => reserves[symbol].toFixed(symbol === 'DAI' ? 2 : 3).concat(" ", symbol)).join(' + '),
-    buyPriceText: buyPrice.toFixed(2).concat(' DAI/token'),
-    sellPriceText: sellPrice.toFixed(2).concat(' DAI/token'),
+    priceText: prices[orderType].toFixed(2).concat(' DAI'),
     inputLabel: "Amount",
     amount,
     onChangeAmount: handleChangeAmount,
@@ -137,7 +138,7 @@ function useTokenSaleInfo(domainName, txScreenOpen) {
   const [buyPrice, setBuyPrice] = React.useState(1);
   const [sellPrice, setSellPrice] = React.useState(1);
   const [reservesDAI, setReservesDAI] = React.useState(0);
-  const [reservesETH, setReservesETH] = React.useState(0);
+  // const [reservesETH, setReservesETH] = React.useState(0);
 
   React.useEffect(() => {
     if (domainName) {
@@ -146,18 +147,18 @@ function useTokenSaleInfo(domainName, txScreenOpen) {
           setBuyPrice(info.buyPrice);
           setSellPrice(info.sellPrice);
           setReservesDAI(info.reservesDAI);
-          setReservesETH(info.reservesETH);
+          // setReservesETH(info.reservesETH);
         })
       }
     } else {
       setBuyPrice(1);
       setSellPrice(1);
       setReservesDAI(0);
-      setReservesETH(0);
+      // setReservesETH(0);
     }
   }, [domainName, txScreenOpen])
 
-  return [buyPrice, sellPrice, reservesDAI, reservesETH]
+  return [buyPrice, sellPrice, reservesDAI/*, reservesETH*/]
 }
 
 const mapStateToProps = state => ({

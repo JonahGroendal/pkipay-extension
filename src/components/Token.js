@@ -63,7 +63,7 @@ function Token(props) {
     subtitle,
     totalSupplyText,
     totalReservesText,
-    buyPriceText, sellPriceText,
+    priceText,
     withdrawAmount,
     onChangeWithdrawAmount,
     tokenOptions,
@@ -85,16 +85,13 @@ function Token(props) {
       </Typography>
       <div className={classes.details}>
         <Typography>
-          {"Total supply: ".concat(totalSupplyText)}
+          {totalSupplyText.concat(" coins in circulation")}
         </Typography>
         <Typography>
-          {"Total reserves: ".concat(totalReservesText)}
+          {totalReservesText.concat(" held in reserve")}
         </Typography>
         <Typography>
-          {"Buy price: ".concat(buyPriceText)}
-        </Typography>
-        <Typography>
-          {"Sell price: ".concat(sellPriceText)}
+          {"Price: ".concat(priceText)}
         </Typography>
       </div>
       {!adminViewEnabled && <div className={classes.rowContainer}>
