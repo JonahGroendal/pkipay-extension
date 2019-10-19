@@ -1,21 +1,44 @@
 import React from 'react';
 import { connect } from 'react-redux'
-import InputTokenAmount from '../components/InputTokenAmount'
-import { reviewTx } from '../actions'
-import { createTxTransfer, createTxTransferETH, addresses, domainNameToEnsAddr, resolveAddress, resolveToken } from '../api/blockchain'
+import PresentationalComponent from '../components/Donate'
+import { reviewTx, addSubscription, setTabIndex, addToken } from '../actions'
+import {
+  apiContractApproved,
+  createTxApproveApiContract,
+  createTxDonate,
+  createTxDonateETH,
+  addresses,
+  domainNameToEnsAddr,
+  resolveAddress,
+  resolveToken
+} from '../api/blockchain'
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-const tokenOptions = ['DAI', 'ETH', 'tokens']
+const scheduleOptions = ['Once', 'Monthly']
+const buttonText = {
+  'Once': 'Donate',
+  'Monthly': 'Subscribe'
+}
 
 function Donate({ domainName, ...mapped }) {
-  const [token, setToken] = React.useState(tokenOptions[0])
   const [amount, setAmount] = React.useState('')
+  const [error, setError] = React.useState(false);
   const parsedAmount = isNaN(amount)
     ? 0
     : Number(amount)
   const address = useEnsResolver(domainName)
-  const tokenAddress = useEnsTokenResolver(domainName, token)
+  const tokenAddress = useEnsTokenResolver(domainName)
+  const tokenOptions = [...Object.keys(addresses)]
+  const tokenAddresses = { ...addresses }
+  console.log('here first')
+  if (tokenAddress !== ZERO_ADDRESS) {
+    console.log('Im here')
+    tokenOptions.push('tokens')
+    tokenAddresses['tokens'] = tokenAddress
+  }
+  const [token, setToken] = React.useState(tokenOptions[0])
+  const [schedule, setSchedule] = React.useState(scheduleOptions[0])
 
   function handleChangeAmount(amount) {
     if (amount === '.' || !isNaN(amount))
@@ -23,26 +46,57 @@ function Donate({ domainName, ...mapped }) {
   }
 
   function handleClickButton() {
-    switch (token) {
-      case 'ETH':
-        return mapped.onTransferETH(mapped.address, domainName, parsedAmount)
-      case 'tokens':
-        return mapped.onTransfer(mapped.address, domainName, tokenAddress, parsedAmount, token)
-      default:
-        return mapped.onTransfer(mapped.address, domainName, addresses[token], parsedAmount, token)
+    if (parsedAmount !== 0)
+      setError(false)
+    if (parsedAmount === 0) {
+      setError(true)
+    }
+    else if (address === ZERO_ADDRESS) {
+      if (schedule === 'Once') {
+        if (token === 'ETH')
+          mapped.onDonateETH(mapped.address, domainName, parsedAmount)
+        else
+          mapped.onDonate(mapped.address, domainName, parsedAmount, addresses[token], token)
+      }
+      else if (schedule === 'Monthly') {
+        // TODO
+      }
+    } else {
+      if (schedule === 'Once') {
+        if (token === 'ETH')
+          mapped.onDonateETH(mapped.address, domainName, parsedAmount)
+        else
+          mapped.onDonate(mapped.address, domainName, parsedAmount, addresses[token], token)
+      }
+      else if (schedule === 'Monthly') {
+        // TODO
+      }
     }
   }
 
-  return React.createElement(InputTokenAmount, {
+  function tooltip() {
+    if (!domainName)
+      return ''
+    else if (schedule === 'Monthly')
+      return "Feature coming soon"
+    else
+      return "Donate ".concat(parsedAmount.toFixed(2), " ", token, " to ", domainName)
+  }
+
+  return React.createElement(PresentationalComponent, {
     amount,
     onChangeAmount: handleChangeAmount,
+    error,
     tokenOptions,
+    scheduleOptions,
     token,
+    schedule,
     onChangeToken: setToken,
+    onChangeSchedule: setSchedule,
     onClickButton: handleClickButton,
-    buttonText: "Donate",
-    buttonDisabled: address === ZERO_ADDRESS || parsedAmount <= 0 || (token === 'tokens' && tokenAddress === ZERO_ADDRESS),
-    tooltip: address !== ZERO_ADDRESS ? "Donate to ".concat(domainName) : domainName.concat(" isn't signed up yet"),
+    buttonText: buttonText[schedule],
+    buttonDisabled: (schedule === 'Monthly') || (token === 'tokens' && tokenAddress === ZERO_ADDRESS),
+    tooltip: tooltip(),
   })
 }
 
@@ -50,8 +104,7 @@ function useEnsResolver(domainName) {
   const [address, setAddress] = React.useState(ZERO_ADDRESS)
   React.useEffect(() => {
     if (domainName) {
-      domainNameToEnsAddr(domainName)
-      .then(resolveAddress)
+      resolveAddress(domainNameToEnsAddr(domainName))
       .then(setAddress)
       .catch(() => { /* Ignore "no resolver" error */ })
     } else {
@@ -61,19 +114,18 @@ function useEnsResolver(domainName) {
   return address
 }
 
-function useEnsTokenResolver(domainName, token) {
+function useEnsTokenResolver(domainName) {
   const [tokenAddress, setTokenAddress] = React.useState(ZERO_ADDRESS)
   React.useEffect(() => {
-    if (domainName && token === 'tokens') {
-      domainNameToEnsAddr(domainName)
-      .then(resolveToken)
+    if (domainName) {
+      resolveToken(domainNameToEnsAddr(domainName))
       .then(setTokenAddress)
       .catch(() => {
         // No resolver set
         setTokenAddress(ZERO_ADDRESS)
       })
     }
-  }, [domainName, token])
+  }, [domainName])
   return tokenAddress
 }
 
@@ -82,14 +134,24 @@ const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = (dispatch) => ({
-  onTransfer: async (from, domainName, tokenAddress, amount, tokenSymbol) => {
-    const tx = await createTxTransfer(from, domainName, tokenAddress, amount)
-    dispatch(reviewTx([tx], [domainName], [{ [tokenSymbol]: amount*-1 }]))
+  onDonate: async (from, domainName, amount, tokenAddr, tokenSymbol) => {
+    const ensDomain = domainNameToEnsAddr(domainName)
+    dispatch(addToken(ensDomain))
+    const txs = []
+    const approved = await apiContractApproved(from, tokenAddr)
+    if (!approved)
+      txs.push(createTxApproveApiContract(from, tokenAddr))
+    txs.push(createTxDonate(from, tokenAddr, ensDomain, amount))
+    dispatch(reviewTx(txs, [ensDomain], [{ [tokenSymbol]: amount*-1 }]))
   },
-  onTransferETH: async (from, domainName, amount) => {
-    const tx = await createTxTransferETH(from, domainName, amount)
-    dispatch(reviewTx([tx], [domainName], [{ 'ETH': amount*-1 }]))
-  }
+  onDonateETH: (from, domainName, amount) => {
+    const ensDomain = domainNameToEnsAddr(domainName)
+    dispatch(addToken(ensDomain))
+    const tx = createTxDonateETH(from, ensDomain, amount)
+    dispatch(reviewTx([tx], [ensDomain], [{ 'ETH': amount*-1 }]))
+  },
+  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsAddr(domainName), amount)),
+  onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
 })
 
 export default connect(

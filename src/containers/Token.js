@@ -1,8 +1,8 @@
 import React from 'react';
 import PresentationalComponent from '../components/Token';
 import {
-  tokenBuyerApproved,
-  createTxApproveTokenBuyer,
+  apiContractApproved,
+  createTxApproveApiContract,
   createTxBuyTokens,
   createTxSellToken,
   createTxWithdraw,
@@ -10,6 +10,7 @@ import {
   addresses,
   getTokenInfo,
   getTokenSaleInfo,
+  domainNameToEnsAddr
 } from '../api/blockchain';
 import { connect } from 'react-redux'
 import { reviewTx, addSubscription, removeSubscription, setTabIndex } from '../actions'
@@ -58,7 +59,7 @@ function Token(props) {
         return await mapped.onSell(mapped.address, domainName, numTokens, numTokens * sellPrice);
       case 'Subscribe (Buy Monthly)':
         setSubmitOrderButtonLoading(true);
-        if (mapped.subscriptions.filter(sub => sub.domainName === domainName).length > 0)
+        if (mapped.subscriptions.filter(sub => sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '') === domainName).length > 0)
           await mapped.onUnsubscribe(domainName, false)
         await mapped.onSubscribe(domainName, numTokens * buyPrice);
         setSubmitOrderButtonLoading(false);
@@ -81,10 +82,10 @@ function Token(props) {
   return React.createElement(PresentationalComponent, {
     adminViewEnabled,
     title: "Token",
-    subtitle: "A stablecoin backed by the credit of ".concat(domainName, ". All purchases are 100% refundable."),
+    subtitle: "A stablecoin backed by the credit of ".concat(domainName, "'s registrant."),
     contract: `This is a vehicle for charitable investment, and, as such,
                will not yield a positive return on investment. The token issuer, the registrant of ${domainName},
-               promises to repurchase all tokens on-demand at a price no less
+               agrees to repurchase all tokens on-demand at a price no less
                than the nominal repurchase price offered at the time of
                purchase. In other words, reserves must never run out, and, over
                time, the nominal sell price must either remain constant or
@@ -105,7 +106,10 @@ function Token(props) {
     onChangeOrderType: setOrderType,
     onClickSubmitOrder: handleClickSubmitOrder,
     submitOrderButtonText: (parsedAmount * prices[orderType]).toFixed(2).concat(" DAI"),
-    submitOrderButtonTooltip: orderType.concat(" ", parsedAmount.toFixed(2), " tokens", " for ", (parsedAmount * prices[orderType]).toFixed(2), " DAI"),
+    submitOrderButtonTooltip: (orderType === 'Sell' ? "Sell " : "Buy ").concat(
+      parsedAmount.toFixed(2), " tokens for ",
+      (parsedAmount * prices[orderType]).toFixed(2), " DAI",
+      orderType === 'Subscribe (Buy Monthly)' ? " every month" : ""),
     submitOrderButtonDisabled: parsedAmount <= 0 || (orderType === 'Sell' && reserves['DAI'] < parsedAmount),
     submitOrderButtonLoading,
     withdrawAmount,
@@ -169,27 +173,31 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = (dispatch) => ({
   onBuy: async (from, domainName, daiValue, amount) => {
+    const ensDomain = domainNameToEnsAddr(domainName)
     const txs = []
-    const approved = await tokenBuyerApproved(from)
+    const approved = await apiContractApproved(from)
     if (!approved)
-      txs.push(createTxApproveTokenBuyer(from))
-    txs.push(createTxBuyTokens(from, domainName, daiValue))
-    dispatch(reviewTx(txs, [domainName], [{ 'DAI': daiValue*-1, 'tokens': amount }]))
+      txs.push(createTxApproveApiContract(from))
+    txs.push(createTxBuyTokens(from, ensDomain, daiValue))
+    dispatch(reviewTx(txs, [ensDomain], [{ 'DAI': daiValue*-1, 'tokens': amount }]))
   },
   onSell: async (from, domainName, amount, daiValue) => {
+    const ensDomain = domainNameToEnsAddr(domainName)
     const txs = await createTxSellToken(from, domainName, amount)
-    dispatch(reviewTx(txs, [domainName], [{ 'DAI': daiValue, 'tokens': amount*-1 }]))
+    dispatch(reviewTx(txs, [ensDomain], [{ 'DAI': daiValue, 'tokens': amount*-1 }]))
   },
-  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainName, amount)),
-  onUnsubscribe: (domainName, reschedule) => dispatch(removeSubscription(domainName, reschedule)),
+  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsAddr(domainName), amount)),
+  onUnsubscribe: (domainName, reschedule) => dispatch(removeSubscription(domainNameToEnsAddr(domainName), reschedule)),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex)),
   onWithdraw: async (from, domainName, tokenAddr, amount, tokenSymbol) => {
+    const ensDomain = domainNameToEnsAddr(domainName)
     const tx = await createTxWithdraw(from, domainName, tokenAddr, amount)
-    dispatch(reviewTx([tx], [domainName], [{ [tokenSymbol]: amount }]))
+    dispatch(reviewTx([tx], [ensDomain], [{ [tokenSymbol]: amount }]))
   },
   onWithdrawETH: async (from, domainName, amount) => {
+    const ensDomain = domainNameToEnsAddr(domainName)
     const tx = await createTxWithdrawETH(from, domainName, amount)
-    dispatch(reviewTx([tx], [domainName], [{ 'ETH': amount }]))
+    dispatch(reviewTx([tx], [ensDomain], [{ 'ETH': amount }]))
   }
 })
 

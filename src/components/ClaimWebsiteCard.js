@@ -37,7 +37,7 @@ function ClaimWebsiteCard(props) {
                 onClick={() => setScreenOpen(!screenOpen)}
                 variant="contained" size="medium" color="primary"
               >
-                Claim ownership
+                Claim donations
               </Button>
             </div>
           </Tooltip>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { makeStyles } from '@material-ui/styles'
+// import { makeStyles } from '@material-ui/styles'
 import Page from './Page'
 import ProfileCard from '../containers/ProfileCard'
 import Token from '../containers/Token'
@@ -9,12 +9,12 @@ import ClaimWebsiteCard from './ClaimWebsiteCard'
 const WINDOW_HEIGHT = 600
 const NAV_HEIGHT = 96
 
-const useStyles = makeStyles(theme => ({
-
-}));
+// const useStyles = makeStyles(theme => ({
+//
+// }));
 
 function PageProfile({ hostname, domainName, domainOwner, address }) {
-  const classes = useStyles();
+  // const classes = useStyles();
 
   const showAdminViewOption = (domainOwner === address)
   let [adminViewEnabled, setAdminViewEnabled] = React.useState(true)
@@ -28,7 +28,6 @@ function PageProfile({ hostname, domainName, domainOwner, address }) {
     <div>
       <div ref={ref}>
         <ProfileCard
-          className={classes.profileCard}
           hostname={hostname}
           showAdminViewOption={showAdminViewOption}
           adminViewEnabled={adminViewEnabled}
@@ -37,11 +36,11 @@ function PageProfile({ hostname, domainName, domainOwner, address }) {
         />
       </div>
       <Page height={WINDOW_HEIGHT - NAV_HEIGHT - profileCardHeight}>
-        {!!domainName && isZero(domainOwner) && (
-          <ClaimWebsiteCard />
-        )}
         {!adminViewEnabled && (
           <Donate domainName={domainName} />
+        )}
+        {!!domainName && isZero(domainOwner) && (
+          <ClaimWebsiteCard />
         )}
         <Token domainName={domainName} adminViewEnabled={adminViewEnabled}/>
       </Page>

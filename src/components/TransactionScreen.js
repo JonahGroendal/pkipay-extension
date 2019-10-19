@@ -163,7 +163,7 @@ function TransactionScreen(props) {
                       ))}
                     </div>
                     <Tooltip title={to} enterDelay={300}>
-                      <ListItemText primary={Array.from(to.substring(0, 17)).map((c, i) => i!==16 ? c : String.fromCharCode(8230)).join('')} />
+                      <ListItemText primary={Array.from(to.replace('.dnsroot.eth', '').replace('.dnsroot.test', '').substring(0, 17)).map((c, i) => i!==16 ? c : String.fromCharCode(8230)).join('')} />
                     </Tooltip>
                   </ListItem>
                 ))}

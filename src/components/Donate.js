@@ -4,7 +4,6 @@ import Paper from '@material-ui/core/Paper'
 import Button from '@material-ui/core/Button'
 import Tooltip from '@material-ui/core/Tooltip'
 import TextField from '@material-ui/core/TextField'
-import InputAdornment from '@material-ui/core/InputAdornment'
 import MenuItem from '@material-ui/core/MenuItem'
 
 const useStyles = makeStyles(theme => ({
@@ -23,21 +22,29 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     alignItems: 'flex-end'
   },
+  textField: {
+    width: theme.spacing(8)
+  },
   selectField: {
     marginLeft: theme.spacing(1)
   },
-  textField: {
-    width: theme.spacing(14)
+  scheduleField: {
+    marginLeft: theme.spacing(1),
+    width: theme.spacing(8)
   }
 }));
 
-function InputTokenAmount(props) {
+function Donate(props) {
   const {
     amount,
     onChangeAmount,
+    error,
     token,
+    schedule,
     tokenOptions,
+    scheduleOptions,
     onChangeToken,
+    onChangeSchedule,
     onClickButton,
     buttonText,
     buttonDisabled,
@@ -54,6 +61,7 @@ function InputTokenAmount(props) {
             label={"Amount"}
             onChange={event => onChangeAmount(event.target.value)}
             value={amount}
+            error={error}
           />
           <TextField
             className={classes.selectField}
@@ -64,6 +72,18 @@ function InputTokenAmount(props) {
             {tokenOptions.map((symbol, i) => (
               <MenuItem key={i} value={symbol}>
                 {symbol}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            className={classes.scheduleField}
+            select
+            value={schedule}
+            onChange={event => onChangeSchedule(event.target.value)}
+          >
+            {scheduleOptions.map((val, i) => (
+              <MenuItem key={i} value={val}>
+                {val}
               </MenuItem>
             ))}
           </TextField>
@@ -84,4 +104,4 @@ function InputTokenAmount(props) {
   )
 }
 
-export default InputTokenAmount;
+export default Donate;

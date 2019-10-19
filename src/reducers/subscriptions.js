@@ -11,12 +11,12 @@ const subscriptions = (state = initialState, action) => {
       return [
         ...state,
         {
-          domainName: action.payload.domainName,
+          address: action.payload.address,
           amount: action.payload.amount
         }
       ];
     case 'REMOVE_SUBSCRIPTION':
-      return state.filter(sub => sub.domainName !== action.payload.domainName || sub.permanent);
+      return state.filter(sub => sub.address !== action.payload.address || sub.permanent);
     default:
       return state;
   }

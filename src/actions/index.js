@@ -1,7 +1,7 @@
 import web3js from '../api/web3js'
 import browser from '../api/browser'
 import datetimeCalculators from '../api/datetimeCalculators'
-import { createTxBuyTokens, tokenBuyerApproved, createTxApproveTokenBuyer } from '../api/blockchain'
+import { createTxBuyTokens, apiContractApproved, createTxApproveApiContract } from '../api/blockchain'
 import AcmeClient from '../api/AcmeClient'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
 
@@ -15,25 +15,25 @@ export const setTabIndex = (index) => ({
   tabIndex: index
 })
 
-export const addSubscription = (domainName, amount) => async (dispatch) => {
+export const addSubscription = (address, amount) => async (dispatch) => {
   if (web3js.eth.accounts.wallet.length === 0)
     await dispatch(unlockWalletRequest())
   dispatch({
     type: 'ADD_SUBSCRIPTION',
     payload: {
-      domainName,
+      address,
       amount
     }
   })
   // Remember token name
-  dispatch(addToken(domainName))
+  dispatch(addToken(address))
   await dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
 }
 
-export const removeSubscription = (domainName, reschedule=true) => (dispatch) => {
+export const removeSubscription = (address, reschedule=true) => (dispatch) => {
   dispatch({
     type: 'REMOVE_SUBSCRIPTION',
-    payload: { domainName }
+    payload: { address }
   })
   if (reschedule)
     dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
@@ -167,6 +167,7 @@ export const sendTx = (txObjects, counterparties) => async (dispatch) => {
     const nonce = parseInt(await web3js.eth.getTransactionCount(txObjects[0].from, 'pending'))
     txObjects.forEach((v, i) => txObjects[i].nonce = nonce + i)
   }
+  counterparties.forEach(c => addToken(c))
   let receipts = [];
   let receipt;
   for (let i=0; i<txObjects.length-1; i++) {
@@ -264,15 +265,15 @@ export const rescheduleSubscriptionsPayments = (nonce=-1) => async (dispatch, ge
   for (let i=0; i<keys.length; i++) {
     await dispatch(unscheduleTx(keys[i]))
   }
-  const domainNames = subscriptions.map(sub => sub.domainName)
+  const addresses = subscriptions.map(sub => sub.address)
   const amounts = subscriptions.map(sub => sub.amount)
-  if (domainNames.length === 0) return;
+  if (addresses.length === 0) return;
   // Schedule transactions
   const address = wallet.addresses[wallet.defaultAccount]
   if (nonce === -1)
     nonce = await web3js.eth.getTransactionCount(address, 'pending')
-  const approved = await tokenBuyerApproved(address)
-  const txObject = createTxBuyTokens(address, domainNames, amounts)
+  const approved = await apiContractApproved(address)
+  const txObject = createTxBuyTokens(address, addresses, amounts)
   const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
   let monthIndex = (new Date(now)).getMonth()
   let year = (new Date(now)).getFullYear()
@@ -281,7 +282,7 @@ export const rescheduleSubscriptionsPayments = (nonce=-1) => async (dispatch, ge
     when = calcWhen((new Date(year, monthIndex)).valueOf())
     const txs = []
     if (i === 0 && !approved) {
-      txs.push({ ...createTxApproveTokenBuyer(address), nonce })
+      txs.push({ ...createTxApproveApiContract(address), nonce })
       nonce++
     }
     txs.push({ ...txObject, nonce })

@@ -6,13 +6,21 @@ import {
   cancelDnsChallenge,
   unlockWalletRequest,
   resetDnsChallenge,
-  completeDnsChallenge
+  completeDnsChallenge,
+  reviewTx,
+  rescheduleSubscriptionsPayments
 } from '../actions'
 import {
   uploadCertAndProveOwnership,
   registerAsDomainOwner,
   pointEnsNodeToResolver,
-  pointResolverAddrToTokenSale
+  pointResolverAddrToSelf,
+  getPendingWithdrawals,
+  createTxWithdrawDonations,
+  createTxWithdrawDonationsETH,
+  domainNameToEnsAddr,
+  getTokenSymbol,
+  addresses
 } from '../api/blockchain'
 import { navigateTo } from '../api/browser'
 import { decrypt } from '../api/symmetricCrypto'
@@ -21,14 +29,19 @@ import PresentationalComponent from '../components/DnsChallengeScreen'
 function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
   const [activeStep, setActiveStep] = React.useState(getInitStepIndex(mapped.recordText, mapped.certUrl));
   const domainName = activeStep === 0 ? mapped.objectHostname.split('.').slice(-2).join('.') : mapped.domainName
+  const [pendingWithdrawals, setPendingWithdrawals] = React.useState(null)
   // const domainName = (mapped.ongoing || activeStep > 0) ? mapped.domainName : mapped.objectHostname.split('.').slice(-2).join('.')
-  console.log(getInitStepIndex(mapped.recordText, mapped.certUrl))
-  console.log(domainName)
-
+  
   React.useEffect(() => {
     if (mapped.ongoing)
       onOpen(); // Open self
   }, []);
+
+  // In case app reopens on this step
+  React.useEffect(() => {
+    if (activeStep === 3 && pendingWithdrawals === null)
+      getPendingWithdrawals(domainNameToEnsAddr(domainName)).then(setPendingWithdrawals)
+  }, [activeStep])
 
   function handleClose() {
     mapped.onCancelChallenge();
@@ -53,8 +66,24 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
         await uploadCertAndProveOwnership(mapped.address, certChain, await decrypt(mapped.pkcs8Key, password));
         await registerAsDomainOwner(mapped.address, domainName);
         await pointEnsNodeToResolver(mapped.address, domainName);
-        await pointResolverAddrToTokenSale(mapped.address, domainName);
+        await pointResolverAddrToSelf(mapped.address, domainNameToEnsAddr(domainName));
         await mapped.onCompleteChallenge();
+        await mapped.onRescheduleSubscriptions();
+        setPendingWithdrawals(await getPendingWithdrawals(domainNameToEnsAddr(domainName)))
+        break;
+      case 3:
+        const tokenAddrs = Object.keys(pendingWithdrawals) // Throws error if pendingWithdrawals === null
+        if (tokenAddrs.length > 0) {
+          const txs = []
+          for (let i=0; i<tokenAddrs.length; i++) {
+            const donors = pendingWithdrawals[tokenAddrs[i]].map(({ donor }) => donor)
+            if (tokenAddrs[i] === addresses.ETH)
+              txs.push(createTxWithdrawDonationsETH(mapped.address, domainNameToEnsAddr(domainName), donors))
+            else
+              txs.push(createTxWithdrawDonations(mapped.address, tokenAddrs[i], domainNameToEnsAddr(domainName), donors))
+          }
+          await mapped.onReviewTx(txs, pendingWithdrawals)
+        }
         break;
       default:
         break;
@@ -73,6 +102,9 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
     navigator.clipboard.writeText(text)
   }
 
+  const ebETH =  pendingWithdrawals !== null && pendingWithdrawals[addresses.ETH] ? pendingWithdrawals[addresses.ETH].reduce((a, c) => a + c.balance, 0) : 0
+  const ebDAI =  pendingWithdrawals !== null && pendingWithdrawals[addresses.DAI] ? pendingWithdrawals[addresses.DAI].reduce((a, c) => a + c.balance, 0) : 0
+  const ebRest = pendingWithdrawals !== null ? Object.values(pendingWithdrawals).map(pw => pw.reduce((a, c) => a + c.balance, 0)).reduce((a, c) => a + c, 0) - ebETH - ebDAI : 0
   return React.createElement(PresentationalComponent, {
     open,
     onClose: handleClose,
@@ -84,7 +116,8 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
     recordName: mapped.recordName,
     recordText: mapped.recordText,
     domainName: domainName,
-    onReset: handleReset
+    onReset: handleReset,
+    escrowBalances: ebETH.toFixed(4).concat(' ETH, ', ebDAI.toFixed(2), ' DAI and ', ebRest.toFixed(3), ' of other tokens')
   })
 }
 
@@ -105,7 +138,15 @@ const mapDispatchToProps = dispatch => ({
   onCancelChallenge: () => dispatch(cancelDnsChallenge()),
   onResetChallenge: () => dispatch(resetDnsChallenge()),
   onCompleteChallenge: () => dispatch(completeDnsChallenge()),
-  onUnlockWalletRequest: () => dispatch(unlockWalletRequest())
+  onRescheduleSubscriptions: () => dispatch(rescheduleSubscriptionsPayments()),
+  onUnlockWalletRequest: () => dispatch(unlockWalletRequest()),
+  onReviewTx: async (txs, pendingWithdrawals) => {
+    const tokenAddrs = Object.keys(pendingWithdrawals)
+    const symbols = await Promise.all(tokenAddrs.map(getTokenSymbol))
+    const balances = tokenAddrs.map(addr => pendingWithdrawals[addr].reduce((a, c) => a + c.balance, 0))
+    const values = Object.fromEntries(tokenAddrs.map((v, i) => [symbols[i], balances[i]]))
+    dispatch(reviewTx(txs, ['Escrow Contract'], [values]))
+  }
 })
 
 export default connect(mapStateToProps, mapDispatchToProps)(DnsChallengeScreen)

@@ -62,7 +62,7 @@ function Subscriptions(props) {
                 aria-label="Launch" fullWidth>
                 <KeyboardArrowLeftIcon />
                   <img
-                    src={'https://www.google.com/s2/favicons?domain=' + subscription.domainName}
+                    src={'https://www.google.com/s2/favicons?domain=' + subscription.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')}
                     height="16px" width="16px"
                     style={{ borderRadius: "50%" }}
                     alt="favicon"
@@ -72,11 +72,12 @@ function Subscriptions(props) {
           </TableCell>
           <TableCell component="th" scope="row"
             onClick={() => onClickSubscription(subscription)}>
-            <Tooltip title={subscription.domainName} enterDelay={500}>
+            <Tooltip title={subscription.address} enterDelay={500}>
               <Typography variant="subtitle1">
-                {subscription.name
+                {/*subscription.name
                   ? Array.from(subscription.name.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
-                  : Array.from(subscription.domainName.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
+                  : Array.from(subscription.address.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('') */
+                  Array.from(subscription.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '').substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
                 }
               </Typography>
             </Tooltip>
@@ -93,7 +94,7 @@ function Subscriptions(props) {
           <TableCell >
             {!subscription.permanent && <Tooltip title="Unsubscribe" enterDelay={500}>
               <Button className={classes.button}
-                onClick={() => onUnsubscribe(subscription.domainName)}
+                onClick={() => onUnsubscribe(subscription.address)}
                 size="small" aria-label="Launch">
                 <DeleteOutlinedIcon />
               </Button>

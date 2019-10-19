@@ -4,6 +4,7 @@ import currencySymbols from '../api/currencySymbols'
 import { connect } from 'react-redux'
 import { addSubscription, removeSubscription, setTabIndex } from '../actions'
 import { convertToUSD } from '../api/ECBForexRates'
+import { domainNameToEnsAddr } from '../api/blockchain.js'
 
 function SubscribeForm({ domainName, subscribed, subscribedAmount, currency, onSubscribe, onUnsubscribe, onChangeTab, classes }) {
   const [amount, setAmount] = React.useState('')
@@ -52,19 +53,19 @@ function SubscribeForm({ domainName, subscribed, subscribedAmount, currency, onS
 }
 
 function getSubscribedAmount(subscriptions, domainName) {
-  let index = subscriptions.findIndex(sub => sub.domainName === domainName)
+  let index = subscriptions.findIndex(sub => sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '') === domainName)
   if (index > -1)
     return subscriptions[index].amount
   return 0
 }
 const mapStateToProps = (state, ownProps) => ({
-  subscribed: -1 !== state.subscriptions.findIndex(sub => sub.domainName === ownProps.domainName),
+  subscribed: -1 !== state.subscriptions.findIndex(sub => sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '') === ownProps.domainName),
   subscribedAmount: getSubscribedAmount(state.subscriptions, ownProps.domainName),
   currency: state.settings['Currency'],
 })
 const mapDispatchToProps = dispatch => ({
-  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainName, amount)),
-  onUnsubscribe: domainName => dispatch(removeSubscription(domainName)),
+  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsAddr(domainName), amount)),
+  onUnsubscribe: domainName => dispatch(removeSubscription(domainNameToEnsAddr(domainName))),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
 })
 

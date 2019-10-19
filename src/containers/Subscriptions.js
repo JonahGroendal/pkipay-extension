@@ -26,7 +26,7 @@ function Subscriptions(props) {
     subscriptions: subscriptions.map(sub => ({ ...sub, amount: convertFromUSD(currency, sub.amount)})),
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
-    onClickSubscription: sub => {setObject(sub.domainName); onChangeIndex(0)},
+    onClickSubscription: sub => {setObject(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeIndex(0)},
     currency,
     currencySymbol: currencySymbols[currency],
     nextPayment: datetimeCalculators[paymentSchedule](Date.now())
@@ -43,7 +43,7 @@ const mapStateToProps = state => ({
   tabIndex: state.pages.tabIndex
 });
 const mapDispatchToProps = dispatch => ({
-  onUnsubscribe: domainName => dispatch(removeSubscription(domainName)),
+  onUnsubscribe: address => dispatch(removeSubscription(address)),
   setObject: hostname => dispatch(setObjectHostname(hostname))
 })
 

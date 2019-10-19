@@ -1,5 +1,5 @@
 import React from 'react'
-import SubscribeForm from '../containers/SubscribeForm'
+// import SubscribeForm from '../containers/SubscribeForm'
 import { makeStyles } from '@material-ui/styles'
 import Paper from '@material-ui/core/Paper'
 import Avatar from '@material-ui/core/Avatar'
@@ -123,9 +123,9 @@ function ProfileCard(props) {
             </div>
           </div>
         </div>
-        {!props.adminViewEnabled && <div className={classes.subscribeContainer}>
+        {/*!props.adminViewEnabled && <div className={classes.subscribeContainer}>
           <SubscribeForm domainName={props.domainName} />
-        </div>}
+        </div>*/}
       </div>
     </Paper>
   )

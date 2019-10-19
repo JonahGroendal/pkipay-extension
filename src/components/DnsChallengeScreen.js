@@ -1,6 +1,7 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles';
 import classNames from 'classnames';
+import { addresses } from '../api/blockchain';
 import FullScreenDialog from './FullScreenDialog'
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
@@ -107,27 +108,31 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const steps = [{
-  label: "Primer",
+  label: "Request a DNS Challenge",
   text:  `To register as the owner of this website and withdraw your
           donations, you must demonstrate your control of the domain by setting a
           DNS record. Navigating to your domain name registrar's website will
           close this app, but don't worry, you can always re-open it to continue
           where you left off.`
 }, {
-  label: "DNS challenge",
+  label: "Add a DNS Record",
   text:  `Log in to your registrar's website and add a record with the below
           information, then wait two minutes before submitting.`
 }, {
-  label: "Send proof",
+  label: "Send Proof to Blockchain",
   text:  `Finally, a proof will be uploaded to the
           blockchain. This will debit a small amount of ETH
           from your account (typically less than 1 USD's worth).`
+}, {
+  label: "Withdraw Donations from Escrow",
+  text: ""
 }]
 
 export default function DnsChallengeScreen(props) {
   const {
     open, domainName, recordName, recordText,
     onClose, onReset, activeStep, setActiveStep,
+    escrowBalances,
     onStepComplete: handleStepComplete,
     onClickLink: handleClickLink,
     onCopy: handleCopy,
@@ -230,6 +235,8 @@ export default function DnsChallengeScreen(props) {
         return 'Submit';
       case 2:
         return 'Send';
+      case 3:
+        return 'Withdraw';
       default:
         return 'Next';
     }
@@ -348,6 +355,13 @@ export default function DnsChallengeScreen(props) {
                         </div>
                       </React.Fragment>
                     )}
+                    {stepIndex === 3 && (
+                      <React.Fragment>
+                        <Typography>
+                          {escrowBalances}
+                        </Typography>
+                      </React.Fragment>
+                    )}
                   </div>
                   <div className={classes.actionsContainer}>
                     <div>
@@ -381,7 +395,7 @@ export default function DnsChallengeScreen(props) {
             </Step>
           ))}
         </Stepper>
-        {activeStep === 3 && (
+        {activeStep === 4 && (
           <Paper square elevation={0} className={classes.resetContainer}>
             <Typography>
               {`Congratulations! Your account is now registered as the owner of ${domainName}`}

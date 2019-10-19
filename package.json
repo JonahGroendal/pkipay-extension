@@ -9,6 +9,8 @@
     "test": "REACT_APP_ACTUAL_ENV=test react-scripts test --env=jsdom --verbose=false",
     "start:firefox": "web-ext run --source-dir ./build/",
     "build-web-ext": "web-ext build --source-dir ./build/ --overwrite-dest",
+    "sign-web-ext": "web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET --source-dir ./build/ --overwrite-dest",
+    "watch": "REACT_APP_ACTUAL_ENV=development cra-build-watch",
     "eject": "react-scripts eject"
   },
   "dependencies": {
@@ -42,6 +44,7 @@
     "x509-forest-of-trust": "github:JonahGroendal/x509-forest-of-trust"
   },
   "devDependencies": {
+    "cra-build-watch": "^2.0.1",
     "fetch-mock": "^7.3.9",
     "ganache-cli": "^6.5.0",
     "redux-mock-store": "^1.5.3",

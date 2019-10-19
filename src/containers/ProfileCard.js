@@ -1,11 +1,17 @@
 import React from 'react'
 import PresentationalComponent from '../components/ProfileCard'
 import { connect } from 'react-redux'
-import { getTotalDonations, getTotalDonationsFromOneMonth } from '../api/blockchain'
+import {
+  getTotalContributions,
+  getTotalContributionsFromOneMonth,
+  domainNameToEnsAddr,
+  getPriceOfETHInUSD,
+  addresses
+} from '../api/blockchain'
 import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function ProfileCard({ hostname, currency, showAdminViewOption, adminViewEnabled, onChangeAdminViewEnabled, square }) {
+function ProfileCard({ hostname, currency, txScreenOpen, showAdminViewOption, adminViewEnabled, onChangeAdminViewEnabled, square }) {
   const domainName = hostname.split('.').slice(-2).join('.')
   const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
   const [largeFaviconExists, setLargeFaviconExists] = React.useState(false)
@@ -14,27 +20,38 @@ function ProfileCard({ hostname, currency, showAdminViewOption, adminViewEnabled
 
   React.useEffect(() => {
     if (domainName) {
-      getTotalDonations(domainName).then(td => {
-        setTotalDonations(convertFromUSD(currency, td))
-      })
-      getTotalDonationsFromOneMonth(domainName).then(td => {
-        setTotalDonationsOneMonth(convertFromUSD(currency, td))
-      })
-      let xhr = new XMLHttpRequest()
-      xhr.open("GET", faviconUrl, true)
-      xhr.onloadend = () => {
-        if (xhr.status !== 404 && xhr.status !== 0)
-          setLargeFaviconExists(true)
-        else
-          setLargeFaviconExists(false)
+      if (!txScreenOpen) {
+        Promise.all([
+          getTotalContributions(domainNameToEnsAddr(domainName)),
+          getTotalContributionsFromOneMonth(domainNameToEnsAddr(domainName)),
+          getPriceOfETHInUSD()
+        ])
+        .then(([contribs, contribs1Mo, ethPrice]) => {
+          let usdValue = 0
+          if (contribs[addresses.DAI]) usdValue += contribs[addresses.DAI]
+          if (contribs[addresses.ETH]) usdValue += contribs[addresses.ETH] * ethPrice
+          setTotalDonations(convertFromUSD(currency, usdValue))
+          usdValue = 0
+          if (contribs1Mo[addresses.DAI]) usdValue += contribs1Mo[addresses.DAI]
+          if (contribs1Mo[addresses.ETH]) usdValue += contribs1Mo[addresses.ETH] * ethPrice
+          setTotalDonationsOneMonth(convertFromUSD(currency, usdValue))
+        })
+        let xhr = new XMLHttpRequest()
+        xhr.open("GET", faviconUrl, true)
+        xhr.onloadend = () => {
+          if (xhr.status !== 404 && xhr.status !== 0)
+            setLargeFaviconExists(true)
+          else
+            setLargeFaviconExists(false)
+        }
+        xhr.send()
       }
-      xhr.send()
     } else {
       setTotalDonations(0)
       setTotalDonationsOneMonth(0)
       setLargeFaviconExists(false)
     }
-  }, [hostname, currency])
+  }, [hostname, currency, txScreenOpen])
 
   // const [avatarColor, setAvatarColor] = React.useState('')
   // React.useEffect(updateState, [subscription, currency])
@@ -126,7 +143,8 @@ function ProfileCard({ hostname, currency, showAdminViewOption, adminViewEnabled
 }
 
 const mapStateToProps = state => ({
-  currency: state.settings['Currency']
+  currency: state.settings['Currency'],
+  txScreenOpen: state.transactionScreen.isOpen
 })
 
 export default connect(mapStateToProps)(ProfileCard)
