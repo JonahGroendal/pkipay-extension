@@ -24,8 +24,7 @@
     "notifications",
     "downloads",
     "storage",
-    "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml",
-    "https://min-api.cryptocompare.com/data/*"
+    "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
   ],
   "browser_specific_settings": {
     "gecko": {

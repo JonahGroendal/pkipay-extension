@@ -20,7 +20,6 @@
     "@material-ui/styles": "^4.3.0",
     "chart.js": "^2.8.0",
     "classnames": "^2.2.6",
-    "cryptocompare": "^0.7.2",
     "dns-over-ens": "github:JonahGroendal/dns-over-ens",
     "ecb-currency-converter": "^1.0.0",
     "eth-ens-namehash": "^2.0.8",

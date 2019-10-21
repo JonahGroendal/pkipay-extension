@@ -2,8 +2,9 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/TransactionScreen'
 import { sendTx, cancelTx, closeTx, openTx, confirmTx } from '../actions'
+import { getPriceOfETHInUSD } from '../api/blockchain'
 import { convertFromUSD } from '../api/ECBForexRates'
-import cryptoCompare from 'cryptocompare'
+// import cryptoCompare from 'cryptocompare'
 import web3js from '../api/web3js'
 import currencySymbols from '../api/currencySymbols'
 
@@ -72,9 +73,10 @@ function useGasValues(txObjects) {
     })))
     .then(gasEstimates => {
       console.log(gasEstimates)
-      cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
-      cryptoCompare.price('ETH', 'USD')
-      .then(currencyPerEth => {
+      // cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
+      // cryptoCompare.price('ETH', 'USD')
+      getPriceOfETHInUSD()
+      .then(usdPerEth => {
         let gasPrice;
         return Promise.all(txObjects.map(txObject => {
           if (txObject.gasPrice)
@@ -85,7 +87,8 @@ function useGasValues(txObjects) {
         }))
         .then(gasPrices => {
           const gasValueETH = gasEstimates.map((ge, i) => parseFloat(web3js.utils.fromWei(web3js.utils.toBN(ge).mul(web3js.utils.toBN(gasPrices[i])).toString()))).reduce((acc, cur) => acc + cur, 0)
-          const gasValueUSD = gasValueETH * currencyPerEth['USD']
+          // const gasValueUSD = gasValueETH * currencyPerEth['USD']
+          const gasValueUSD = gasValueETH * usdPerEth
           setGasValues({
             ETH: gasValueETH,
             USD: gasValueUSD,
