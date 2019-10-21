@@ -31,9 +31,7 @@ function Donate({ domainName, ...mapped }) {
   const tokenAddress = useEnsTokenResolver(domainName)
   const tokenOptions = [...Object.keys(addresses)]
   const tokenAddresses = { ...addresses }
-  console.log('here first')
   if (tokenAddress !== ZERO_ADDRESS) {
-    console.log('Im here')
     tokenOptions.push('tokens')
     tokenAddresses['tokens'] = tokenAddress
   }
