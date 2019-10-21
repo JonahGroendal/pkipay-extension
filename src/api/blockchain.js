@@ -810,7 +810,7 @@ export async function getTotalContributions(ensName, fromBlock = 0) {
 }
 
 export async function getTotalContributionsFromOneMonth(ensName) {
-  console.log('getTotalDonationsFromOneMonth')
+  console.log('getContributionsFromOneMonth')
   const currentTimestamp = Date.now()/1000;
   const currentBlockNum = await web3js.eth.getBlockNumber()
   const estFromBlock = currentBlockNum - 60*60*24*30/15
