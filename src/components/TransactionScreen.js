@@ -96,6 +96,7 @@ function TransactionScreen(props) {
     txSent,
     txConfirmed,
     txErrored,
+    txReverted,
     onClickSend,
     onClickCancel,
     onClickClose,
@@ -201,7 +202,7 @@ function TransactionScreen(props) {
                 <Button
                   onClick={onClickCancel}
                   variant="outlined" size="medium"color="primary"
-                  disabled={txSent && !txErrored}
+                  disabled={txSent && !txErrored && !txReverted}
                 >
                   Cancel
                 </Button>
@@ -214,7 +215,7 @@ function TransactionScreen(props) {
                   <SendIcon className={classes.rightIcon} />
                 </Button>
               </div>
-              {txSent && !txConfirmed && !txErrored && <div className={classes.status}>
+              {txSent && !txConfirmed && !txErrored && !txReverted && <div className={classes.status}>
                 <Typography variant="subtitle1">
                   {"Transaction pending "}
                 </Typography>
@@ -229,6 +230,12 @@ function TransactionScreen(props) {
               {txSent && txErrored && <div className={classes.status}>
                 <Typography variant="subtitle1">
                   {"Transaction errored "}
+                </Typography>
+                <ErrorIcon />
+              </div>}
+              {txSent && txReverted && <div className={classes.status}>
+                <Typography variant="subtitle1">
+                  {"Transaction reverted "}
                 </Typography>
                 <ErrorIcon />
               </div>}

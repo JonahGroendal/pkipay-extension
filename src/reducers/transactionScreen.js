@@ -2,10 +2,11 @@ const initialState = {
   isOpen: false,
   counterparties: [],
   values: [],
-  txHash: null,
+  txHashes: null,
   txError: null,
   txObjects: null,
-  txConfirmed: false
+  txConfirmed: false,
+  txReverted: false
 }
 
 function transactionScreen(state=initialState, action) {
@@ -21,17 +22,22 @@ function transactionScreen(state=initialState, action) {
     case 'SEND_TX_SUCCESS':
       return {
         ...state,
-        txHash: action.payload.txHash
+        txHashes: action.payload.txHashes
       };
     case 'SEND_TX_ERROR':
       return {
         ...state,
         txError: action.payload.txError
       };
-    case 'CONFIRM_TX':
+    case 'TX_CONFIRMED':
       return {
         ...state,
         txConfirmed: true
+      };
+    case 'TX_REVERTED':
+      return {
+        ...state,
+        txReverted: true
       };
     case 'CLOSE_TX':
       return {

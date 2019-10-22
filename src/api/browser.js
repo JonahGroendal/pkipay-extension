@@ -102,6 +102,17 @@ export function navigateTo(url) {
   })
 }
 
+export function sendMessage(request) {
+  return new Promise((resolve, reject) => {
+    api.runtime.sendMessage(request, function (response) {
+      if (!api.lastError)
+        resolve(response)
+      else
+        reject(api.lastError)
+    })
+  })
+}
+
 function inflateZeros(str) {
   let chars = str.split('');
   let numZeros = 0;

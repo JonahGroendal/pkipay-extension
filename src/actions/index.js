@@ -1,5 +1,5 @@
 import web3js from '../api/web3js'
-import browser from '../api/browser'
+import browser, { sendMessage } from '../api/browser'
 import datetimeCalculators from '../api/datetimeCalculators'
 import { createTxBuyTokens, apiContractApproved, createTxApproveApiContract } from '../api/blockchain'
 import AcmeClient from '../api/AcmeClient'
@@ -153,8 +153,12 @@ export const openTx = () => ({
   type: 'OPEN_TX'
 })
 
-export const confirmTx = () => ({
-  type: 'CONFIRM_TX'
+export const txConfirmed = () => ({
+  type: 'TX_CONFIRMED'
+})
+
+export const txReverted = () => ({
+  type: 'TX_REVERTED'
 })
 
 export const sendTx = (txObjects, counterparties) => async (dispatch) => {
@@ -165,46 +169,36 @@ export const sendTx = (txObjects, counterparties) => async (dispatch) => {
     await dispatch(unlockWalletRequest())
   if (typeof txObjects[0].nonce === 'undefined') {
     const nonce = parseInt(await web3js.eth.getTransactionCount(txObjects[0].from, 'pending'))
-    txObjects.forEach((v, i) => txObjects[i].nonce = nonce + i)
+    txObjects.forEach((v, i) => v.nonce = nonce + i)
   }
   counterparties.forEach(c => addToken(c))
-  let receipts = [];
-  let receipt;
-  for (let i=0; i<txObjects.length-1; i++) {
-    try {
-      // we must await to ensure correct order
-      receipt = await web3js.eth.sendTransaction(txObjects[i])
-    } catch (txError) {
-      dispatch({
-        type: 'SEND_TX_ERROR',
-        payload: { txError }
-      })
-      return null
+  try {
+    const txs = []
+    for (let i=0; i<txObjects.length; i++) {
+      const tx = {}
+      tx.txObject = txObjects[i]
+      const pk = web3js.eth.accounts.wallet[txObjects[i].from].privateKey
+      const signed = await web3js.eth.accounts.signTransaction(txObjects[i], pk)
+      tx.rawTransaction = signed.rawTransaction
+      // tx.txHash = signed.transactionHash
+      txs.push(tx)
     }
-    receipts.push(receipt)
+    const responses = await sendMessage({ type: 'SEND_TXS', txs })
+    let errorIndex = responses.findIndex(r => r.error !== undefined)
+    if (errorIndex !== -1)
+      throw new Error(responses[errorIndex].error.message)
+    dispatch({
+      type: 'SEND_TX_SUCCESS',
+      payload: {
+        txHashes: responses.map(r => r.result)
+      }
+    })
+  } catch (txError) {
+    dispatch({
+      type: 'SEND_TX_ERROR',
+      payload: { txError }
+    })
   }
-  if (txObjects.length > 0) {
-    let lastTx = web3js.eth.sendTransaction(txObjects[txObjects.length-1])
-    .once('transactionHash', txHash => {
-      dispatch({
-        type: 'SEND_TX_SUCCESS',
-        payload: { txHash }
-      })
-      counterparties.forEach(counterparty => dispatch(addToken(counterparty)))
-    })
-    .once('confirmation', numConfs => {
-      dispatch(confirmTx())
-      dispatch(rescheduleSubscriptionsPayments(parseInt(txObjects[txObjects.length-1].nonce)+1))
-    })
-    .catch(txError => {
-      dispatch({
-        type: 'SEND_TX_ERROR',
-        payload: { txError }
-      })
-    })
-    receipts.push(lastTx)
-  }
-  return Promise.all(receipts)
 }
 
 export const scheduleTx = (when, txObjects, counterparties) => async (dispatch) => {

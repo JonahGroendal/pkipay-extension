@@ -1,11 +1,11 @@
 const api = chrome || browser;
 
-api.runtime.onInstalled.addListener(function() {
+api.runtime.onInstalled.addListener(function () {
   // Send scheduled transaction on alarm
-  api.alarms.onAlarm.addListener(function(alarm) {
+  api.alarms.onAlarm.addListener(function (alarm) {
     if (alarm.name.substring(0, 2) !== 'TX') return;
     // Get application state
-    api.storage.sync.get(null, function(storage) {
+    api.storage.sync.get(null, function (storage) {
       if (api.lastError) return;
       // Piece together chunks of stringified state
       let serializedState = Object.keys(storage).filter(k => k.includes('state')).sort().map(k => storage[k]).join('');
@@ -24,38 +24,78 @@ api.runtime.onInstalled.addListener(function() {
       });
     });
   });
+
+  api.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.type === 'SEND_TXS') {
+      sendAll(request.txs, sendResponse)
+      return true;
+    }
+  })
 });
 
 // recursively loop through txs and send them
-function sendAll(txs, i=0) {
-  send(txs[i])
-  .then((response) => {
-    console.log(response);
-    if (i+1 < txs.length)
-      sendAll(txs, i+1);
-  })
+function sendAll(txs, callback) {
+  function loop(i, responses) {
+    if (i < txs.length) {
+      send(txs[i].rawTransaction, txs[i].txObject.chainId, function (response) {
+        console.log(response)
+        responses.push(JSON.parse(response))
+        loop(i+1, responses)
+      })
+    } else {
+      callback(responses)
+    }
+  }
+  loop(0, [])
 }
 
-function send(tx) {
-  return new Promise((resolve, reject) => {
-    const rpcEndpoint = parseInt(tx.txObject.chainId) === 1
-      ? "https://mainnet.infura.io/v3/48899b10645a48e189e345be4be19ece"
-      : "https://kovan.infura.io/v3/48899b10645a48e189e345be4be19ece"
-    // Send TX
-    let oReq = new XMLHttpRequest();
-    oReq.addEventListener('load', function() {
-      resolve(oReq.response);
-    })
-    oReq.open("POST", rpcEndpoint);
-    oReq.setRequestHeader("Content-Type", "application/json");
-    oReq.send(JSON.stringify({
-      "jsonrpc": "2.0",
-      "method": "eth_sendRawTransaction",
-      "params": [tx.rawTransaction],
-      "id": 1
-    }));
+function send(rawTransaction, chainId, callback) {
+  const rpcEndpoint = parseInt(chainId) === 1
+    ? "https://mainnet.infura.io/v3/48899b10645a48e189e345be4be19ece"
+    : "https://kovan.infura.io/v3/48899b10645a48e189e345be4be19ece"
+  // Send TX
+  let oReq = new XMLHttpRequest();
+  oReq.addEventListener('load', function() {
+    callback(oReq.response);
   })
+  oReq.open("POST", rpcEndpoint);
+  oReq.setRequestHeader("Content-Type", "application/json");
+  oReq.send(JSON.stringify({
+    "jsonrpc": "2.0",
+    "method": "eth_sendRawTransaction",
+    "params": [rawTransaction],
+    "id": 1
+  }));
 }
+
+// function sendAll(txs, i=0) {
+//   return send(txs[i].rawTransaction, txs[i].txObject.chainId)
+//   .then((response) => {
+//     console.log(response);
+//     if (txs.length < i+1)
+//       return sendAll(txs, i+1);
+//   })
+// }
+// function send(rawTransaction, chainId) {
+//   return new Promise((resolve, reject) => {
+//     const rpcEndpoint = parseInt(chainId) === 1
+//       ? "https://mainnet.infura.io/v3/48899b10645a48e189e345be4be19ece"
+//       : "https://kovan.infura.io/v3/48899b10645a48e189e345be4be19ece"
+//     // Send TX
+//     let oReq = new XMLHttpRequest();
+//     oReq.addEventListener('load', function() {
+//       resolve(oReq.response);
+//     })
+//     oReq.open("POST", rpcEndpoint);
+//     oReq.setRequestHeader("Content-Type", "application/json");
+//     oReq.send(JSON.stringify({
+//       "jsonrpc": "2.0",
+//       "method": "eth_sendRawTransaction",
+//       "params": [rawTransaction],
+//       "id": 1
+//     }));
+//   })
+// }
 
 // Same function as in project_root/src/api/browser.js
 function inflateZeros(str) {

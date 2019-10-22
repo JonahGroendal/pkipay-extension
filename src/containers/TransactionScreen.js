@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/TransactionScreen'
-import { sendTx, cancelTx, closeTx, openTx, confirmTx } from '../actions'
+import { sendTx, cancelTx, closeTx, openTx, txConfirmed, txReverted } from '../actions'
 import { getPriceOfETHInUSD } from '../api/blockchain'
 import { convertFromUSD } from '../api/ECBForexRates'
 // import cryptoCompare from 'cryptocompare'
@@ -13,14 +13,16 @@ function TransactionScreen(props) {
     isOpen,
     counterparties,
     values,
-    txHash,
+    txHashes,
     txError,
+    txReverted,
     txConfirmed,
     onSend,
     onClickCancel,
     onClickClose,
     onClickOpen,
     onTxConfirmation,
+    onTxRevert,
     currency,
   } = props
   let { txObjects } = props;
@@ -28,15 +30,21 @@ function TransactionScreen(props) {
   const gasValues = useGasValues(txObjects)
 
   React.useEffect(() => {
-    if (isOpen && !txConfirmed && txHash !== null) {
+    if (isOpen && !txConfirmed && !txReverted && txHashes !== null) {
       const interval = setInterval(() => {
-        web3js.eth.getTransactionReceipt(txHash).then(receipt => {
-          if (receipt && receipt.status && !txConfirmed) onTxConfirmation()
+        web3js.eth.getTransactionReceipt(txHashes[txHashes.length-1]).then(receipt => {
+          console.log('receipt', receipt)
+          if (receipt && !txConfirmed && !txReverted) {
+            if (receipt.status)
+              onTxConfirmation()
+            else
+              onTxRevert()
+          }
         })
-      }, 3000)
+      }, 5000)
       return () => clearInterval(interval)
     }
-  }, [isOpen, txConfirmed, txHash])
+  }, [isOpen, txConfirmed, txReverted, txHashes])
 
   return React.createElement(PresentationalComponent, {
     isOpen,
@@ -45,15 +53,16 @@ function TransactionScreen(props) {
     gasValue: convertFromUSD(currency, gasValues.USD),
     gasValueETH: gasValues.ETH,
     gasValueIsApproximation: gasValues.isApproximation,
-    txSent: (txHash !== null || txError !== null),
+    txSent: (txHashes !== null || txError !== null),
     txConfirmed,
     txErrored: txError !== null,
+    txReverted,
     onClickSend: () => onSend(txObjects, counterparties, values),
     onClickCancel,
     onClickClose,
     onClickOpen,
     currencySymbol: currencySymbols[currency],
-    badgeInvisible: (txObjects === null || txHash !== null),
+    badgeInvisible: (txObjects === null || txHashes !== null),
     txObjectExists: txObjects !== null && txObjects.length > 0
   })
 }
@@ -110,8 +119,9 @@ const mapStateToProps = state => ({
   isOpen:         state.transactionScreen.isOpen,
   counterparties: state.transactionScreen.counterparties,
   values:         state.transactionScreen.values,
-  txHash:         state.transactionScreen.txHash,
+  txHashes:       state.transactionScreen.txHashes,
   txError:        state.transactionScreen.txError,
+  txReverted:     state.transactionScreen.txReverted,
   txConfirmed:    state.transactionScreen.txConfirmed,
   txObjects:      state.transactionScreen.txObjects,
   currency:       state.settings['Currency'],
@@ -122,7 +132,8 @@ const mapDispatchToProps = (dispatch, ownProps) => ({
   onClickCancel: () => dispatch(cancelTx()),
   onClickClose: () => dispatch(closeTx()),
   onClickOpen: () => dispatch(openTx()),
-  onTxConfirmation: () => dispatch(confirmTx())
+  onTxConfirmation: () => dispatch(txConfirmed()),
+  onTxRevert: () => dispatch(txReverted())
 })
 
 export default connect(
