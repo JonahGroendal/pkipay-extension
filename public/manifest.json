@@ -15,7 +15,7 @@
   },
   "background": {
     "scripts": [
-      "scheduledTransactions.js"
+      "transactionSender.js"
     ]
   },
   "permissions": [
