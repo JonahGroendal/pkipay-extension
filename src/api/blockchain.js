@@ -794,35 +794,50 @@ export async function getTotalContributions(ensName, fromBlock = 0) {
   console.log('getTotalContributions')
   const ensNode = namehash.hash(ensName);
 
-  const events = await api.getPastEvents('allEvents', {
+  const donationEvents = await api.getPastEvents('Donation', {
+    filter: { node: ensNode },
+    fromBlock: 0
+  })
+  const buyEvents = await api.getPastEvents('Donation', {
     filter: { node: ensNode },
     fromBlock: 0
   })
 
-  const byToken = {}
-  events.forEach(event => {
-    if (!byToken[event.returnValues.currency])
-      byToken[event.returnValues.currency] = 0
-    byToken[event.returnValues.currency] += parseFloat(web3js.utils.fromWei(event.returnValues.value))
-  })
+  const eventsAll = [...donationEvents, ...buyEvents].sort((a, b) => a.blockNumber - b.blockNumber)
 
-  return byToken
+  const oneMonthAgoBlockNum = await timestampToBlockNum(Date.now() - 60*60*24*30 * 1000)
+  const eventsLastMonth = eventsAll.filter(e => e.blockNumber >= oneMonthAgoBlockNum)
+
+  const getTotals = events => {
+    const byToken = {}
+    events.forEach(event => {
+      if (!byToken[event.returnValues.currency])
+        byToken[event.returnValues.currency] = 0
+      byToken[event.returnValues.currency] += parseFloat(web3js.utils.fromWei(event.returnValues.value))
+    })
+    return byToken
+  }
+
+  return {
+    all: getTotals(eventsAll),
+    lastMonth: getTotals(eventsLastMonth)
+  }
 }
 
-export async function getTotalContributionsFromOneMonth(ensName) {
-  console.log('getContributionsFromOneMonth')
-  const currentTimestamp = Date.now()/1000;
+export async function timestampToBlockNum(msSinceUnixEpoch) {
+  console.log('timestampToBlockNum')
+  const now = Date.now()
+  const secondsAgo = (now - msSinceUnixEpoch) / 1000
+  const currentTimestamp = now / 1000;
   const currentBlockNum = await web3js.eth.getBlockNumber()
-  const estFromBlock = currentBlockNum - 60*60*24*30/15
-  if (estFromBlock > 0) {
-    const estFromBlockTimestamp = (await web3js.eth.getBlock(estFromBlock)).timestamp;
-    const secondsPerBlock = (currentTimestamp - estFromBlockTimestamp) / ((60*60*24*30)/15);
-    let fromBlock = Math.floor(currentBlockNum - 60*60*24*30/secondsPerBlock);
-    if (fromBlock < 0) fromBlock = 0;
-    return await getTotalContributions(ensName, fromBlock);
-  }
-  return await getTotalContributions(ensName, 0);
-
+  const estFromBlock = currentBlockNum - secondsAgo/15
+  if (estFromBlock <= 0)
+    return 0;
+  const estFromBlockTimestamp = (await web3js.eth.getBlock(Math.floor(estFromBlock))).timestamp;
+  const secondsPerBlock = (currentTimestamp - estFromBlockTimestamp) / ((secondsAgo)/15);
+  let fromBlock = Math.floor(currentBlockNum - secondsAgo/secondsPerBlock);
+  if (fromBlock < 0) fromBlock = 0;
+  return fromBlock
 }
 
 function validateDomainName(domainName) {

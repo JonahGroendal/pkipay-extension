@@ -3,7 +3,6 @@ import PresentationalComponent from '../components/ProfileCard'
 import { connect } from 'react-redux'
 import {
   getTotalContributions,
-  getTotalContributionsFromOneMonth,
   domainNameToEnsAddr,
   getPriceOfETHInUSD,
   addresses
@@ -23,17 +22,16 @@ function ProfileCard({ hostname, currency, txScreenOpen, showAdminViewOption, ad
       if (!txScreenOpen) {
         Promise.all([
           getTotalContributions(domainNameToEnsAddr(domainName)),
-          getTotalContributionsFromOneMonth(domainNameToEnsAddr(domainName)),
           getPriceOfETHInUSD()
         ])
-        .then(([contribs, contribs1Mo, ethPrice]) => {
+        .then(([contribs, ethPrice]) => {
           let usdValue = 0
-          if (contribs[addresses.DAI]) usdValue += contribs[addresses.DAI]
-          if (contribs[addresses.ETH]) usdValue += contribs[addresses.ETH] * ethPrice
+          if (contribs.all[addresses.DAI]) usdValue += contribs.all[addresses.DAI]
+          if (contribs.all[addresses.ETH]) usdValue += contribs.all[addresses.ETH] * ethPrice
           setTotalDonations(convertFromUSD(currency, usdValue))
           usdValue = 0
-          if (contribs1Mo[addresses.DAI]) usdValue += contribs1Mo[addresses.DAI]
-          if (contribs1Mo[addresses.ETH]) usdValue += contribs1Mo[addresses.ETH] * ethPrice
+          if (contribs.lastMonth[addresses.DAI]) usdValue += contribs.lastMonth[addresses.DAI]
+          if (contribs.lastMonth[addresses.ETH]) usdValue += contribs.lastMonth[addresses.ETH] * ethPrice
           setTotalDonationsOneMonth(convertFromUSD(currency, usdValue))
         })
         let xhr = new XMLHttpRequest()
