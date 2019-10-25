@@ -1,12 +1,12 @@
 import React from 'react'
 // import { makeStyles } from '@material-ui/styles'
+import appConfig from '../api/appConfig'
 import Page from './Page'
 import ProfileCard from '../containers/ProfileCard'
 import Token from '../containers/Token'
 import Donate from '../containers/Donate'
 import ClaimWebsiteCard from './ClaimWebsiteCard'
 
-const WINDOW_HEIGHT = 600
 const NAV_HEIGHT = 96
 
 // const useStyles = makeStyles(theme => ({
@@ -35,7 +35,7 @@ function PageProfile({ hostname, domainName, domainOwner, address }) {
           square={true}
         />
       </div>
-      <Page height={WINDOW_HEIGHT - NAV_HEIGHT - profileCardHeight}>
+      <Page height={appConfig.height - NAV_HEIGHT - profileCardHeight}>
         {!adminViewEnabled && (
           <Donate domainName={domainName} />
         )}

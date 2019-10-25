@@ -1,5 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/styles'
+import appConfig from '../api/appConfig'
 import IconButton from '@material-ui/core/IconButton';
 import Dialog from '@material-ui/core/Dialog';
 import AppBar from '@material-ui/core/AppBar';
@@ -10,8 +11,8 @@ import Slide from '@material-ui/core/Slide';
 
 const useStyles = makeStyles(theme => ({
   root: {
-    maxWidth: '360px', // theme.spacing(45)
-    maxHeight: '600px', // theme.spacing(75)
+    maxWidth: appConfig.width,
+    maxHeight: appConfig.height,
   },
   appBar: {
     position: 'relative',

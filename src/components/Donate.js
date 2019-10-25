@@ -26,11 +26,12 @@ const useStyles = makeStyles(theme => ({
     width: theme.spacing(8)
   },
   selectField: {
-    marginLeft: theme.spacing(1)
+    marginLeft: theme.spacing(1),
+    minWidth: theme.spacing(7)
   },
   scheduleField: {
     marginLeft: theme.spacing(1),
-    width: theme.spacing(8)
+    width: theme.spacing(10) + 4
   }
 }));
 

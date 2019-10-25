@@ -1,6 +1,7 @@
 import React from 'react'
 import { ThemeProvider } from '@material-ui/styles'
 import { createMuiTheme } from '@material-ui/core/styles'
+import appConfig from '../api/appConfig'
 import blueGrey from '@material-ui/core/colors/blueGrey'
 import amber from '@material-ui/core/colors/amber'
 import CreatePasswordScreen from '../containers/CreatePasswordScreen'
@@ -27,7 +28,7 @@ function App({ darkMode }) {
 
   return (
     <ThemeProvider theme={theme}>
-      <div >
+      <div style={{ width: appConfig.width, height: appConfig.height }}>
         <CssBaseline />
         <CreatePasswordScreen />
         <UnlockWalletScreen />
