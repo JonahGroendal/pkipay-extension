@@ -28,6 +28,7 @@
     "node-rsa": "^1.0.5",
     "pkipay-blockchain": "github:JonahGroendal/pkipay-blockchain",
     "prop-types": "^15.7.2",
+    "qrcode": "^1.4.2",
     "react": "^16.8.6",
     "react-chartjs-2": "^2.7.6",
     "react-custom-scrollbars": "^4.2.1",

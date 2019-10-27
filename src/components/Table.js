@@ -16,6 +16,8 @@ import classNames from 'classnames'
 
 const useStyles = makeStyles(theme => ({
   toolbar: {
+    display: 'flex',
+    justifyContent: 'space-between',
     paddingTop: theme.spacing(2),
     paddingRight: theme.spacing(2),
     paddingLeft: theme.spacing(2),
@@ -80,7 +82,8 @@ function Table(props) {
     rowsData,
     fixedIndices,
     rowsPerPage,
-    highlightedRowIndex
+    highlightedRowIndex,
+    titleComponent
   } = props
   const classes = useStyles()
   const [order, setOrder] = React.useState(props.initOrder)
@@ -114,7 +117,7 @@ function Table(props) {
   const classCellNumericLast = classNames(classes.tableCell, classes.tableCellNumeric, classes.tableCellLast)
   return (
     <Paper>
-      {(title !== '' || subtitle !== '') && <Toolbar className={classes.toolbar}>
+      {(!!title || !!subtitle || !!titleComponent) && <Toolbar className={classes.toolbar}>
         <div className={classes.title}>
           <Typography variant="h6" id="tabletitle">
             {title}
@@ -123,7 +126,9 @@ function Table(props) {
             {subtitle}
           </Typography> : false}
         </div>
-        <div className={classes.spacer} />
+        <div>
+          {titleComponent}
+        </div>
       </Toolbar>}
       <MuiTable className={classes.table} padding="none" aria-labelledby="tableTitle">
         <TableHead>

@@ -1,5 +1,6 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles'
+import QRCodeScreen from '../containers/QRCodeScreen'
 import Table from './Table'
 import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
@@ -32,6 +33,7 @@ function Balances({ balances }) {
       headerCells={headerCells}
       rowsData={balances}
       fixedIndices={[0,1]}
+      titleComponent={<QRCodeScreen />}
     >
       {(holding, index) => (
         <TableRow className={classes.tableRow} hover key={index}>
