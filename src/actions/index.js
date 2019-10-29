@@ -161,8 +161,8 @@ export const txReverted = () => ({
   type: 'TX_REVERTED'
 })
 
-export const sendTx = (txObjects, counterparties) => async (dispatch) => {
-  console.log('sendTx')
+export const sendTx = (txObjects) => async (dispatch) => {
+  console.log('sendTx', txObjects)
   if (!Array.isArray(txObjects))
     txObjects = [txObjects]
   if (web3js.eth.accounts.wallet.length === 0)
@@ -171,7 +171,6 @@ export const sendTx = (txObjects, counterparties) => async (dispatch) => {
     const nonce = parseInt(await web3js.eth.getTransactionCount(txObjects[0].from, 'pending'))
     txObjects.forEach((v, i) => v.nonce = nonce + i)
   }
-  counterparties.forEach(c => addToken(c))
   try {
     const txs = []
     for (let i=0; i<txObjects.length; i++) {

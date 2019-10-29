@@ -46,11 +46,11 @@ function useEthBalance(address, txScreenOpen, tabIndex) {
 }
 
 function useDaiBalance(address, txScreenOpen, tabIndex) {
-  const [daiBalance, setDaiBalance] = React.useState({ name: 'USD (DAI)', balance: 0 })
+  const [daiBalance, setDaiBalance] = React.useState({ name: 'DAI (USD)', balance: 0 })
 
   React.useEffect(() => {
     if (!txScreenOpen && address && tabIndex === 1)
-      getBalanceDAI(address).then(balance => setDaiBalance({ name: 'USD (DAI)', balance }))
+      getBalanceDAI(address).then(balance => setDaiBalance({ name: 'DAI (USD)', balance }))
   }, [txScreenOpen, address, tabIndex])
 
   return daiBalance
