@@ -448,6 +448,22 @@ export async function getTokenSymbol(tokenAddr) {
   } catch {}
 }
 
+export async function getTokenName(tokenAddr) {
+  console.log('getTokenName')
+  const entries = Object.entries(addresses)
+  const index = entries.map(([key, value]) => value).indexOf(tokenAddr)
+  if (index !== -1)
+    return entries[index][0]
+  try {
+    const token = new web3js.eth.Contract(ERC20DetailedString.abi, tokenAddr)
+    return await token.methods.name().call()
+  } catch {}
+  try {
+    const token = new web3js.eth.Contract(ERC20DetailedBytes32.abi, tokenAddr)
+    return web3js.utils.hexToUtf8(await token.methods.name().call())
+  } catch {}
+}
+
 export async function uploadCertAndProveOwnership(from, pemCertChain, pkcs8Key) {
   console.log('uploadCertAndProveOwnership')
   let pemPubKeys = []

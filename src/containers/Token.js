@@ -13,7 +13,7 @@ import {
   domainNameToEnsAddr
 } from '../api/blockchain';
 import { connect } from 'react-redux'
-import { reviewTx, addSubscription, removeSubscription, setTabIndex } from '../actions'
+import { reviewTx, addSubscription, removeSubscription, setTabIndex, addToken } from '../actions'
 
 const tokenOptions = ['DAI', 'ETH']
 const orderTypeOptions = ['Buy', 'Sell', 'Subscribe (Buy Monthly)']
@@ -179,6 +179,7 @@ const mapDispatchToProps = (dispatch) => ({
     if (!approved)
       txs.push(createTxApproveApiContract(from))
     txs.push(createTxBuyTokens(from, ensDomain, daiValue))
+    dispatch(addToken(ensDomain))
     dispatch(reviewTx(txs, [ensDomain], [{ 'DAI': daiValue*-1, 'tokens': amount }]))
   },
   onSell: async (from, domainName, amount, daiValue) => {

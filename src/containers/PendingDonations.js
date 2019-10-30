@@ -5,7 +5,7 @@ import { getPendingDonations, getTokenSymbol } from '../api/blockchain'
 import namehash from 'eth-ens-namehash'
 
 function PendingDonations({ ...mapped }) {
-  const pendingDonations = useDonationEscrowBalances(mapped.address, mapped.txScreenOpen, mapped.tabIndex, mapped.tokens)
+  const pendingDonations = useDonationEscrowBalances(mapped.address, mapped.txScreenOpen, mapped.tabIndex, mapped.counterparties)
 
   return React.createElement(PresentationalComponent, {
     pendingDonations
@@ -16,7 +16,7 @@ const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount],
   txScreenOpen: state.transactionScreen.isOpen,
   tabIndex: state.pages.tabIndex,
-  tokens: state.wallet.tokens
+  counterparties: state.wallet.counterparties
 })
 
 export default connect(mapStateToProps)(PendingDonations)

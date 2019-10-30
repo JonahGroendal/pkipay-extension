@@ -116,17 +116,31 @@ export const setDefaultAccount = (accountIndex) => ({
   }
 })
 
-export const addToken = (tokenName) => ({
+export const addToken = (address) => ({
   type: 'ADD_TOKEN',
   payload: {
-    token: tokenName
+    address
   }
 })
 
-export const removeToken = (tokenName) => ({
+export const removeToken = (address) => ({
   type: 'REMOVE_TOKEN',
   payload: {
-    token: tokenName
+    address
+  }
+})
+
+export const addCounterparty = (address) => ({
+  type: 'ADD_COUNTERPARTY',
+  payload: {
+    address
+  }
+})
+
+export const removeCounterparty = (address) => ({
+  type: 'REMOVE_COUNTERPARTY',
+  payload: {
+    address
   }
 })
 

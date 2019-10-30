@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Donate'
-import { reviewTx, addSubscription, setTabIndex, addToken } from '../actions'
+import { reviewTx, addSubscription, setTabIndex, addCounterparty } from '../actions'
 import {
   apiContractApproved,
   createTxApproveApiContract,
@@ -134,7 +134,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = (dispatch) => ({
   onDonate: async (from, domainName, amount, tokenAddr, tokenSymbol) => {
     const ensDomain = domainNameToEnsAddr(domainName)
-    dispatch(addToken(ensDomain))
+    dispatch(addCounterparty(ensDomain))
     const txs = []
     const approved = await apiContractApproved(from, tokenAddr)
     if (!approved)
@@ -144,7 +144,7 @@ const mapDispatchToProps = (dispatch) => ({
   },
   onDonateETH: (from, domainName, amount) => {
     const ensDomain = domainNameToEnsAddr(domainName)
-    dispatch(addToken(ensDomain))
+    dispatch(addCounterparty(ensDomain))
     const tx = createTxDonateETH(from, ensDomain, amount)
     dispatch(reviewTx([tx], [ensDomain], [{ 'ETH': amount*-1 }]))
   },
