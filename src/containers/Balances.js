@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
-import { getTokenBalances, getBalanceETH, getBalanceDAI } from '../api/blockchain'
+import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken } from '../api/blockchain'
 
 function Balances({ address, tokens, txScreenOpen, tabIndex }) {
   const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, tabIndex)
@@ -25,32 +25,68 @@ export default connect(mapStateToProps)(Balances)
 
 function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
   const [tokenBalances, setTokenBalances] = React.useState([])
-
   React.useEffect(() => {
     if (!txScreenOpen && address && tabIndex === 1)
-      getTokenBalances(address, tokens).then(setTokenBalances)
+      Promise.all(tokens.map(ensName => resolveToken(ensName, { usePublicResolver: true })))
+      .then(tokenAddrs => {
+        return Promise.all(tokenAddrs.map(tokenAddr => (
+          (tokenAddr && tokenAddr !== '0x0000000000000000000000000000000000000000')
+            ? getTokenBalance(address, tokenAddr)
+            : 0
+        )))
+        .then(balances => {
+          return Promise.all([
+            balances,
+            Promise.all(tokenAddrs.map((v, i) => (
+              (balances[i] > 0)
+                ? getTokenName(tokenAddrs[i])
+                : ''
+            ))),
+            Promise.all(tokenAddrs.map((v, i) => (
+              (balances[i] > 0)
+                ? getTokenSymbol(tokenAddrs[i])
+                : ''
+            )))
+          ])
+          .then(([balances, names, symbols]) => {
+            const results = []
+            tokenAddrs.forEach((v, i) => {
+              if (balances[i] > 0)
+                results.push({
+                  name: names[i] ? names[i] : tokens[i],
+                  symbol: symbols[i],
+                  balance: balances[i]
+                })
+            })
+            return results
+          })
+        })
+      })
+      .then(tokenDetailsObjs => {
+        setTokenBalances(tokenDetailsObjs)
+      })
   }, [txScreenOpen, address, tabIndex])
 
   return tokenBalances
 }
 
 function useEthBalance(address, txScreenOpen, tabIndex) {
-  const [ethBalance, setEthBalance] = React.useState({ name: 'ETH', balance: 0 })
+  const [ethBalance, setEthBalance] = React.useState({ symbol: 'ETH', name: 'Ether', balance: 0 })
 
   React.useEffect(() => {
     if (!txScreenOpen && address && tabIndex === 1)
-      getBalanceETH(address).then(balance => setEthBalance({ name: 'ETH', balance }))
+      getBalanceETH(address).then(balance => setEthBalance({ symbol: 'ETH', name: 'Ether', balance }))
   }, [txScreenOpen, address, tabIndex])
 
   return ethBalance
 }
 
 function useDaiBalance(address, txScreenOpen, tabIndex) {
-  const [daiBalance, setDaiBalance] = React.useState({ name: 'DAI (USD)', balance: 0 })
+  const [daiBalance, setDaiBalance] = React.useState({ symbol: 'DAI', name: 'Dai Stablecoin v1.0', balance: 0 })
 
   React.useEffect(() => {
     if (!txScreenOpen && address && tabIndex === 1)
-      getBalanceDAI(address).then(balance => setDaiBalance({ name: 'DAI (USD)', balance }))
+      getBalanceDAI(address).then(balance => setDaiBalance({ symbol: 'DAI', name: 'Dai Stablecoin v1.0', balance }))
   }, [txScreenOpen, address, tabIndex])
 
   return daiBalance

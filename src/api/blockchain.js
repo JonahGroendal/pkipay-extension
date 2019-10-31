@@ -358,14 +358,24 @@ export async function resolveAddress(ensAddress) {
   return await ensResolver.methods.addr(ensNode).call()
 }
 
-export async function resolveToken(ensAddress) {
+/**
+ * @param {string} ensName - The ENS address of the token
+ * @returns {string|undefined} - The address of the token that ensName resolves to, or undefined if there's no resolver
+ */
+export async function resolveToken(ensName, options={ usePublicResolver: false }) {
   console.log('resolveToken')
-  const ensNode = namehash.hash(ensAddress)
-  const ensResolverAddr = await ens.methods.resolver(ensNode).call()
-  if (ensResolverAddr === '0x0000000000000000000000000000000000000000')
-    throw new Error('Resolver is not set for "'.concat(ensAddress, '"'))
-  const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
-  return await ensResolver.methods.token(ensNode).call()
+  let address
+  const ensNode = namehash.hash(ensName)
+  if (options.usePublicResolver) {
+    address = await resolver.methods.token(ensNode).call()
+  } else {
+    const ensResolverAddr = await ens.methods.resolver(ensNode).call()
+    if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
+      const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
+      address = await ensResolver.methods.token(ensNode).call()
+    }
+  }
+  return address
 }
 
 export async function getDomainOwner(domainName) {
@@ -462,6 +472,12 @@ export async function getTokenName(tokenAddr) {
     const token = new web3js.eth.Contract(ERC20DetailedBytes32.abi, tokenAddr)
     return web3js.utils.hexToUtf8(await token.methods.name().call())
   } catch {}
+}
+
+export async function getTokenBalance(from, tokenAddr) {
+  const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+  const weiBalance = await token.methods.balanceOf(from).call()
+  return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
 
 export async function uploadCertAndProveOwnership(from, pemCertChain, pkcs8Key) {
@@ -775,24 +791,6 @@ export async function getBalanceERC20(from, tokenAddr) {
 //   }
 //   return Object.values(balances)
 // }
-export async function getTokenBalances(from, tokenNames) {
-  console.log('getTokenBalances')
-  if (typeof from !== 'string' || from.length !== 42)
-    throw new Error("Invalid address")
-  let balances = []
-  for (let domainName of tokenNames) {
-    const tokenAddr = await resolver.methods.token(namehash.hash(domainName.concat('.', dnsRootEnsAddress))).call()
-    if (tokenAddr !== '0x0000000000000000000000000000000000000000') {
-      const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
-      const weiBalance = await token.methods.balanceOf(from).call()
-      balances.push({
-        name: domainName,
-        balance: parseFloat(web3js.utils.fromWei(weiBalance.toString()))
-      })
-    }
-  }
-  return balances
-}
 
 export async function subscribeToDaiTransfer(from, onTransfer) {
   console.log('subscribeToDaiTransfer')

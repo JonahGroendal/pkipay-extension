@@ -20,8 +20,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const headerCells = [
-  {label: 'Name', width: '45%', sortable: true, cellProps: {key: 'name', padding: 'default', numeric: false}},
-  {label: 'Balance', width: '22%', sortable: true, cellProps: {key: 'balance', padding: 'none', numeric: true}},
+  {label: 'Name', width: '55%', sortable: true, cellProps: {key: 'name', padding: 'default', numeric: false}},
+  {label: 'Symbol', width: '20%', sortable: true, cellProps: {key: 'symbol', padding: 'default', numeric: false}},
+  {label: 'Balance', width: '25%', sortable: true, cellProps: {key: 'balance', padding: 'default', numeric: true}},
 ]
 
 function Balances({ balances }) {
@@ -44,7 +45,14 @@ function Balances({ balances }) {
               </Typography>
             </Tooltip>
           </TableCell>
-          <TableCell className={classes.tableCell} align="right" padding="none">
+          <TableCell className={classes.tableCell}>
+            <Tooltip title={holding.symbol}>
+              <Typography variant="subtitle1">
+                {holding.symbol}
+              </Typography>
+            </Tooltip>
+          </TableCell>
+          <TableCell className={classes.tableCell} align="right">
             <Tooltip title={holding.balance}>
               <Typography variant="subtitle1">
                 {holding.balance.toFixed(3)}
