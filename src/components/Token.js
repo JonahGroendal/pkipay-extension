@@ -155,7 +155,7 @@ function Token(props) {
             <Button
               onClick={onClickWithdraw}
               disabled={withdrawButtonDisabled}
-              variant="contained" size="medium" color="secondary"
+              variant="contained" size="medium" color="primary"
             >
               {"Withdraw"}
             </Button>

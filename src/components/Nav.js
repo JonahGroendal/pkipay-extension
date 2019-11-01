@@ -2,13 +2,12 @@ import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import Settings from '../containers/Settings'
 import TransactionScreen from '../containers/TransactionScreen'
-import AppBar from '@material-ui/core/AppBar'
-import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
-import Tabs from '@material-ui/core/Tabs'
 
 const useStyles = makeStyles(theme => ({
   toolbar: {
+    paddingRight: theme.spacing(3),
+    paddingLeft: theme.spacing(3),
     minHeight: theme.spacing(6),
     display: 'flex',
     justifyContent: 'space-between'
@@ -24,8 +23,8 @@ function Nav({ tabIndex, children, onChangeTab }) {
 
   return (
     <div>
-      <AppBar position="static" className={classes.appBar}>
-        <Toolbar className={classes.toolbar}>
+      <div className={classes.appBar}>
+        <div className={classes.toolbar}>
           <div className={classes.titleColumn}>
             <Typography variant="h6">
               PkiPay
@@ -36,16 +35,8 @@ function Nav({ tabIndex, children, onChangeTab }) {
             <TransactionScreen />
             <Settings />
           </div>
-        </Toolbar>
-        <Tabs
-          value={tabIndex}
-          onChange={(event, value) => onChangeTab(value)}
-          variant="fullWidth"
-        >
-          {children}
-
-        </Tabs>
-      </AppBar>
+        </div>
+      </div>
     </div>
   )
 }

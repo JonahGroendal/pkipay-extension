@@ -67,18 +67,7 @@ function ProfileCard(props) {
   const classes = useStyles()
 
   return (
-    <Paper square={props.square} elevation={3}>
-      {props.showAdminViewOption && (
-        <div className={classes.adminViewSwitch}>
-          <Typography>
-            Administrative view
-          </Typography>
-          <Switch
-            checked={props.adminViewEnabled}
-            onChange={props.onChangeAdminViewEnabled}
-          />
-        </div>
-      )}
+    <div>
       <div className={classes.paper}>
         <div className={classes.rowAvatar}>
           <div className={classes.columnAvatar}>
@@ -127,7 +116,18 @@ function ProfileCard(props) {
           <SubscribeForm domainName={props.domainName} />
         </div>*/}
       </div>
-    </Paper>
+      {props.showAdminViewOption && (
+        <div className={classes.adminViewSwitch}>
+          <Typography>
+            Administrative view
+          </Typography>
+          <Switch
+            checked={props.adminViewEnabled}
+            onChange={props.onChangeAdminViewEnabled}
+          />
+        </div>
+      )}
+    </div>
   )
 }
 

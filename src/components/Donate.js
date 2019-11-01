@@ -94,7 +94,7 @@ function Donate(props) {
             <Button
               onClick={onClickButton}
               disabled={buttonDisabled}
-              variant="contained" size="medium" color="secondary"
+              variant="contained" size="medium" color="primary"
             >
               {buttonText}
             </Button>

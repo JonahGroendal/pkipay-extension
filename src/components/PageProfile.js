@@ -7,7 +7,7 @@ import Token from '../containers/Token'
 import Donate from '../containers/Donate'
 import ClaimWebsiteCard from './ClaimWebsiteCard'
 
-const NAV_HEIGHT = 96
+const NAV_HEIGHT = 104
 
 // const useStyles = makeStyles(theme => ({
 //

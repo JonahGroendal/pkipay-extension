@@ -26,7 +26,7 @@ export default connect(mapStateToProps)(Balances)
 function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
   const [tokenBalances, setTokenBalances] = React.useState([])
   React.useEffect(() => {
-    if (!txScreenOpen && address && tabIndex === 1)
+    if (!txScreenOpen && address && tabIndex === 1) {
       Promise.all(tokens.map(ensName => resolveToken(ensName, { usePublicResolver: true })))
       .then(tokenAddrs => {
         return Promise.all(tokenAddrs.map(tokenAddr => (
@@ -65,28 +65,39 @@ function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
       .then(tokenDetailsObjs => {
         setTokenBalances(tokenDetailsObjs)
       })
+    }
   }, [txScreenOpen, address, tabIndex])
 
   return tokenBalances
 }
 
 function useEthBalance(address, txScreenOpen, tabIndex) {
-  const [ethBalance, setEthBalance] = React.useState({ symbol: 'ETH', name: 'Ether', balance: 0 })
+  const [ethBalance, setEthBalance] = React.useState({
+    name: 'Ether',
+    symbol: 'ETH',
+    balance: 0
+  })
 
   React.useEffect(() => {
     if (!txScreenOpen && address && tabIndex === 1)
-      getBalanceETH(address).then(balance => setEthBalance({ symbol: 'ETH', name: 'Ether', balance }))
+      getBalanceETH(address)
+      .then(balance => setEthBalance(prev => ({ ...prev, balance })))
   }, [txScreenOpen, address, tabIndex])
 
   return ethBalance
 }
 
 function useDaiBalance(address, txScreenOpen, tabIndex) {
-  const [daiBalance, setDaiBalance] = React.useState({ symbol: 'DAI', name: 'Dai Stablecoin v1.0', balance: 0 })
+  const [daiBalance, setDaiBalance] = React.useState({
+    name: 'Dai Stablecoin v1.0',
+    symbol: 'DAI',
+    balance: 0
+  })
 
   React.useEffect(() => {
     if (!txScreenOpen && address && tabIndex === 1)
-      getBalanceDAI(address).then(balance => setDaiBalance({ symbol: 'DAI', name: 'Dai Stablecoin v1.0', balance }))
+      getBalanceDAI(address)
+      .then(balance => setDaiBalance(prev => ({ ...prev, balance })))
   }, [txScreenOpen, address, tabIndex])
 
   return daiBalance
