@@ -10,7 +10,7 @@ import {
 import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function ProfileCard({ hostname, currency, txScreenOpen, showAdminViewOption, adminViewEnabled, onChangeAdminViewEnabled, square }) {
+function ProfileCard({ hostname, currency, txScreenOpen, square }) {
   const domainName = hostname.split('.').slice(-2).join('.')
   const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
   const [largeFaviconExists, setLargeFaviconExists] = React.useState(false)
@@ -124,9 +124,6 @@ function ProfileCard({ hostname, currency, txScreenOpen, showAdminViewOption, ad
 
   return React.createElement(PresentationalComponent, {
     hostname,
-    showAdminViewOption,
-    adminViewEnabled,
-    onChangeAdminViewEnabled,
     square,
     largeFaviconExists,
     setLargeFaviconExists,
