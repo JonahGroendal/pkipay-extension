@@ -36,14 +36,23 @@ function PageProfile({ hostname, domainName, domainOwner, address }) {
   let [adminViewEnabled, setAdminViewEnabled] = React.useState(true)
   adminViewEnabled = adminViewEnabled && showAdminViewOption
 
-  const [profileCardHeight, setProfileCardHeight] = React.useState(104)
-  const ref = React.useRef(null)
-  React.useEffect(() => setProfileCardHeight(ref.current.clientHeight))
+  // Get height of elements after they render. Values will be set after
+  // the first render but before the browser paints for the first time.
+  const [profileCardRenderHeight, setProfileCardRenderHeight] = React.useState(0)
+  const [adminViewRenderHeight, setAdminViewRenderHeight] = React.useState(0)
+  const profileCardRef = React.useRef(null)
+  const adminViewRef = React.useRef(null)
+  React.useLayoutEffect(() => {
+    if (profileCardRef.current)
+      setProfileCardRenderHeight(profileCardRef.current.clientHeight)
+    if (adminViewRef.current)
+      setAdminViewRenderHeight(adminViewRef.current.clientHeight)
+  })
 
   return (
     <div>
       {showAdminViewOption && (
-        <div className={classes.adminViewSwitch}>
+        <div className={classes.adminViewSwitch} ref={adminViewRef}>
           <Typography>
             Administrative view
           </Typography>
@@ -56,15 +65,15 @@ function PageProfile({ hostname, domainName, domainOwner, address }) {
       <div>
         {/* hack to relatively position a div without affecting the page flow */}
         <div className={classes.profileCardContainerRel}>
-          <div ref={ref} className={classes.profileCardContainerAbs}>
+          <div ref={profileCardRef} className={classes.profileCardContainerAbs}>
             <ProfileCard
               hostname={hostname}
               square={true}
             />
           </div>
         </div>
-        <Page height={appConfig.height - NAV_HEIGHT/* - profileCardHeight*/}>
-          <div style={{ height: profileCardHeight }}></div>
+        <Page height={appConfig.height - NAV_HEIGHT - adminViewRenderHeight}>
+          <div style={{ height: profileCardRenderHeight }}></div>
           {!adminViewEnabled && (
             <Donate domainName={domainName} />
           )}
