@@ -8,7 +8,7 @@ import {
   createTxDonate,
   createTxDonateETH,
   addresses,
-  domainNameToEnsAddr,
+  domainNameToEnsName,
   resolveAddress,
   resolveToken
 } from '../api/blockchain'
@@ -49,17 +49,7 @@ function Donate({ domainName, ...mapped }) {
     if (parsedAmount === 0) {
       setError(true)
     }
-    else if (address === ZERO_ADDRESS) {
-      if (schedule === 'Once') {
-        if (token === 'ETH')
-          mapped.onDonateETH(mapped.address, domainName, parsedAmount)
-        else
-          mapped.onDonate(mapped.address, domainName, parsedAmount, addresses[token], token)
-      }
-      else if (schedule === 'Monthly') {
-        // TODO
-      }
-    } else {
+    else {
       if (schedule === 'Once') {
         if (token === 'ETH')
           mapped.onDonateETH(mapped.address, domainName, parsedAmount)
@@ -102,9 +92,9 @@ function useEnsResolver(domainName) {
   const [address, setAddress] = React.useState(ZERO_ADDRESS)
   React.useEffect(() => {
     if (domainName) {
-      resolveAddress(domainNameToEnsAddr(domainName))
+      const ensName = domainNameToEnsName(domainName)
+      resolveAddress(ensName)
       .then(setAddress)
-      .catch(() => { /* Ignore "no resolver" error */ })
     } else {
       setAddress(ZERO_ADDRESS)
     }
@@ -116,7 +106,7 @@ function useEnsTokenResolver(domainName) {
   const [tokenAddress, setTokenAddress] = React.useState(ZERO_ADDRESS)
   React.useEffect(() => {
     if (domainName) {
-      resolveToken(domainNameToEnsAddr(domainName))
+      resolveToken(domainNameToEnsName(domainName))
       .then(setTokenAddress)
       .catch(() => {
         // No resolver set
@@ -133,22 +123,22 @@ const mapStateToProps = state => ({
 })
 const mapDispatchToProps = (dispatch) => ({
   onDonate: async (from, domainName, amount, tokenAddr, tokenSymbol) => {
-    const ensDomain = domainNameToEnsAddr(domainName)
-    dispatch(addCounterparty(ensDomain))
+    const ensName = domainNameToEnsName(domainName)
+    dispatch(addCounterparty(ensName))
     const txs = []
     const approved = await apiContractApproved(from, tokenAddr)
     if (!approved)
       txs.push(createTxApproveApiContract(from, tokenAddr))
-    txs.push(createTxDonate(from, tokenAddr, ensDomain, amount))
-    dispatch(reviewTx(txs, [ensDomain], [{ [tokenSymbol]: amount*-1 }]))
+    txs.push(createTxDonate(from, tokenAddr, ensName, amount))
+    dispatch(reviewTx(txs, [ensName], [{ [tokenSymbol]: amount*-1 }]))
   },
   onDonateETH: (from, domainName, amount) => {
-    const ensDomain = domainNameToEnsAddr(domainName)
-    dispatch(addCounterparty(ensDomain))
-    const tx = createTxDonateETH(from, ensDomain, amount)
-    dispatch(reviewTx([tx], [ensDomain], [{ 'ETH': amount*-1 }]))
+    const ensName = domainNameToEnsName(domainName)
+    dispatch(addCounterparty(ensName))
+    const tx = createTxDonateETH(from, ensName, amount)
+    dispatch(reviewTx([tx], [ensName], [{ 'ETH': amount*-1 }]))
   },
-  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsAddr(domainName), amount)),
+  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsName(domainName), amount)),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
 })
 

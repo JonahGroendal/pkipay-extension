@@ -77,13 +77,13 @@ export function createTxApproveApiContract(from, tokenAddr) {
   }
 }
 
-export function createTxDonate(from, tokenAddr, ensDomains, amounts) {
+export function createTxDonate(from, tokenAddr, ensNames, amounts) {
   console.log('createTxDonate')
-  if (!Array.isArray(ensDomains)) ensDomains = [ensDomains];
+  if (!Array.isArray(ensNames)) ensNames = [ensNames];
   if (!Array.isArray(amounts)) amounts = [amounts];
-  if (amounts.length !== ensDomains.length)
+  if (amounts.length !== ensNames.length)
     throw new Error("Parallel arrays have unequal lengths")
-  const ensNodes = ensDomains.map(namehash.hash)
+  const ensNodes = ensNames.map(namehash.hash)
   const values = amounts.map(amount => web3js.utils.toWei(amount.toString()))
 
   return {
@@ -94,20 +94,20 @@ export function createTxDonate(from, tokenAddr, ensDomains, amounts) {
   }
 }
 
-export function createTxDonateETH(from, ensDomains, amounts) {
+export function createTxDonateETH(from, ensNames, amounts) {
   console.log('createTxDonateETH')
-  if (!Array.isArray(ensDomains)) ensDomains = [ensDomains];
+  if (!Array.isArray(ensNames)) ensNames = [ensNames];
   if (!Array.isArray(amounts)) amounts = [amounts];
-  if (amounts.length !== ensDomains.length)
+  if (amounts.length !== ensNames.length)
     throw new Error("Parallel arrays have unequal lengths")
-  const ensNodes = ensDomains.map(namehash.hash)
+  const ensNodes = ensNames.map(namehash.hash)
   const values = amounts.map(amount => web3js.utils.toWei(amount.toString()))
   const totalValue = web3js.utils.toWei(amounts.reduce((a, b) => a + b).toString())
 
   return {
     from,
     to: api.options.address,
-    gas: 60000 + (42000 * ensDomains.length), // Exact calculation: 22655 + (40795 * length)
+    gas: 60000 + (42000 * ensNames.length), // Exact calculation: 22655 + (40795 * length)
     value: totalValue,
     data: api.methods.multiDonateETH(ensNodes, values).encodeABI()
   }
@@ -116,13 +116,13 @@ export function createTxDonateETH(from, ensDomains, amounts) {
 /**
  * @param {string[]} amounts - The DAI value of tokens to buy for each token
  */
-export function createTxBuyTokens(from, ensDomains, amounts) {
+export function createTxBuyTokens(from, ensNames, amounts) {
   console.log('createTxBuyTokens');
-  if (!Array.isArray(ensDomains)) ensDomains = [ensDomains];
+  if (!Array.isArray(ensNames)) ensNames = [ensNames];
   if (!Array.isArray(amounts)) amounts = [amounts];
-  if (amounts.length !== ensDomains.length)
+  if (amounts.length !== ensNames.length)
     throw new Error("Parallel arrays have unequal lengths")
-  const ensNodes = ensDomains.map(namehash.hash)
+  const ensNodes = ensNames.map(namehash.hash)
   const weiValues = amounts.map(a => web3js.utils.toWei(a.toString()));
   return {
     from,
@@ -132,20 +132,11 @@ export function createTxBuyTokens(from, ensDomains, amounts) {
   }
 }
 
-/**
- * @param {string[]} amount - The number of tokens to sell
- */
-export async function createTxSellToken(from, domainName, amount) {
+export async function createTxSellToken(from, tokenAddr, tokenSaleAddr, amount) {
   console.log('createTxSellToken')
-  validateDomainName(domainName)
   const txs = []
-  const ensNode = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
   const weiValue = web3js.utils.toWei(amount.toString())
-  const tokenAddr = await resolver.methods.token(ensNode).call()
-  if (tokenAddr === '0x0000000000000000000000000000000000000000')
-    throw new Error('Token does not exist')
   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
-  const tokenSaleAddr = await resolver.methods.tokenSale(ensNode).call()
   const tokenSale = new web3js.eth.Contract(TokenSale.abi, tokenSaleAddr)
   const allowance = await token.methods.allowance(from, tokenSaleAddr).call()
   if (BigInt(allowance) < BigInt(weiValue))
@@ -164,28 +155,10 @@ export async function createTxSellToken(from, domainName, amount) {
   return txs
 }
 
-// export async function createTxWithdrawDAI(from, domainName, amount) {
-//   console.log('createTxWithdrawDAI')
-//   validateDomainName(domainName)
-//   const weiAmount = web3js.utils.toWei(amount.toString())
-//   const ensNode = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
-//   const saleAddr = await resolver.methods.tokenSale(ensNode).call()
-//   if (saleAddr === '0x0000000000000000000000000000000000000000')
-//     throw new Error('Token sale does not exist');
-//   let tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr);
-//   return {
-//     from,
-//     to: saleAddr,
-//     gas: 100000,
-//     data: await tokenSale.methods.withdraw(dai.options.address, from, weiAmount).encodeABI()
-//   }
-// }
-
-export async function createTxWithdraw(from, saleDomainName, tokenAddr, amount) {
+export async function createTxWithdraw(from, tokenAddr, tokenSaleEnsName, amount) {
   console.log('createTxWithdrawDAI')
-  validateDomainName(saleDomainName)
   const weiAmount = web3js.utils.toWei(amount.toString())
-  const ensNode = namehash.hash(saleDomainName.concat('.', dnsRootEnsAddress))
+  const ensNode = namehash.hash(tokenSaleEnsName)
   const saleAddr = await resolver.methods.tokenSale(ensNode).call()
   if (saleAddr === '0x0000000000000000000000000000000000000000')
     throw new Error('Token sale does not exist');
@@ -198,11 +171,10 @@ export async function createTxWithdraw(from, saleDomainName, tokenAddr, amount) 
   }
 }
 
-export async function createTxWithdrawETH(from, domainName, amount) {
+export async function createTxWithdrawETH(from, tokenSaleEnsName, amount) {
   console.log('createTxWithdrawETH')
-  validateDomainName(domainName)
   const weiAmount = web3js.utils.toWei(amount.toString())
-  const ensNode = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
+  const ensNode = namehash.hash(tokenSaleEnsName)
   const saleAddr = await resolver.methods.tokenSale(ensNode).call()
   if (saleAddr === '0x0000000000000000000000000000000000000000')
     throw new Error('Token sale does not exist');
@@ -215,9 +187,9 @@ export async function createTxWithdrawETH(from, domainName, amount) {
   }
 }
 
-export function createTxReclaimDonations(from, tokenAddr, ensAddress) {
+export function createTxReclaimDonations(from, tokenAddr, ensName) {
   console.log('createTxReclaimDonations')
-  const ensNode = namehash.hash(ensAddress)
+  const ensNode = namehash.hash(ensName)
   return {
     from,
     to: escrow.options.address,
@@ -226,9 +198,9 @@ export function createTxReclaimDonations(from, tokenAddr, ensAddress) {
   }
 }
 
-export function createTxReclaimDonationsETH(from, ensAddress) {
+export function createTxReclaimDonationsETH(from, ensName) {
   console.log('createTxReclaimDonationsETH')
-  const ensNode = namehash.hash(ensAddress)
+  const ensNode = namehash.hash(ensName)
   return {
     from,
     to: escrow.options.address,
@@ -237,9 +209,9 @@ export function createTxReclaimDonationsETH(from, ensAddress) {
   }
 }
 
-export function createTxWithdrawDonations(from, tokenAddr, ensAddress, donors) {
+export function createTxWithdrawDonations(from, tokenAddr, ensName, donors) {
   console.log('createTxWithdrawDonations')
-  const ensNode = namehash.hash(ensAddress)
+  const ensNode = namehash.hash(ensName)
   return {
     from,
     to: escrow.options.address,
@@ -248,9 +220,9 @@ export function createTxWithdrawDonations(from, tokenAddr, ensAddress, donors) {
   }
 }
 
-export function createTxWithdrawDonationsETH(from, ensAddress, donors) {
+export function createTxWithdrawDonationsETH(from, ensName, donors) {
   console.log('createTxWithdrawDonationsETH')
-  const ensNode = namehash.hash(ensAddress)
+  const ensNode = namehash.hash(ensName)
   return {
     from,
     to: escrow.options.address,
@@ -259,65 +231,12 @@ export function createTxWithdrawDonationsETH(from, ensAddress, donors) {
   }
 }
 
-// export async function createTxWithdrawAll(from, domainName) {
-//   console.log('createTxWithdrawAll')
-//   validateDomainName(domainName)
-//   const ensNode = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
-//   const saleAddr = await resolver.methods.tokenSale(ensNode).call()
-//   if (saleAddr === '0x0000000000000000000000000000000000000000')
-//     throw new Error('Token sale does not exist');
-//   let tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr);
-//   const daiValue = (await dai.methods.balanceOf(saleAddr).call()).toString()
-//   const ethValue = await web3js.eth.getBalance(saleAddr)
-//   let txObjects = [];
-//   if (parseInt(daiValue) > 0)
-//     txObjects.push({
-//       from,
-//       to: saleAddr,
-//       gas: 100000,
-//       data: await tokenSale.methods.withdrawDAI(from, daiValue).encodeABI()
-//     });
-//   if (parseInt(ethValue) > 0)
-//     txObjects.push({
-//       from,
-//       to: saleAddr,
-//       gas: 100000,
-//       data: await tokenSale.methods.withdrawETH(from, ethValue).encodeABI()
-//     });
-//   return {
-//     txObjects,
-//     daiValue: parseFloat(web3js.utils.fromWei(daiValue)),
-//     ethValue: parseFloat(web3js.utils.fromWei(ethValue))
-//   }
-// }
-
-// export async function createTxTransferDai(from, domainName, amount) {
-//   console.log('createTxTransferDai')
-//   validateDomainName(domainName)
-//   domainName = domainName.concat('.', dnsRootEnsAddress)
-//   const ensNode = namehash.hash(domainName)
-//   const weiAmount = web3js.utils.toWei(amount.toString())
-//   const toResolverAddr = await ens.methods.resolver(ensNode).call()
-//   if (toResolverAddr === '0x0000000000000000000000000000000000000000')
-//     throw new Error('Resolver is not set for "'.concat(domainName).concat('"'))
-//   const toResolver = new web3js.eth.Contract(TokenResolver.abi, toResolverAddr)
-//   const to = await toResolver.methods.addr(ensNode).call()
-//   if (to === '0x0000000000000000000000000000000000000000')
-//     throw new Error('"'.concat(domainName).concat('" resolves to the zero address'))
-//   return {
-//     from,
-//     to: dai.options.address,
-//     gas: "70000",
-//     data: dai.methods.transfer(to, weiAmount).encodeABI()
-//   }
-// }
-
-export async function createTxTransfer(from, toEnsDomain, tokenAddr, amount) {
+export async function createTxTransfer(from, toEnsName, tokenAddr, amount) {
   console.log('createTxTransferTokens')
   const weiAmount = web3js.utils.toWei(amount.toString())
-  const to = await resolveAddress(toEnsDomain)
+  const to = await resolveAddress(toEnsName)
   if (to === '0x0000000000000000000000000000000000000000')
-    throw new Error('"'.concat(toEnsDomain, '" resolves to the zero address'))
+    throw new Error('"'.concat(toEnsName, '" resolves to the zero address'))
   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
   return {
     from,
@@ -327,12 +246,12 @@ export async function createTxTransfer(from, toEnsDomain, tokenAddr, amount) {
   }
 }
 
-export async function createTxTransferETH(from, toEnsDomain, amount) {
+export async function createTxTransferETH(from, toEnsName, amount) {
   console.log('createTxTransferETH')
   const weiAmount = web3js.utils.toWei(amount.toString())
-  const to = await resolveAddress(toEnsDomain)
+  const to = await resolveAddress(toEnsName)
   if (to === '0x0000000000000000000000000000000000000000')
-    throw new Error('"'.concat(toEnsDomain, '" resolves to the zero address'))
+    throw new Error('"'.concat(toEnsName, '" resolves to the zero address'))
   return {
     from,
     to,
@@ -345,17 +264,19 @@ export async function getPriceOfETHInUSD() {
   return parseFloat(web3js.utils.fromWei(web3js.utils.hexToNumberString(await medianizer.methods.read().call())))
 }
 
-export function domainNameToEnsAddr(domainName) {
+export function domainNameToEnsName(domainName) {
   return domainName.concat('.', dnsRootEnsAddress)
 }
 
-export async function resolveAddress(ensAddress) {
-  const ensNode = namehash.hash(ensAddress)
+export async function resolveAddress(ensName) {
+  let resolvedAddr = '0x0000000000000000000000000000000000000000'
+  const ensNode = namehash.hash(ensName)
   const ensResolverAddr = await ens.methods.resolver(ensNode).call()
-  if (ensResolverAddr === '0x0000000000000000000000000000000000000000')
-    throw new Error('Resolver is not set for "'.concat(ensAddress, '"'))
-  const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
-  return await ensResolver.methods.addr(ensNode).call()
+  if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
+    const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
+    resolvedAddr = await ensResolver.methods.addr(ensNode).call()
+  }
+  return resolvedAddr
 }
 
 /**
@@ -378,19 +299,36 @@ export async function resolveToken(ensName, options={ usePublicResolver: false }
   return address
 }
 
-export async function getDomainOwner(domainName) {
-  console.log('getDomainOwner')
-  validateDomainName(domainName)
-  const ensNode = namehash.hash(domainName.concat('.', dnsRootEnsAddress));
-  const tokenAddr = await resolver.methods.token(ensNode).call();
-  let owner;
-  if (tokenAddr === "0x0000000000000000000000000000000000000000") {
-    owner = await ens.methods.owner(ensNode).call();
+/**
+ * @param {string} ensName - The ENS address of the token
+ * @returns {string|undefined} - The address of the token that ensName resolves to, or undefined if there's no resolver
+ */
+export async function resolveTokenSale(ensName, options={ usePublicResolver: false }) {
+  console.log('resolveToken')
+  let address
+  const ensNode = namehash.hash(ensName)
+  if (options.usePublicResolver) {
+    address = await resolver.methods.tokenSale(ensNode).call()
   } else {
-    const ownedContract = new web3js.eth.Contract(OwnedByENSNode.abi, tokenAddr);
-    owner = await ownedContract.methods.owner().call();
+    const ensResolverAddr = await ens.methods.resolver(ensNode).call()
+    if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
+      const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
+      address = await ensResolver.methods.tokenSale(ensNode).call()
+    }
   }
-  return owner;
+  return address
+}
+
+export async function getTokenOwner(tokenAddr) {
+  console.log('getTokenOwner')
+  const ownedContract = new web3js.eth.Contract(OwnedByENSNode.abi, tokenAddr);
+  return await ownedContract.methods.owner().call();
+}
+
+export async function getEnsNodeOwner(ensName) {
+  console.log('getEnsNodeOwner')
+  const ensNode = namehash.hash(ensName)
+  return await ens.methods.owner(ensNode).call();
 }
 
 export async function getPendingDonations(from) {
@@ -416,9 +354,9 @@ export async function getPendingDonations(from) {
   return pendingDonations
 }
 
-export async function getPendingWithdrawals(ensAddress) {
+export async function getPendingWithdrawals(ensName) {
   console.log('getPendingWithdrawals')
-  const donee = namehash.hash(ensAddress)
+  const donee = namehash.hash(ensName)
   const donations = await escrow.getPastEvents('Donation', {
     filter: { donee },
     fromBlock: 0
@@ -545,8 +483,9 @@ export async function signAndSubmitCertChallengeBytes(from, challengeBytes, pkcs
 
 export async function registerAsDomainOwner(from, domainName) {
   console.log('registerAsDomainOwner')
-  validateDomainName(domainName)
-  const ensNode = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
+  if (domainName.split('.').length !== 2)
+    throw new Error("Invalid domain name: '"+domainName+"' is not of the form domain.tld")
+  const ensNode = namehash.hash(domainNameToEnsName(domainName))
   const currentOwner = await ens.methods.owner(ensNode).call();
   if (currentOwner !== from) {
     const labelHashes = domainName.split('.').reverse().map(web3js.utils.sha3)
@@ -559,21 +498,19 @@ export async function registerAsDomainOwner(from, domainName) {
   }
 }
 
-export async function pointEnsNodeToResolver(from, domainName) {
+export async function pointEnsNodeToResolver(from, ensName) {
   console.log('pointEnsNodeToResolver')
-  validateDomainName(domainName)
-  const node = namehash.hash(domainName.concat('.', dnsRootEnsAddress)) // domain.tld.dnsroot.eth
-  const currentResolver = await ens.methods.resolver(node).call();
+  const ensNode = namehash.hash(ensName) // domain.tld.dnsroot.eth
+  const currentResolver = await ens.methods.resolver(ensNode).call();
   if (currentResolver !== resolver.options.address) {
     // setResolver(bytes32 node, address resolver)
-    await ens.methods.setResolver(node, resolver.options.address).send({ from, gas: 100000 })
+    await ens.methods.setResolver(ensNode, resolver.options.address).send({ from, gas: 100000 })
   }
 }
 
-export async function pointResolverAddrToTokenSale(from, domainName) {
+export async function pointResolverAddrToTokenSale(from, ensName) {
   console.log('pointResolverAddrToTokenSale')
-  validateDomainName(domainName)
-  const ensNode = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
+  const ensNode = namehash.hash(ensName)
   let tokenSaleAddr = await resolver.methods.tokenSale(ensNode).call()
   if (tokenSaleAddr === '0x0000000000000000000000000000000000000000') {
     await resolver.methods.createTokenAndSale(ensNode).send({ from, gas: 400000 })
@@ -588,14 +525,13 @@ export async function pointResolverAddrToSelf(from, ensName) {
   await resolver.methods.setAddr(ensNode, from).send({ from, gas: 100000 })
 }
 
-export async function getTokenSaleInfo(domainName) {
+export async function getTokenSaleInfo(ensName) {
   console.log('getTokenSaleInfo')
-  validateDomainName(domainName)
   let buyPrice = 1
   let sellPrice = 1
   let reservesDAI = 0
   let reservesETH = 0
-  const node = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
+  const node = namehash.hash(ensName)
   const tokenSaleAddr = await resolver.methods.tokenSale(node).call()
   if (tokenSaleAddr !== '0x0000000000000000000000000000000000000000') {
     const tokenSale = new web3js.eth.Contract(TokenSale.abi, tokenSaleAddr)
@@ -609,127 +545,17 @@ export async function getTokenSaleInfo(domainName) {
   return { buyPrice, sellPrice, reservesDAI, reservesETH }
 }
 
-export async function getTokenInfo(domainName) {
+export async function getTokenInfo(ensName) {
   console.log('getTokenInfo')
-  validateDomainName(domainName)
   let totalSupply = 0
-  const node = namehash.hash(domainName.concat('.', dnsRootEnsAddress))
-  const address = await resolver.methods.token(node).call()
+  const ensNode = namehash.hash(ensName)
+  const address = await resolver.methods.token(ensNode).call()
   if (address !== '0x0000000000000000000000000000000000000000') {
     const token = new web3js.eth.Contract(ERC20.abi, address)
     totalSupply = parseFloat(web3js.utils.fromWei(await token.methods.totalSupply().call()))
   }
   return { totalSupply }
 }
-
-// export async function approveTokenBuyer(address) {
-//   console.log('approveTokenBuyer')
-//   const balance = await dai.methods.balanceOf(address).call()
-//   if (balance === "0") return;
-//   const allowance = await dai.methods.allowance(address, tokenBuyer.options.address).call()
-//   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-//   if (parseInt(allowance.toString()) > 10**36) return;
-//   await dai.methods.approve(tokenBuyer.options.address, maxUint).send({
-//     from: address,
-//     gas: 50000
-//   })
-// }
-
-// // Deposit dai tokens into BuyMultipleTokens contract for future transfers
-// export async function depositAllCurrency() {
-//   const balance = await dai.methods.balanceOf(web3js.eth.accounts.wallet[0].address).call()
-//   const gasPrice = await web3js.eth.getGasPrice()
-//   console.log('depositing dai')
-//   console.log(parseInt(parseInt(gasPrice) * 1.01).toString())
-//   try {
-//     await dai.methods.approve(buyMultipleTokens.address, balance).send({
-//       from: web3js.eth.accounts.wallet[0].address,
-//       gas: 100000,
-//       // higher gas price to ensure ordering
-//       gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
-//     })
-//     await buyMultipleTokens.methods.deposit(web3js.eth.accounts.wallet[0].address, balance).send({
-//       from: web3js.eth.accounts.wallet[0].address,
-//       gas: 100000,
-//       gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
-//     })
-//   } catch (error) {
-//     console.log(error)
-//     return false
-//   }
-//   return true
-// }
-
-// export async function createTokenBuyer() {
-//   const balance = await dai.methods.balanceOf(web3js.eth.accounts.wallet[0].address).call()
-//   const gasPrice = await web3js.eth.getGasPrice()
-//   console.log(parseInt(parseInt(gasPrice) * 1.01).toString())
-//   let result
-//   try {
-//     result = await tokenBuyerFactory.methods.create().send({
-//       from: web3js.eth.accounts.wallet[0].address,
-//       gas: 200000,
-//       // higher gas price to ensure ordering
-//       gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
-//     })
-//     const tokenBuyerAddress = result.events.TokenBuyerCreated.returnValues[0]
-//     await dai.methods.transfer(tokenBuyerAddress, balance).send({
-//       from: web3js.eth.accounts.wallet[0].address,
-//       gas: 100000,
-//       gasPrice: parseInt(parseInt(gasPrice) * 1.01).toString()
-//     })
-//   } catch (error) {
-//     console.log(error)
-//     return null
-//   }
-//   return tokenBuyerAddress
-// }
-
-// export async function buyTHX(hostname, amount) {
-//   const ensNode = namehash.hash(hostname);
-//   let address = await resolver.methods.tokens(ensNode).call();
-//   if (address === "0x0000000000000000000000000000000000000000") {
-//     await resolver.methods.createToken(ensNode).send({
-//       from: web3js.eth.accounts.wallet[0].address,
-//       gas: 200000,
-//     });
-//     address = await resolver.methods.tokens(ensNode).call();
-//   }
-//   const thxToken = new web3js.eth.Contract(abis.ThxToken, address);
-//   const allowance = await dai.methods.allowance(web3js.eth.accounts.wallet[0].address, address).call();
-//   if ( web3js.utils.toBN(allowance).lt(web3js.utils.toBN(amount)) ) {
-//     await dai.methods.increaseAllowance(address, amount).send({
-//       from: web3js.eth.accounts.wallet[0].address,
-//       gas: 100000,
-//     });
-//   }
-//   return await thxToken.methods.buy(amount).send({
-//     from: web3js.eth.accounts.wallet[0].address,
-//     gas: 150000,
-//   })
-// }
-
-// export async function buyTHXFromSubs(subscriptions) {
-//   let recipients = []
-//   let amounts = []
-//   for (let i=0; i<subscriptions.length; i++) {
-//     if (subscriptions[i].hostname !== "gratiis#mostViewedSites") {
-//       recipients.push(subscriptions[i].hostname)
-//       amounts.push(subscriptions[i].amount)
-//     }
-//   }
-//   const mvsIndex = subscriptions.findIndex(sub => sub.hostname === "gratiis#mostViewedSites")
-//   if (subscriptions[mvsIndex].amount !== 0) { // if Most Viewed Sites are being paid
-//     let views = await getViews()
-//     for (let view in views) {
-//       recipients.push(view.hostname)
-//       amounts.push(view.share * subscriptions[0].amount)
-//     }
-//   }
-//   for (let i=0; i<recipients.length; i++) {
-//     buyThx(recipients[i], amounts[i])
-//   }
-// }
 
 export async function getBalanceETH(from) {
   console.log('getBalanceETH')
@@ -748,49 +574,6 @@ export async function getBalanceERC20(from, tokenAddr) {
   const weiBalance = await token.methods.balanceOf(from).call()
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
 }
-
-// export async function getTokenBalance(address, domainName) {
-//   let weiValue
-//   try {
-//     const ensNode = namehash.hash(domainName)
-//     const tokenAddress = await resolver.methods.tokens(ensNode).call()
-//     const contract = new web3js.eth.Contract(abis.ERC20, tokenAddress)
-//     weiValue = await contract.methods.balanceOf(address).call()
-//   } catch(error) {
-//     return null
-//   }
-//
-//   return parseFloat(web3js.utils.fromWei(weiValue))
-// }
-//
-// export async function getTokenBalances(address, domainNames) {
-//   let balances = []
-//   for (let i=0; i<domainNames.length; i++) {
-//     balances.push({
-//       name: domainNames[i],
-//       balance: await getTokenBalance(address, domainNames[i])
-//     })
-//   }
-//   return balances
-// }
-
-// export async function getTokenBalances(address) {
-//   console.log('getTokenBalances')
-//   if (typeof address !== 'string' || address.length !== 42)
-//     throw new Error("Invalid address")
-//   let balances = {}
-//   let events = await tokenBuyer.getPastEvents('Buy', {fromBlock: 0, filter: {buyer: address}})
-//   for (const event of events) {
-//     if (!(event.returnValues.token in balances)) {
-//       const contract = new web3js.eth.Contract(abis.TokenSale, event.returnValues.token)
-//       balances[event.returnValues.token] = {
-//         name: await contract.methods.name().call(),
-//         balance: parseFloat(web3js.utils.fromWei((await contract.methods.balanceOf(address).call()).toString()))
-//       }
-//     }
-//   }
-//   return Object.values(balances)
-// }
 
 export async function subscribeToDaiTransfer(from, onTransfer) {
   console.log('subscribeToDaiTransfer')
@@ -852,9 +635,4 @@ export async function timestampToBlockNum(msSinceUnixEpoch) {
   let fromBlock = Math.floor(currentBlockNum - secondsAgo/secondsPerBlock);
   if (fromBlock < 0) fromBlock = 0;
   return fromBlock
-}
-
-function validateDomainName(domainName) {
-  if (domainName.split('.').length !== 2)
-    throw new Error("Invalid domain name: '"+domainName+"' is not of the form domain.tld")
 }

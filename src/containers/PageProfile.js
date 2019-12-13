@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/PageProfile'
 import { getUrl, getHostname } from '../api/browser'
-import { getDomainOwner } from '../api/blockchain'
+import { domainNameToEnsName, getEnsNodeOwner } from '../api/blockchain'
 import { setObjectHostname } from '../actions'
 
 function PageProfile({ hostname, dnsChallengeChanged, address, onChangeHostname }) {
@@ -15,7 +15,8 @@ function PageProfile({ hostname, dnsChallengeChanged, address, onChangeHostname 
 
   React.useEffect(() => {
     if (domainName) {
-      getDomainOwner(domainName).then(setDomainOwner)
+      const ensName = domainNameToEnsName(domainName)
+      getEnsNodeOwner(ensName).then(setDomainOwner)
     }
   }, [domainName, dnsChallengeChanged])
 

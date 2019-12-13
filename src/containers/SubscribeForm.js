@@ -4,7 +4,7 @@ import currencySymbols from '../api/currencySymbols'
 import { connect } from 'react-redux'
 import { addSubscription, removeSubscription, setTabIndex } from '../actions'
 import { convertToUSD } from '../api/ECBForexRates'
-import { domainNameToEnsAddr } from '../api/blockchain.js'
+import { domainNameToEnsName } from '../api/blockchain.js'
 
 function SubscribeForm({ domainName, subscribed, subscribedAmount, currency, onSubscribe, onUnsubscribe, onChangeTab, classes }) {
   const [amount, setAmount] = React.useState('')
@@ -64,8 +64,8 @@ const mapStateToProps = (state, ownProps) => ({
   currency: state.settings['Currency'],
 })
 const mapDispatchToProps = dispatch => ({
-  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsAddr(domainName), amount)),
-  onUnsubscribe: domainName => dispatch(removeSubscription(domainNameToEnsAddr(domainName))),
+  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsName(domainName), amount)),
+  onUnsubscribe: domainName => dispatch(removeSubscription(domainNameToEnsName(domainName))),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
 })
 

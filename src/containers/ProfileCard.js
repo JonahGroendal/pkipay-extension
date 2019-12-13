@@ -3,7 +3,7 @@ import PresentationalComponent from '../components/ProfileCard'
 import { connect } from 'react-redux'
 import {
   getTotalContributions,
-  domainNameToEnsAddr,
+  domainNameToEnsName,
   getPriceOfETHInUSD,
   addresses
 } from '../api/blockchain'
@@ -21,7 +21,7 @@ function ProfileCard({ hostname, currency, txScreenOpen, square }) {
     if (domainName) {
       if (!txScreenOpen) {
         Promise.all([
-          getTotalContributions(domainNameToEnsAddr(domainName)),
+          getTotalContributions(domainNameToEnsName(domainName)),
           getPriceOfETHInUSD()
         ])
         .then(([contribs, ethPrice]) => {

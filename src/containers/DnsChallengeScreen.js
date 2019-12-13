@@ -18,7 +18,7 @@ import {
   getPendingWithdrawals,
   createTxWithdrawDonations,
   createTxWithdrawDonationsETH,
-  domainNameToEnsAddr,
+  domainNameToEnsName,
   getTokenSymbol,
   addresses
 } from '../api/blockchain'
@@ -31,7 +31,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
   const domainName = activeStep === 0 ? mapped.objectHostname.split('.').slice(-2).join('.') : mapped.domainName
   const [pendingWithdrawals, setPendingWithdrawals] = React.useState(null)
   // const domainName = (mapped.ongoing || activeStep > 0) ? mapped.domainName : mapped.objectHostname.split('.').slice(-2).join('.')
-  
+
   React.useEffect(() => {
     if (mapped.ongoing)
       onOpen(); // Open self
@@ -40,7 +40,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
   // In case app reopens on this step
   React.useEffect(() => {
     if (activeStep === 3 && pendingWithdrawals === null)
-      getPendingWithdrawals(domainNameToEnsAddr(domainName)).then(setPendingWithdrawals)
+      getPendingWithdrawals(domainNameToEnsName(domainName)).then(setPendingWithdrawals)
   }, [activeStep])
 
   function handleClose() {
@@ -65,11 +65,11 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
         const certChain = await getCertChain(mapped.certUrl);
         await uploadCertAndProveOwnership(mapped.address, certChain, await decrypt(mapped.pkcs8Key, password));
         await registerAsDomainOwner(mapped.address, domainName);
-        await pointEnsNodeToResolver(mapped.address, domainName);
-        await pointResolverAddrToSelf(mapped.address, domainNameToEnsAddr(domainName));
+        await pointEnsNodeToResolver(mapped.address, domainNameToEnsName(domainName));
+        await pointResolverAddrToSelf(mapped.address, domainNameToEnsName(domainName));
         await mapped.onCompleteChallenge();
         await mapped.onRescheduleSubscriptions();
-        setPendingWithdrawals(await getPendingWithdrawals(domainNameToEnsAddr(domainName)))
+        setPendingWithdrawals(await getPendingWithdrawals(domainNameToEnsName(domainName)))
         break;
       case 3:
         const tokenAddrs = Object.keys(pendingWithdrawals) // Throws error if pendingWithdrawals === null
@@ -78,9 +78,9 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
           for (let i=0; i<tokenAddrs.length; i++) {
             const donors = pendingWithdrawals[tokenAddrs[i]].map(({ donor }) => donor)
             if (tokenAddrs[i] === addresses.ETH)
-              txs.push(createTxWithdrawDonationsETH(mapped.address, domainNameToEnsAddr(domainName), donors))
+              txs.push(createTxWithdrawDonationsETH(mapped.address, domainNameToEnsName(domainName), donors))
             else
-              txs.push(createTxWithdrawDonations(mapped.address, tokenAddrs[i], domainNameToEnsAddr(domainName), donors))
+              txs.push(createTxWithdrawDonations(mapped.address, tokenAddrs[i], domainNameToEnsName(domainName), donors))
           }
           await mapped.onReviewTx(txs, pendingWithdrawals)
         }

@@ -2,6 +2,8 @@ import React from 'react';
 import PresentationalComponent from '../components/Token';
 import {
   apiContractApproved,
+  resolveToken,
+  resolveTokenSale,
   createTxApproveApiContract,
   createTxBuyTokens,
   createTxSellToken,
@@ -10,7 +12,7 @@ import {
   addresses,
   getTokenInfo,
   getTokenSaleInfo,
-  domainNameToEnsAddr
+  domainNameToEnsName
 } from '../api/blockchain';
 import { connect } from 'react-redux'
 import { reviewTx, addSubscription, removeSubscription, setTabIndex, addToken } from '../actions'
@@ -127,7 +129,8 @@ function useTokenInfo(domainName, txScreenOpen) {
 
   React.useEffect(() => {
     if (domainName && !txScreenOpen) {
-      getTokenInfo(domainName).then(info => {
+      const ensName = domainNameToEnsName(domainName)
+      getTokenInfo(ensName).then(info => {
         setTotalSupply(info.totalSupply)
       })
     } else {
@@ -147,7 +150,8 @@ function useTokenSaleInfo(domainName, txScreenOpen) {
   React.useEffect(() => {
     if (domainName) {
       if (!txScreenOpen) {
-        getTokenSaleInfo(domainName).then(info => {
+        const ensName = domainNameToEnsName(domainName)
+        getTokenSaleInfo(ensName).then(info => {
           setBuyPrice(info.buyPrice);
           setSellPrice(info.sellPrice);
           setReservesDAI(info.reservesDAI);
@@ -173,32 +177,34 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = (dispatch) => ({
   onBuy: async (from, domainName, daiValue, amount) => {
-    const ensDomain = domainNameToEnsAddr(domainName)
+    const ensName = domainNameToEnsName(domainName)
     const txs = []
     const approved = await apiContractApproved(from)
     if (!approved)
       txs.push(createTxApproveApiContract(from))
-    txs.push(createTxBuyTokens(from, ensDomain, daiValue))
-    dispatch(addToken(ensDomain))
-    dispatch(reviewTx(txs, [ensDomain], [{ 'DAI': daiValue*-1, 'tokens': amount }]))
+    txs.push(createTxBuyTokens(from, ensName, daiValue))
+    dispatch(addToken(ensName))
+    dispatch(reviewTx(txs, [ensName], [{ 'DAI': daiValue*-1, 'tokens': amount }]))
   },
   onSell: async (from, domainName, amount, daiValue) => {
-    const ensDomain = domainNameToEnsAddr(domainName)
-    const txs = await createTxSellToken(from, domainName, amount)
-    dispatch(reviewTx(txs, [ensDomain], [{ 'DAI': daiValue, 'tokens': amount*-1 }]))
+    const ensName = domainNameToEnsName(domainName)
+    const tokenAddr = await resolveToken(ensName, { usePublicResolver: true })
+    const tokenSaleAddr = await resolveTokenSale(ensName, { usePublicResolver: true })
+    const txs = await createTxSellToken(from, tokenAddr, tokenSaleAddr, amount)
+    dispatch(reviewTx(txs, [ensName], [{ 'DAI': daiValue, 'tokens': amount*-1 }]))
   },
-  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsAddr(domainName), amount)),
-  onUnsubscribe: (domainName, reschedule) => dispatch(removeSubscription(domainNameToEnsAddr(domainName), reschedule)),
+  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsName(domainName), amount)),
+  onUnsubscribe: (domainName, reschedule) => dispatch(removeSubscription(domainNameToEnsName(domainName), reschedule)),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex)),
   onWithdraw: async (from, domainName, tokenAddr, amount, tokenSymbol) => {
-    const ensDomain = domainNameToEnsAddr(domainName)
-    const tx = await createTxWithdraw(from, domainName, tokenAddr, amount)
-    dispatch(reviewTx([tx], [ensDomain], [{ [tokenSymbol]: amount }]))
+    const ensName = domainNameToEnsName(domainName)
+    const tx = await createTxWithdraw(from, tokenAddr, ensName, amount)
+    dispatch(reviewTx([tx], [ensName], [{ [tokenSymbol]: amount }]))
   },
   onWithdrawETH: async (from, domainName, amount) => {
-    const ensDomain = domainNameToEnsAddr(domainName)
-    const tx = await createTxWithdrawETH(from, domainName, amount)
-    dispatch(reviewTx([tx], [ensDomain], [{ 'ETH': amount }]))
+    const ensName = domainNameToEnsName(domainName)
+    const tx = await createTxWithdrawETH(from, ensName, amount)
+    dispatch(reviewTx([tx], [ensName], [{ 'ETH': amount }]))
   }
 })
 
