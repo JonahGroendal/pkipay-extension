@@ -9,7 +9,7 @@ import {
   createTxDonateETH,
   addresses,
   domainNameToEnsName,
-  resolveAddress,
+  // resolveAddress,
   resolveToken
 } from '../api/blockchain'
 
@@ -27,7 +27,7 @@ function Donate({ domainName, ...mapped }) {
   const parsedAmount = isNaN(amount)
     ? 0
     : Number(amount)
-  const address = useEnsResolver(domainName)
+  // const address = useEnsResolver(domainName)
   const tokenAddress = useEnsTokenResolver(domainName)
   const tokenOptions = [...Object.keys(addresses)]
   const tokenAddresses = { ...addresses }
@@ -88,19 +88,19 @@ function Donate({ domainName, ...mapped }) {
   })
 }
 
-function useEnsResolver(domainName) {
-  const [address, setAddress] = React.useState(ZERO_ADDRESS)
-  React.useEffect(() => {
-    if (domainName) {
-      const ensName = domainNameToEnsName(domainName)
-      resolveAddress(ensName)
-      .then(setAddress)
-    } else {
-      setAddress(ZERO_ADDRESS)
-    }
-  }, [domainName])
-  return address
-}
+// function useEnsResolver(domainName) {
+//   const [address, setAddress] = React.useState(ZERO_ADDRESS)
+//   React.useEffect(() => {
+//     if (domainName) {
+//       const ensName = domainNameToEnsName(domainName)
+//       resolveAddress(ensName)
+//       .then(setAddress)
+//     } else {
+//       setAddress(ZERO_ADDRESS)
+//     }
+//   }, [domainName])
+//   return address
+// }
 
 function useEnsTokenResolver(domainName) {
   const [tokenAddress, setTokenAddress] = React.useState(ZERO_ADDRESS)

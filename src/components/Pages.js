@@ -2,7 +2,6 @@ import React from 'react'
 import Nav from './Nav'
 import PageProfile from '../containers/PageProfile'
 import PageManage from './PageManage'
-import Tab from '@material-ui/core/Tab'
 import SwipeableViews from 'react-swipeable-views'
 import BottomNavigation from '@material-ui/core/BottomNavigation';
 import BottomNavigationAction from '@material-ui/core/BottomNavigationAction';

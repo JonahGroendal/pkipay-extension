@@ -113,9 +113,6 @@ export function createTxDonateETH(from, ensNames, amounts) {
   }
 }
 
-/**
- * @param {string[]} amounts - The DAI value of tokens to buy for each token
- */
 export function createTxBuyTokens(from, ensNames, amounts) {
   console.log('createTxBuyTokens');
   if (!Array.isArray(ensNames)) ensNames = [ensNames];
@@ -301,7 +298,7 @@ export async function resolveToken(ensName, options={ usePublicResolver: false }
 
 /**
  * @param {string} ensName - The ENS address of the token
- * @returns {string|undefined} - The address of the token that ensName resolves to, or undefined if there's no resolver
+ * @returns {string|undefined} - The address of the token sale that ensName resolves to, or undefined if there's no resolver
  */
 export async function resolveTokenSale(ensName, options={ usePublicResolver: false }) {
   console.log('resolveToken')
