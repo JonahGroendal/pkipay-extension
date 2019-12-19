@@ -117,7 +117,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
     recordText: mapped.recordText,
     domainName: domainName,
     onReset: handleReset,
-    escrowBalances: ebETH.toFixed(4).concat(' ETH, ', ebDAI.toFixed(2), ' DAI and ', ebRest.toFixed(3), ' of other tokens')
+    escrowBalances: ebETH.toFixed(4).concat(' ETH, ', ebDAI.toFixed(3), ' DAI and ', ebRest.toFixed(3), ' of other tokens')
   })
 }
 
