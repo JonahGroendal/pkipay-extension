@@ -1,6 +1,5 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles'
-import DnsChallengeScreen from '../containers/DnsChallengeScreen'
 import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button'
@@ -20,8 +19,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function ClaimWebsiteCard(props) {
-  const [screenOpen, setScreenOpen] = React.useState(false)
+function ClaimWebsiteCard({ onClickButton }) {
   const classes = useStyles()
 
   return (
@@ -34,7 +32,7 @@ function ClaimWebsiteCard(props) {
           <Tooltip title={'claim ownership of this site'} enterDelay={300}>
             <div>
               <Button
-                onClick={() => setScreenOpen(!screenOpen)}
+                onClick={onClickButton}
                 variant="contained" size="medium" color="primary"
               >
                 Claim donations
@@ -43,11 +41,6 @@ function ClaimWebsiteCard(props) {
           </Tooltip>
         </div>
       </Paper>
-      <DnsChallengeScreen
-        open={screenOpen}
-        onClose={() => setScreenOpen(false)}
-        onOpen={() => setScreenOpen(true)}
-      />
     </div>
   )
 }

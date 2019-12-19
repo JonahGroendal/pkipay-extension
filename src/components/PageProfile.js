@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/styles'
 import appConfig from '../api/appConfig'
 import Page from './Page'
 import ProfileCard from '../containers/ProfileCard'
+import DnsChallengeScreen from '../containers/DnsChallengeScreen'
 import Token from '../containers/Token'
 import Donate from '../containers/Donate'
 import ClaimWebsiteCard from './ClaimWebsiteCard'
@@ -29,12 +30,23 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function PageProfile({ hostname, domainName, domainOwner, address }) {
+function PageProfile(props) {
+  const {
+    hostname,
+    domainName,
+    domainOwner,
+    address,
+    pendingWithdrawals,
+    setPendingWithdrawals,
+    pendingWithdrawalsExist
+  } = props
   const classes = useStyles();
 
   const showAdminViewOption = (domainOwner === address)
   let [adminViewEnabled, setAdminViewEnabled] = React.useState(true)
   adminViewEnabled = adminViewEnabled && showAdminViewOption
+
+  const [dnsChalScreenOpen, setDnsChalScreenOpen] = React.useState(false)
 
   // Get height of elements after they render. Values will be set after
   // the first render but before the browser paints for the first time.
@@ -77,9 +89,21 @@ function PageProfile({ hostname, domainName, domainOwner, address }) {
           {!adminViewEnabled && (
             <Donate domainName={domainName} />
           )}
-          {!!domainName && isZero(domainOwner) && (
-            <ClaimWebsiteCard />
-          )}
+          <div>
+            {!!domainName && (isZero(domainOwner) || pendingWithdrawalsExist) && (
+              <ClaimWebsiteCard
+                onClickButton={() => setDnsChalScreenOpen(true)}
+              />
+            )}
+            <DnsChallengeScreen
+              open={dnsChalScreenOpen}
+              onClose={() => setDnsChalScreenOpen(false)}
+              onOpen={() => setDnsChalScreenOpen(true)}
+              domainOwner={domainOwner}
+              pendingWithdrawals={pendingWithdrawals}
+              setPendingWithdrawals={setPendingWithdrawals}
+            />
+          </div>
           <Token domainName={domainName} adminViewEnabled={adminViewEnabled}/>
         </Page>
       </div>

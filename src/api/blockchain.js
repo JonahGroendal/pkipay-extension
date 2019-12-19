@@ -17,9 +17,6 @@ import ENSRegistry from '@ensdomains/ens/build/contracts/ENSRegistry.json'
 import IExchangeRates from 'pkipay-blockchain/build/contracts/IExchangeRates.json'
 import IMedianizer from 'pkipay-blockchain/build/contracts/IMedianizer.json'
 
-import forge from 'node-forge'
-import NodeRSA from 'node-rsa'
-
 const addressOf = (artifact) => {
   switch (process.env.REACT_APP_ACTUAL_ENV) {
     case 'development':
@@ -40,7 +37,6 @@ const registrar = new web3js.eth.Contract(DNSRegistrar.abi, addressOf(DNSRegistr
 const dai = new web3js.eth.Contract(ERC20.abi, addressOf(ERC20Mock));
 const api = new web3js.eth.Contract(API.abi, addressOf(API));
 const escrow = new web3js.eth.Contract(ENSDonationEscrow.abi, addressOf(ENSDonationEscrow));
-const x509Forest = new web3js.eth.Contract(X509ForestOfTrust.abi, addressOf(X509ForestOfTrust));
 const ens = new web3js.eth.Contract(ENSRegistry.abi, addressOf(ENSRegistry));
 const medianizerAddr = (process.env.REACT_APP_ACTUAL_ENV === 'development' || process.env.REACT_APP_ACTUAL_ENV === 'test')
   ? '0x02998f73FAbb52282664094B0ff87741A1Ce9030'
@@ -55,6 +51,10 @@ export const addresses = {
   'ETH': '0x0000000000000000000000000000000000000000',
   'DAI': dai.options.address
 }
+
+export const chainId = process.env.REACT_APP_ACTUAL_ENV === 'production'
+  ? 1
+  : 42
 
 export async function apiContractApproved(from, tokenAddr) {
   console.log('apiContractApproved')
@@ -413,69 +413,6 @@ export async function getTokenBalance(from, tokenAddr) {
   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
   const weiBalance = await token.methods.balanceOf(from).call()
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
-}
-
-export async function uploadCertAndProveOwnership(from, pemCertChain, pkcs8Key) {
-  console.log('uploadCertAndProveOwnership')
-  let pemPubKeys = []
-  let certIds = []
-  let pubKey;
-  pemCertChain.forEach(pem => {
-    pubKey = forge.pki.certificateFromPem(pem).publicKey
-    pemPubKeys.push(forge.pki.publicKeyToPem(pubKey))
-    certIds.push(web3js.utils.sha3('0x' + forge.asn1.toDer(forge.pki.publicKeyToAsn1(pubKey)).toHex()))
-  })
-
-  for (let i=0; i<pemCertChain.length; i++) {
-    if (parseInt(await x509Forest.methods.validNotAfter(certIds[i]).call()) === 0)
-      await uploadCertificate(from, pemCertChain[i], pemPubKeys[Math.max(i - 1, 0)])
-  }
-  const { challengeBytes, blockNum } = await getCertChallengeBytes(from)
-
-  await signAndSubmitCertChallengeBytes(from, challengeBytes, pkcs8Key, pemPubKeys[pemPubKeys.length-1], blockNum)
-}
-
-export async function uploadCertificate(from, pemCert, pemParentPubKey) {
-  console.log('uploadCertificate')
-  const cert = forge.pki.certificateFromPem(pemCert)
-  const parentPubKey = forge.pki.publicKeyFromPem(pemParentPubKey)
-  const certBytes = '0x' + forge.asn1.toDer(forge.pki.certificateToAsn1(cert)).toHex()
-  const parentPubKeyBytes = '0x' + forge.asn1.toDer(forge.pki.publicKeyToAsn1(parentPubKey)).toHex()
-
-  // addCert(bytes memory cert, bytes memory parentPubKey)
-  const tx = x509Forest.methods.addCert(certBytes, parentPubKeyBytes)
-  const options = { from, gas: 2000000 }
-  // Make sure it works
-  await tx.call(options)
-  // Then send
-  await tx.send(options)
-}
-
-export async function getCertChallengeBytes(from) {
-  console.log("getCertChallengeText")
-  // signThis() external view returns (bytes memory, uint)
-  const res = await x509Forest.methods.signThis().call({ from })
-  return {
-    challengeBytes: res[0].slice(2), // remove "0x"
-    blockNum: parseInt(res[1].toString())
-  }
-}
-
-export async function signAndSubmitCertChallengeBytes(from, challengeBytes, pkcs8Key, pemPubKey, blockNum) {
-  console.log('signAndSubmitCertChallengeBytes')
-  let pubKey = forge.pki.publicKeyFromPem(pemPubKey)
-  let pubKeyBytes = '0x' + forge.asn1.toDer(forge.pki.publicKeyToAsn1(pubKey)).toHex()
-  // Calculate signature
-  let key = new NodeRSA(pkcs8Key, 'pkcs8')
-  let signed = key.sign(challengeBytes, 'hex', 'hex')
-
-  const sha256WithRSAEncryption = "0x2a864886f70d01010b0000000000000000000000000000000000000000000000"
-  const tx = x509Forest.methods.proveOwnership(pubKeyBytes, "0x"+signed, blockNum, sha256WithRSAEncryption)
-  const options = { from, gas: 200000 }
-  // Make sure it wont revert
-  await tx.call(options)
-  // Then do it for real
-  await tx.send(options)
 }
 
 export async function registerAsDomainOwner(from, domainName) {

@@ -2,7 +2,7 @@ import web3js from '../api/web3js'
 import browser, { sendMessage } from '../api/browser'
 import datetimeCalculators from '../api/datetimeCalculators'
 import { createTxBuyTokens, apiContractApproved, createTxApproveApiContract } from '../api/blockchain'
-import AcmeClient from '../api/AcmeClient'
+import AcmeClient from 'acme-easy'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
 
 export const setObjectHostname = (hostname) => ({
@@ -371,9 +371,9 @@ export const submitDnsChallenge = (password) => async (dispatch, getState) => {
     ? 'letsencrypt-staging'
     : 'letsencrypt'
   const ac = await AcmeClient(authority, jwk)
-  let certUrl; let pkcs8Key;
+  let pemCertChain; let pkcs8Key;
   try {
-    ({ certUrl, pkcs8Key } = await ac.submitDnsChallengeAndFinalize(order));
+    ({ pemCertChain, pkcs8Key } = await ac.submitDnsChallengeAndFinalize(order));
   } catch (error) {
     dispatch({
       type: 'DNS_CHALLENGE_ERROR',
@@ -384,11 +384,11 @@ export const submitDnsChallenge = (password) => async (dispatch, getState) => {
   dispatch({
     type: 'DNS_CHALLENGE_SUCCESS',
     payload: {
-      certUrl,
+      pemCertChain,
       pkcs8Key: await encrypt(pkcs8Key, password)
     }
   })
-  return { certUrl, pkcs8Key }
+  return { pemCertChain, pkcs8Key }
 }
 
 export const resetDnsChallenge = () => ({

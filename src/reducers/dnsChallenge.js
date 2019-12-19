@@ -5,7 +5,7 @@ const initState = {
   recordText: '',
   jwk: null,
   order: null,
-  certUrl: '',
+  pemCertChain: null,
   pkcs8Key: null
 }
 
@@ -28,7 +28,7 @@ function dnsChallenge(state=initState, action) {
     case 'DNS_CHALLENGE_SUCCESS':
       return {
         ...state,
-        certUrl: action.payload.certUrl,
+        pemCertChain: action.payload.pemCertChain,
         pkcs8Key: action.payload.pkcs8Key
       }
     case 'RESET_DNS_CHALLENGE':
