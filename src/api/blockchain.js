@@ -17,31 +17,28 @@ import ENSRegistry from '@ensdomains/ens/build/contracts/ENSRegistry.json'
 import IExchangeRates from 'pkipay-blockchain/build/contracts/IExchangeRates.json'
 import IMedianizer from 'pkipay-blockchain/build/contracts/IMedianizer.json'
 
-const addressOf = (artifact) => {
-  switch (process.env.REACT_APP_ACTUAL_ENV) {
-    case 'development':
-      if (artifact.contractName.includes('ERC20'))
-        return '0xC4375B7De8af5a38a93548eb8453a498222C4fF2' // Kovan DAI address
-      return artifact.networks[42].address;
-    case 'test':
-      const chainId = Object.keys(artifact.networks).sort((a, b) => b - a)[0]; // sort descending
-      return artifact.networks[chainId].address;
-    default:
-      if (artifact.contractName.includes('ERC20'))
-        return '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359' // Mainnet DAI address
-      return artifact.networks[42].address;
+const contractAddrs = {
+  dai: {
+    1: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
+    42: '0xC4375B7De8af5a38a93548eb8453a498222C4fF2'
+  },
+  medianizer: {
+    1: '0x729D19f657BD0614b4985Cf1D82531c67569197B',
+    42: '0x02998f73FAbb52282664094B0ff87741A1Ce9030'
   }
 }
-const resolver = new web3js.eth.Contract(TokenResolver.abi, addressOf(TokenResolver));
-const registrar = new web3js.eth.Contract(DNSRegistrar.abi, addressOf(DNSRegistrar));
-const dai = new web3js.eth.Contract(ERC20.abi, addressOf(ERC20Mock));
-const api = new web3js.eth.Contract(API.abi, addressOf(API));
-const escrow = new web3js.eth.Contract(ENSDonationEscrow.abi, addressOf(ENSDonationEscrow));
-const ens = new web3js.eth.Contract(ENSRegistry.abi, addressOf(ENSRegistry));
-const medianizerAddr = (process.env.REACT_APP_ACTUAL_ENV === 'development' || process.env.REACT_APP_ACTUAL_ENV === 'test')
-  ? '0x02998f73FAbb52282664094B0ff87741A1Ce9030'
-  : '0x729D19f657BD0614b4985Cf1D82531c67569197B'
-const medianizer = new web3js.eth.Contract(IMedianizer.abi, medianizerAddr)
+
+export const chainId = process.env.REACT_APP_ACTUAL_ENV === 'production'
+  ? 1
+  : 42
+
+const resolver = new web3js.eth.Contract(TokenResolver.abi, TokenResolver.networks[chainId].address);
+const registrar = new web3js.eth.Contract(DNSRegistrar.abi, DNSRegistrar.networks[chainId].address);
+const api = new web3js.eth.Contract(API.abi, API.networks[chainId].address);
+const escrow = new web3js.eth.Contract(ENSDonationEscrow.abi, ENSDonationEscrow.networks[chainId].address);
+const ens = new web3js.eth.Contract(ENSRegistry.abi, ENSRegistry.networks[chainId].address);
+const dai = new web3js.eth.Contract(ERC20.abi, contractAddrs.dai[chainId]);
+const medianizer = new web3js.eth.Contract(IMedianizer.abi, contractAddrs.medianizer[chainId])
 
 const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
   ? 'dnsroot.eth'
@@ -51,10 +48,6 @@ export const addresses = {
   'ETH': '0x0000000000000000000000000000000000000000',
   'DAI': dai.options.address
 }
-
-export const chainId = process.env.REACT_APP_ACTUAL_ENV === 'production'
-  ? 1
-  : 42
 
 export async function apiContractApproved(from, tokenAddr) {
   console.log('apiContractApproved')
