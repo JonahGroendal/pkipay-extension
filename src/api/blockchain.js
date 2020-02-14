@@ -19,12 +19,12 @@ import IMedianizer from 'pkipay-blockchain/build/contracts/IMedianizer.json'
 
 const contractAddrs = {
   dai: {
-    1: '0x89d24A6b4CcB1B6fAA2625fE562bDD9a23260359',
-    42: '0xC4375B7De8af5a38a93548eb8453a498222C4fF2'
+    1: '0x6b175474e89094c44da98b954eedeac495271d0f',
+    42: '0x4f96fe3b7a6cf9725f59d353f723c1bdb64ca6aa'
   },
   medianizer: {
-    1: '0x729D19f657BD0614b4985Cf1D82531c67569197B',
-    42: '0x02998f73FAbb52282664094B0ff87741A1Ce9030'
+    1: '0x64DE91F5A373Cd4c28de3600cB34C7C6cE410C85',
+    42: '0x61232E4719f0709064a97C180C2d8802b742Ed08'
   }
 }
 
