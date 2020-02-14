@@ -2,6 +2,7 @@ import React from 'react'
 import PresentationalComponent from '../components/Settings'
 import datetimeCalculators from '../api/datetimeCalculators.js'
 import { supportedCurrencies } from '../api/ECBForexRates.js'
+import browser from '../api/browser'
 import { connect } from 'react-redux';
 import { changeSetting } from '../actions'
 
@@ -10,15 +11,23 @@ const settingsOptions = {
   'Payment schedule': Object.keys(datetimeCalculators)
 }
 
-function Settings({ ...mapped }) {
+function Settings({ keystore, currentSettings, onChangeSetting }) {
   return React.createElement(PresentationalComponent, {
     settingsOptions,
-    ...mapped
+    currentSettings,
+    onChangeSetting,
+    onClickDownloadWallet: () => {
+      keystore.forEach(wallet => {
+        let file = new File([JSON.stringify(wallet)], 'pkipay-keystore.json', {type: 'text/plain'})
+        browser.downloads.download({url: URL.createObjectURL(file), filename: 'pkipay-keystore.json'})
+      })
+    },
   })
 }
 
 const mapStateToProps = state => ({
-  currentSettings: state.settings
+  currentSettings: state.settings,
+  keystore: state.wallet.keystore
 })
 const mapDispatchToProps = dispatch => ({
   onChangeSetting: (name, value) => dispatch(changeSetting(name, value))

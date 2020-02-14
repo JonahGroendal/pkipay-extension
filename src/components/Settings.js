@@ -11,6 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Switch from '@material-ui/core/Switch';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
+import Button from '@material-ui/core/Button';
 
 const useStyles = makeStyles(theme => ({
   contentRoot: {
@@ -20,7 +21,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Settings({ settingsOptions, currentSettings, onChangeSetting }) {
+function Settings({ settingsOptions, currentSettings, onChangeSetting, onClickDownloadWallet }) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false);
   return (
@@ -60,6 +61,17 @@ function Settings({ settingsOptions, currentSettings, onChangeSetting }) {
                 </ListItemSecondaryAction>
               </ListItem>
             ))}
+            <ListItem style={{paddingLeft: 0}}>
+              <ListItemText primary="&nbsp;" />
+              <ListItemSecondaryAction>
+                <Button
+                  onClick={onClickDownloadWallet}
+                  variant="contained" size="medium" color="primary"
+                >
+                  Download wallet backup
+                </Button>
+              </ListItemSecondaryAction>
+            </ListItem>
           </List>
         </div>
       </FullScreenDialog>

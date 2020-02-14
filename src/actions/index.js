@@ -82,8 +82,10 @@ export const createWallet = (password) => {
   const wallet = web3js.eth.accounts.wallet.create(1);
   const keystore = web3js.eth.accounts.wallet.encrypt(password)
   // Download copy of keystore for safe keeping
-  let file = new File([JSON.stringify(keystore[0])], 'keystore.json', {type: 'text/plain'})
-  browser.downloads.download({url: URL.createObjectURL(file), filename: 'keystore.json'})
+  let file = new File([JSON.stringify(keystore[0])], 'pkipay-keystore.json', {type: 'text/plain'})
+  browser.downloads.download({url: URL.createObjectURL(file), filename: 'pkipay-keystore.json'})
+  // Also save to localstorage just in case something happens to the redux store
+  web3js.eth.accounts.wallet.save(password)
 
   let addresses = [];
   for (let i=0; i<wallet.length; i++) {
