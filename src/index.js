@@ -12,13 +12,14 @@ import { loadState, saveState } from './api/browser'
 import { throttle, omit } from 'lodash'
 
 loadState().then(persistedState => {
+  const middlewares = []
+  middlewares.push(thunkMiddleware)
+  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+    middlewares.push(loggerMiddleware)
   const store = createStore(
     rootReducer,
     persistedState,
-    applyMiddleware(
-      thunkMiddleware,
-      loggerMiddleware
-    )
+    applyMiddleware(...middlewares)
   );
 
   ReactDOM.render(
