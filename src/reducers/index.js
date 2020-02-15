@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux'
-import objectHostname from './objectHostname'
+import target from './target'
 import subscriptions from './subscriptions'
 import settings from './settings'
 import unlockWalletScreen from './unlockWalletScreen'
@@ -10,7 +10,7 @@ import pages from './pages'
 import dnsChallenge from './dnsChallenge'
 
 export default combineReducers({
-  objectHostname,
+  target,
   subscriptions,
   settings,
   unlockWalletScreen,

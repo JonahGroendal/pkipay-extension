@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Subscriptions'
 import currencySymbols from '../api/currencySymbols'
 import datetimeCalculators from '../api/datetimeCalculators'
-import { removeSubscription, setObjectHostname } from '../actions'
+import { removeSubscription, setTarget } from '../actions'
 import { convertFromUSD } from '../api/ECBForexRates'
 
 function Subscriptions(props) {
@@ -12,7 +12,7 @@ function Subscriptions(props) {
     currency,
     paymentSchedule,
     onUnsubscribe,
-    setObject,
+    setTarget,
     onChangeIndex,
   } = props
   const [newRowIndex, setNewRowIndex] = React.useState(-1)
@@ -26,7 +26,7 @@ function Subscriptions(props) {
     subscriptions: subscriptions.map(sub => ({ ...sub, amount: convertFromUSD(currency, sub.amount)})),
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
-    onClickSubscription: sub => {setObject(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeIndex(0)},
+    onClickSubscription: sub => {setTarget(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeIndex(0)},
     currency,
     currencySymbol: currencySymbols[currency],
     nextPayment: datetimeCalculators[paymentSchedule](Date.now())
@@ -44,7 +44,7 @@ const mapStateToProps = state => ({
 });
 const mapDispatchToProps = dispatch => ({
   onUnsubscribe: address => dispatch(removeSubscription(address)),
-  setObject: hostname => dispatch(setObjectHostname(hostname))
+  setTarget: target => dispatch(setTarget(target))
 })
 
 export default connect(

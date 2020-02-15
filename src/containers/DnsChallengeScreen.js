@@ -39,8 +39,8 @@ function DnsChallengeScreen({ open, onClose, onOpen, domainOwner, pendingWithdra
     return 0;
   }
   const [activeStep, setActiveStep] = React.useState(initStepIndex());
-  const domainName = activeStep === 0 ? mapped.objectHostname.split('.').slice(-2).join('.') : mapped.domainName
-  // const domainName = (mapped.ongoing || activeStep > 0) ? mapped.domainName : mapped.objectHostname.split('.').slice(-2).join('.')
+  const domainName = activeStep === 0 ? mapped.target.split('.').slice(-2).join('.') : mapped.domainName
+  // const domainName = (mapped.ongoing || activeStep > 0) ? mapped.domainName : mapped.target.split('.').slice(-2).join('.')
 
   React.useEffect(() => {
     if (mapped.ongoing)
@@ -146,7 +146,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, domainOwner, pendingWithdra
 }
 
 const mapStateToProps = state => ({
-  objectHostname: state.objectHostname,
+  target: state.target,
   address: state.wallet.addresses[state.wallet.defaultAccount],
   recordName: state.dnsChallenge.recordName,
   recordText: state.dnsChallenge.recordText,

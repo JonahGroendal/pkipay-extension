@@ -3,16 +3,16 @@ import { connect } from 'react-redux'
 import PresentationalComponent from '../components/PageProfile'
 import { getUrl, getHostname } from '../api/browser'
 import { domainNameToEnsName, getEnsNodeOwner, getPendingWithdrawals } from '../api/blockchain'
-import { setObjectHostname } from '../actions'
+import { setTarget } from '../actions'
 
-function PageProfile({ hostname, dnsChallengeChanged, address, onChangeHostname }) {
+function PageProfile({ hostname, dnsChallengeChanged, address, onChangeTarget }) {
   const domainName = hostname.split('.').slice(-2).join('.')
   const [domainOwner, setDomainOwner] = React.useState('0x0000000000000000000000000000000000000000')
   const [pendingWithdrawals, setPendingWithdrawals] = React.useState(null)
   const pendingWithdrawalsExist = pendingWithdrawals !== null && Object.keys(pendingWithdrawals).length > 0
 
   React.useEffect(() => {
-    getUrl().then(url => onChangeHostname(getHostname(url)))
+    getUrl().then(url => onChangeTarget(getHostname(url)))
   }, [])
 
   React.useEffect(() => {
@@ -40,12 +40,12 @@ function PageProfile({ hostname, dnsChallengeChanged, address, onChangeHostname 
 }
 
 const mapStateToProps = state => ({
-  hostname: state.objectHostname,
+  hostname: state.target,
   dnsChallengeChanged: state.dnsChallenge.recordName === '',
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = dispatch => ({
-  onChangeHostname: h => dispatch(setObjectHostname(h))
+  onChangeTarget: h => dispatch(setTarget(h))
 })
 export default connect(
   mapStateToProps,

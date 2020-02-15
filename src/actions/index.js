@@ -5,9 +5,9 @@ import { createTxBuyTokens, apiContractApproved, createTxApproveApiContract } fr
 import AcmeClient from 'acme-easy'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
 
-export const setObjectHostname = (hostname) => ({
-  type: 'SET_OBJECT_HOSTNAME',
-  hostname
+export const setTarget = (target) => ({
+  type: 'SET_TARGET',
+  target
 })
 
 export const setTabIndex = (index) => ({

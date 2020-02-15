@@ -30,6 +30,6 @@ loadState().then(persistedState => {
   );
 
   store.subscribe(throttle(() => {
-    saveState(omit(store.getState(), ['pages', 'unlockWalletScreen', 'objectHostname']));
+    saveState(omit(store.getState(), ['pages', 'unlockWalletScreen', 'target']));
   }, 3000));
 })
