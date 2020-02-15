@@ -177,25 +177,23 @@ export async function createTxWithdrawETH(from, tokenSaleEnsName, amount) {
   }
 }
 
-export function createTxReclaimDonations(from, tokenAddr, ensName) {
+export function createTxReclaimDonations(from, ensNode, tokenAddr) {
   console.log('createTxReclaimDonations')
-  const ensNode = namehash.hash(ensName)
   return {
     from,
     to: escrow.options.address,
     gas: 60000,
-    data: escrow.methods.reclaim(tokenAddr, ensNode).ecodeABI()
+    data: escrow.methods.reclaim(tokenAddr, ensNode).encodeABI()
   }
 }
 
-export function createTxReclaimDonationsETH(from, ensName) {
+export function createTxReclaimDonationsETH(from, ensNode) {
   console.log('createTxReclaimDonationsETH')
-  const ensNode = namehash.hash(ensName)
   return {
     from,
     to: escrow.options.address,
     gas: 30000,
-    data: escrow.methods.reclaimETH(ensNode).ecodeABI()
+    data: escrow.methods.reclaimETH(ensNode).encodeABI()
   }
 }
 

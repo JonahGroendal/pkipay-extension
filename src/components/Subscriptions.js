@@ -9,6 +9,7 @@ import DeleteOutlinedIcon from '@material-ui/icons/DeleteForeverOutlined'
 import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft'
 import Tooltip from '@material-ui/core/Tooltip'
 import classNames from 'classnames'
+import { truncateForDisplay } from '../api/utils'
 
 const useStyles = makeStyles(theme => ({
   amount: {
@@ -74,11 +75,7 @@ function Subscriptions(props) {
             onClick={() => onClickSubscription(subscription)}>
             <Tooltip title={subscription.address} enterDelay={500}>
               <Typography variant="subtitle1">
-                {/*subscription.name
-                  ? Array.from(subscription.name.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
-                  : Array.from(subscription.address.substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('') */
-                  Array.from(subscription.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '').substring(0, 20)).map((c, i) => i!==19 ? c : String.fromCharCode(8230)).join('')
-                }
+                {truncateForDisplay(subscription.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), 16)}
               </Typography>
             </Tooltip>
           </TableCell>

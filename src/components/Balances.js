@@ -6,6 +6,7 @@ import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
+import { truncateForDisplay } from '../api/utils'
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -41,7 +42,7 @@ function Balances({ balances }) {
           <TableCell className={classes.tableCell}>
             <Tooltip title={holding.name}>
               <Typography variant="subtitle1">
-                {Array.from(holding.name.substring(0, 30)).map((c, i) => i!==29 ? c : String.fromCharCode(8230)).join('')}
+                {truncateForDisplay(holding.name, 30)}
               </Typography>
             </Tooltip>
           </TableCell>

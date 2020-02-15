@@ -41,11 +41,12 @@ function useDonationEscrowBalances(from, txScreenOpen, tabIndex, ensDomains) {
         .then((tokenSymbols, index) => {
           setBalances(pendingDonations.map((pd, i) => {
             if (tokenSymbols[i] !== undefined)
-              pd.token = tokenSymbols[i]
+              pd.tokenSymbol = tokenSymbols[i]
             else if (pd.token === '0x0000000000000000000000000000000000000000')
-              pd.token = 'ETH'
-            if (ensNodes[pd.donee])
-              pd.donee = ensNodes[pd.donee]
+              pd.tokenSymbol = 'ETH'
+            else
+              pd.tokenSymbol = pd.token
+            pd.doneeName = ensNodes[pd.donee] ? ensNodes[pd.donee] : pd.donee
             return pd
           }))
           setTokenSymbols(tempTokenSymbols)
