@@ -103,7 +103,8 @@ function TransactionScreen(props) {
     onClickOpen,
     currencySymbol,
     badgeInvisible,
-    txObjectExists
+    txObjectExists,
+    invalidCounterpartyExists
   } = props;
   const classes = useStyles()
 
@@ -206,14 +207,21 @@ function TransactionScreen(props) {
                 >
                   Cancel
                 </Button>
-                <Button
-                  onClick={onClickSend}
-                  variant="contained" size="medium" color="secondary"
-                  disabled={!txObjectExists || txSent}
+                <Tooltip
+                  title={invalidCounterpartyExists ? "Invalid counterparty" : ""}
+                  enterDelay={300}
                 >
-                  Send
-                  <SendIcon className={classes.rightIcon} />
-                </Button>
+                  <div> {/* div is here so tooltip works when button is disabled */}
+                    <Button
+                      onClick={onClickSend}
+                      variant="contained" size="medium" color="secondary"
+                      disabled={!txObjectExists || txSent || invalidCounterpartyExists}
+                    >
+                      Send
+                      <SendIcon className={classes.rightIcon} />
+                    </Button>
+                  </div>
+                </Tooltip>
               </div>
               {txSent && !txConfirmed && !txErrored && !txReverted && <div className={classes.status}>
                 <Typography variant="subtitle1">

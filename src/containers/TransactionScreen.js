@@ -63,7 +63,8 @@ function TransactionScreen(props) {
     onClickOpen,
     currencySymbol: currencySymbols[currency],
     badgeInvisible: (txObjects === null || txHashes !== null),
-    txObjectExists: txObjects !== null && txObjects.length > 0
+    txObjectExists: txObjects !== null && txObjects.length > 0,
+    invalidCounterpartyExists: counterparties.some(c => c.charAt(0) === '.')
   })
 }
 

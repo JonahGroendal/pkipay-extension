@@ -112,7 +112,7 @@ function Token(props) {
       parsedAmount.toFixed(2), " tokens for ",
       (parsedAmount * prices[orderType]).toFixed(2), " DAI",
       orderType === 'Subscribe (Buy Monthly)' ? " every month" : ""),
-    submitOrderButtonDisabled: parsedAmount <= 0 || (orderType === 'Sell' && reserves['DAI'] < parsedAmount),
+    submitOrderButtonDisabled: parsedAmount <= 0 || (orderType === 'Sell' && reserves['DAI'] < parsedAmount) || !domainName,
     submitOrderButtonLoading,
     withdrawAmount,
     onChangeWithdrawAmount: handleChangeWithdrawAmount,

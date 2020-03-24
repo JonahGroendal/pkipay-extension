@@ -29,7 +29,7 @@ function ClaimWebsiteCard({ onClickButton }) {
           <Typography variant="subtitle1">
             Is this your site?
           </Typography>
-          <Tooltip title={'claim ownership of this site'} enterDelay={300}>
+          <Tooltip title={'Claim ownership of this site'} enterDelay={300}>
             <div>
               <Button
                 onClick={onClickButton}

@@ -83,7 +83,7 @@ function Donate({ domainName, ...mapped }) {
     onChangeSchedule: setSchedule,
     onClickButton: handleClickButton,
     buttonText: buttonText[schedule],
-    buttonDisabled: (schedule === 'Monthly') || (token === 'tokens' && tokenAddress === ZERO_ADDRESS),
+    buttonDisabled: (schedule === 'Monthly') || (token === 'tokens' && tokenAddress === ZERO_ADDRESS) || !domainName,
     tooltip: tooltip(),
   })
 }
