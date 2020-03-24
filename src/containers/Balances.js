@@ -2,14 +2,16 @@ import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
 import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken } from '../api/blockchain'
+import { setTarget } from '../actions'
 
-function Balances({ address, tokens, txScreenOpen, tabIndex }) {
+function Balances({ onChangeIndex, address, tokens, txScreenOpen, tabIndex, setTarget }) {
   const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, tabIndex)
   const ethBalance = useEthBalance(address, txScreenOpen, tabIndex)
   const daiBalance = useDaiBalance(address, txScreenOpen, tabIndex)
 
   return React.createElement(PresentationalComponent, {
-    balances: [ethBalance, daiBalance, ...tokenBalances]
+    balances: [ethBalance, daiBalance, ...tokenBalances],
+    onClickBalance: address => {setTarget(address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeIndex(0)},
   })
 }
 
@@ -20,7 +22,14 @@ const mapStateToProps = state => ({
   tabIndex: state.pages.tabIndex
 })
 
-export default connect(mapStateToProps)(Balances)
+const mapDispatchToProps = dispatch => ({
+  setTarget: target => dispatch(setTarget(target))
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Balances)
 
 
 function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
@@ -89,7 +98,7 @@ function useEthBalance(address, txScreenOpen, tabIndex) {
 
 function useDaiBalance(address, txScreenOpen, tabIndex) {
   const [daiBalance, setDaiBalance] = React.useState({
-    name: 'Dai Stablecoin v1.0',
+    name: 'Dai Stablecoin',
     symbol: 'DAI',
     balance: 0
   })

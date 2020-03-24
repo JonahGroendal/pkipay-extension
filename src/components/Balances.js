@@ -26,7 +26,7 @@ const headerCells = [
   {label: 'Balance', width: '25%', sortable: true, cellProps: {key: 'balance', padding: 'default', numeric: true}},
 ]
 
-function Balances({ balances }) {
+function Balances({ balances, onClickBalance }) {
   const classes = useStyles()
   return (
     <Table
@@ -38,7 +38,15 @@ function Balances({ balances }) {
       titleComponent={<QRCodeScreen />}
     >
       {(holding, index) => (
-        <TableRow className={classes.tableRow} hover key={index}>
+        <TableRow
+          key={index}
+          className={classes.tableRow}
+          hover
+          onClick={() => {
+            if (holding.name.slice(-4) === '.eth' || holding.name.slice(-5) === '.test')
+              onClickBalance(holding.name)
+          }}
+        >
           <TableCell className={classes.tableCell}>
             <Tooltip title={holding.name}>
               <Typography variant="subtitle1">

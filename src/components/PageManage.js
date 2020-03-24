@@ -10,7 +10,7 @@ const NAV_HEIGHT = 104
 const PageManage = ({ subscription, onChangeIndex }) => (
   <Page height={appConfig.height - NAV_HEIGHT}>
     <Subscriptions onChangeIndex={onChangeIndex}/>
-    <Balances />
+    <Balances onChangeIndex={onChangeIndex}/>
     <PendingDonations />
   </Page>
 )
