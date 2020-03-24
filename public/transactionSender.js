@@ -16,7 +16,7 @@ api.runtime.onInstalled.addListener(function () {
       if (Date.now() - scheduledTx.when > 604800000) return;
       sendAll(scheduledTx.txs);
       // Notify user
-      chrome.notifications.create(alarm.name, {
+      api.notifications.create(alarm.name, {
         type: 'basic',
         iconUrl: 'icon16.png',
         title: 'PkiPay: Transaction',
