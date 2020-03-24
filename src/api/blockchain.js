@@ -190,7 +190,7 @@ export function createTxReclaimDonations(from, ensNode, tokenAddr) {
   return {
     from,
     to: escrow.options.address,
-    gas: 60000,
+    gas: 80000,
     data: escrow.methods.reclaim(tokenAddr, ensNode).encodeABI()
   }
 }
@@ -201,7 +201,7 @@ export function createTxReclaimDonationsETH(from, ensNode) {
   return {
     from,
     to: escrow.options.address,
-    gas: 30000,
+    gas: 50000,
     data: escrow.methods.reclaimETH(ensNode).encodeABI()
   }
 }
