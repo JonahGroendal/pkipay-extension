@@ -269,7 +269,7 @@ export async function getPriceOfETHInUSD() {
     console.log('getPriceOfETHInUSD')
   // Get the value `val` from the contract's private storage
   const hexValueOfVal = '0x'.concat((await web3js.eth.getStorageAt(contractAddrs.medianizer[chainId], 1)).slice(-32))
-  return parseInt(web3js.utils.fromWei(hexValueOfVal))
+  return parseFloat(web3js.utils.fromWei(hexValueOfVal))
 }
 
 export function domainNameToEnsName(domainName) {
