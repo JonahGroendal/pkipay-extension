@@ -24,7 +24,7 @@ const contractAddrs = {
   },
   medianizer: {
     1: '0x64DE91F5A373Cd4c28de3600cB34C7C6cE410C85',
-    42: '0x61232E4719f0709064a97C180C2d8802b742Ed08'
+    42: '0x0E30F0FC91FDbc4594b1e2E5d64E6F1f94cAB23D'
   }
 }
 
@@ -261,10 +261,12 @@ export async function createTxTransferETH(from, toEnsName, amount) {
   }
 }
 
+// This method no longer works because the Medianizer contract has been changed
+// to restrict who can call read() to a whitelist of addresses
 export async function getPriceOfETHInUSD() {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('getPriceOfETHInUSD')
-  return parseFloat(web3js.utils.fromWei(web3js.utils.hexToNumberString(await medianizer.methods.read().call())))
+  return parseFloat(web3js.utils.fromWei(await medianizer.methods.read().call()))
 }
 
 export function domainNameToEnsName(domainName) {

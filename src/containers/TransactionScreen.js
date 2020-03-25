@@ -69,24 +69,23 @@ function TransactionScreen(props) {
 }
 
 function useGasValues(txObjects) {
-  const init = { USD: 0, ETH: 0 }
-  const [gasValues, setGasValues] = React.useState(init)
+  const [isApproximation, setIsApproximation] = React.useState(0)
+  const [gasValueETH, setGasValueETH] = React.useState(0)
+  const [gasValueUSD, setGasValueUSD] = React.useState(0)
+
   React.useEffect(() => {
     if (txObjects === null) {
-      setGasValues(init);
-      return;
-    }
-    let isApproximation = false
-    Promise.all(txObjects.map(txObject => web3js.eth.estimateGas(txObject).catch(() => {
-      isApproximation = true;
-      return Number(txObject.gas)
-    })))
-    .then(gasEstimates => {
-      console.log(gasEstimates)
-      // cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
-      // cryptoCompare.price('ETH', 'USD')
-      getPriceOfETHInUSD()
-      .then(usdPerEth => {
+      setGasValueETH(0)
+      setGasValueUSD(0)
+    } else {
+      let isApprox = false
+      Promise.all(txObjects.map(txObject => web3js.eth.estimateGas(txObject).catch(() => {
+        isApprox = true;
+        return Number(txObject.gas)
+      })))
+      .then(gasEstimates => {
+        // cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
+        // cryptoCompare.price('ETH', 'USD')
         let gasPrice;
         return Promise.all(txObjects.map(txObject => {
           if (txObject.gasPrice)
@@ -97,23 +96,32 @@ function useGasValues(txObjects) {
         }))
         .then(gasPrices => {
           const gasValueETH = gasEstimates.map((ge, i) => parseFloat(web3js.utils.fromWei(web3js.utils.toBN(ge).mul(web3js.utils.toBN(gasPrices[i])).toString()))).reduce((acc, cur) => acc + cur, 0)
-          // const gasValueUSD = gasValueETH * currencyPerEth['USD']
-          const gasValueUSD = gasValueETH * usdPerEth
-          setGasValues({
-            ETH: gasValueETH,
-            USD: gasValueUSD,
-            isApproximation
+          setGasValueETH(gasValueETH)
+          setIsApproximation(isApprox)
+
+          getPriceOfETHInUSD()
+          .then(usdPerEth => {
+            setGasValueUSD(gasValueETH * usdPerEth)
+          })
+          .catch(error => {
+            setGasValueUSD(0)
+            console.error(error);
           })
         })
       })
-    })
-    .catch(error => {
-      setGasValues(init);
-      console.error(error);
-    })
+      .catch(error => {
+        setGasValueETH(0)
+        setGasValueUSD(0)
+        console.error(error);
+      })
+    }
   }, [txObjects])
 
-  return gasValues
+  return {
+    ETH: gasValueETH,
+    USD: gasValueUSD,
+    isApproximation
+  }
 }
 
 const mapStateToProps = state => ({

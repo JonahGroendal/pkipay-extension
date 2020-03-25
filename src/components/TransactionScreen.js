@@ -178,7 +178,7 @@ function TransactionScreen(props) {
                   {"Network fees:"}
                 </Typography>
                 <Typography variant="subtitle1">
-                  {(gasValueIsApproximation ? "<" : "") + (gasValueETH*1000).toFixed(3) + "mETH (" + currencySymbol + gasValue.toFixed(2) + ")"}
+                  {(gasValueIsApproximation ? "<" : "").concat((gasValueETH*1000).toFixed(3), "mETH", gasValue > 0 ? " (".concat(currencySymbol, gasValue.toFixed(2), ")") : "")}
                 </Typography>
               </div>
               <div className={classes.summaryRow}>
