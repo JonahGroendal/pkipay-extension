@@ -261,12 +261,15 @@ export async function createTxTransferETH(from, toEnsName, amount) {
   }
 }
 
-// This method no longer works because the Medianizer contract has been changed
-// to restrict who can call read() to a whitelist of addresses
+// Because the Medianizer contract has been changed to restrict who can call
+// read() to a whitelist of addresses, getStorageAt needs to be used to get
+// around the restriction
 export async function getPriceOfETHInUSD() {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('getPriceOfETHInUSD')
-  return parseFloat(web3js.utils.fromWei(await medianizer.methods.read().call()))
+  // Get the value `val` from the contract's private storage
+  const hexValueOfVal = '0x'.concat((await web3js.eth.getStorageAt(contractAddrs.medianizer[chainId], 1)).slice(-32))
+  return parseInt(web3js.utils.fromWei(hexValueOfVal))
 }
 
 export function domainNameToEnsName(domainName) {
