@@ -11,17 +11,17 @@ import {
   createTxWithdrawETH,
   addresses,
   getTokenInfo,
-  getTokenSaleInfo,
-  domainNameToEnsName
+  getTokenSaleInfo
 } from '../api/blockchain';
 import { connect } from 'react-redux'
 import { reviewTx, addSubscription, removeSubscription, setTabIndex, addToken } from '../actions'
+import { isEnsNode } from '../api/utils'
 
 const tokenOptions = ['DAI', 'ETH']
 const orderTypeOptions = ['Buy', 'Sell', 'Subscribe (Buy Monthly)']
 
 function Token(props) {
-  const { domainName, adminViewEnabled, ...mapped } = props;
+  const { ensAddress, adminViewEnabled, ...mapped } = props;
 
   const [amount, setAmount] = React.useState('');
   const parsedAmount = isNaN(amount) ? 0 : Number(amount);
@@ -29,8 +29,8 @@ function Token(props) {
   const [submitOrderButtonLoading, setSubmitOrderButtonLoading] = React.useState(false);
   const [withdrawAmount, setWithdrawAmount] = React.useState('');
   const [token, setToken] = React.useState(tokenOptions[0]);
-  const [totalSupply] = useTokenInfo(domainName, mapped.txScreenOpen);
-  const [buyPrice, sellPrice, reservesDAI/*, reservesETH*/] = useTokenSaleInfo(domainName, mapped.txScreenOpen);
+  const [totalSupply] = useTokenInfo(ensAddress, mapped.txScreenOpen);
+  const [buyPrice, sellPrice, reservesDAI/*, reservesETH*/] = useTokenSaleInfo(ensAddress, mapped.txScreenOpen);
 
   const prices = {
     'Buy': buyPrice,
@@ -56,14 +56,14 @@ function Token(props) {
     const numTokens = parseFloat(amount);
     switch (orderType) {
       case 'Buy':
-        return await mapped.onBuy(mapped.address, domainName, numTokens * buyPrice, numTokens);
+        return await mapped.onBuy(mapped.address, ensAddress, numTokens * buyPrice, numTokens);
       case 'Sell':
-        return await mapped.onSell(mapped.address, domainName, numTokens, numTokens * sellPrice);
+        return await mapped.onSell(mapped.address, ensAddress, numTokens, numTokens * sellPrice);
       case 'Subscribe (Buy Monthly)':
         setSubmitOrderButtonLoading(true);
-        if (mapped.subscriptions.filter(sub => sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '') === domainName).length > 0)
-          await mapped.onUnsubscribe(domainName, false)
-        await mapped.onSubscribe(domainName, numTokens * buyPrice);
+        if (mapped.subscriptions.filter(sub => sub.address === ensAddress).length > 0)
+          await mapped.onUnsubscribe(ensAddress, false)
+        await mapped.onSubscribe(ensAddress, numTokens * buyPrice);
         setSubmitOrderButtonLoading(false);
         mapped.onChangeTab(1);
         setAmount('');
@@ -74,17 +74,17 @@ function Token(props) {
   async function handleClickWithdraw() {
     const amount = parseFloat(withdrawAmount)
     if (token === 'ETH')
-      await mapped.onWithdrawETH(mapped.address, domainName, amount)
+      await mapped.onWithdrawETH(mapped.address, ensAddress, amount)
     else
-      await mapped.onWithdraw(mapped.address, domainName, addresses[token], amount, token)
+      await mapped.onWithdraw(mapped.address, ensAddress, addresses[token], amount, token)
   }
 
 
-
+  const domainName = ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')
   return React.createElement(PresentationalComponent, {
     adminViewEnabled,
     title: "Token",
-    subtitle: "A stablecoin backed by the credit of ".concat(domainName, "'s registrant."),
+    subtitle: isEnsNode(domainName) ? "" : "A stablecoin backed by the credit of ".concat(domainName, "'s registrant."),
     contract: `This is a vehicle for charitable investment, and, as such,
                will not yield a positive return on investment. The token issuer, the registrant of ${domainName},
                agrees to repurchase all tokens on-demand at a price no less
@@ -111,8 +111,9 @@ function Token(props) {
     submitOrderButtonTooltip: (orderType === 'Sell' ? "Sell " : "Buy ").concat(
       parsedAmount.toFixed(2), " tokens for ",
       (parsedAmount * prices[orderType]).toFixed(2), " DAI",
-      orderType === 'Subscribe (Buy Monthly)' ? " every month" : ""),
-    submitOrderButtonDisabled: parsedAmount <= 0 || (orderType === 'Sell' && reserves['DAI'] < parsedAmount) || !domainName,
+      orderType === 'Subscribe (Buy Monthly)' ? " every month" : ""
+    ),
+    submitOrderButtonDisabled: parsedAmount <= 0 || (orderType === 'Sell' && reserves['DAI'] < parsedAmount) || !ensAddress,
     submitOrderButtonLoading,
     withdrawAmount,
     onChangeWithdrawAmount: handleChangeWithdrawAmount,
@@ -124,34 +125,32 @@ function Token(props) {
   });
 }
 
-function useTokenInfo(domainName, txScreenOpen) {
+function useTokenInfo(ensAddress, txScreenOpen) {
   const [totalSupply, setTotalSupply] = React.useState(0);
 
   React.useEffect(() => {
-    if (domainName && !txScreenOpen) {
-      const ensName = domainNameToEnsName(domainName)
-      getTokenInfo(ensName).then(info => {
+    if (ensAddress && !txScreenOpen) {
+      getTokenInfo(ensAddress).then(info => {
         setTotalSupply(info.totalSupply)
       })
     } else {
       setTotalSupply(0);
     }
-  }, [domainName, txScreenOpen])
+  }, [ensAddress, txScreenOpen])
 
   return [totalSupply]
 }
 
-function useTokenSaleInfo(domainName, txScreenOpen) {
+function useTokenSaleInfo(ensAddress, txScreenOpen) {
   const [buyPrice, setBuyPrice] = React.useState(1);
   const [sellPrice, setSellPrice] = React.useState(1);
   const [reservesDAI, setReservesDAI] = React.useState(0);
   // const [reservesETH, setReservesETH] = React.useState(0);
 
   React.useEffect(() => {
-    if (domainName) {
+    if (ensAddress) {
       if (!txScreenOpen) {
-        const ensName = domainNameToEnsName(domainName)
-        getTokenSaleInfo(ensName).then(info => {
+        getTokenSaleInfo(ensAddress).then(info => {
           setBuyPrice(info.buyPrice);
           setSellPrice(info.sellPrice);
           setReservesDAI(info.reservesDAI);
@@ -164,7 +163,7 @@ function useTokenSaleInfo(domainName, txScreenOpen) {
       setReservesDAI(0);
       // setReservesETH(0);
     }
-  }, [domainName, txScreenOpen])
+  }, [ensAddress, txScreenOpen])
 
   return [buyPrice, sellPrice, reservesDAI/*, reservesETH*/]
 }
@@ -176,35 +175,31 @@ const mapStateToProps = state => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  onBuy: async (from, domainName, daiValue, amount) => {
-    const ensName = domainNameToEnsName(domainName)
+  onBuy: async (from, ensAddress, daiValue, amount) => {
     const txs = []
     const approved = await apiContractApproved(from)
     if (!approved)
       txs.push(createTxApproveApiContract(from))
-    txs.push(createTxBuyTokens(from, ensName, daiValue))
-    dispatch(addToken(ensName))
-    dispatch(reviewTx(txs, [ensName], [{ 'DAI': daiValue*-1, 'tokens': amount }]))
+    txs.push(createTxBuyTokens(from, ensAddress, daiValue))
+    dispatch(addToken(ensAddress))
+    dispatch(reviewTx(txs, [ensAddress], [{ 'DAI': daiValue*-1, 'tokens': amount }]))
   },
-  onSell: async (from, domainName, amount, daiValue) => {
-    const ensName = domainNameToEnsName(domainName)
-    const tokenAddr = await resolveToken(ensName, { usePublicResolver: true })
-    const tokenSaleAddr = await resolveTokenSale(ensName, { usePublicResolver: true })
+  onSell: async (from, ensAddress, amount, daiValue) => {
+    const tokenAddr = await resolveToken(ensAddress, { usePublicResolver: true })
+    const tokenSaleAddr = await resolveTokenSale(ensAddress, { usePublicResolver: true })
     const txs = await createTxSellToken(from, tokenAddr, tokenSaleAddr, amount)
-    dispatch(reviewTx(txs, [ensName], [{ 'DAI': daiValue, 'tokens': amount*-1 }]))
+    dispatch(reviewTx(txs, [ensAddress], [{ 'DAI': daiValue, 'tokens': amount*-1 }]))
   },
-  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsName(domainName), amount)),
-  onUnsubscribe: (domainName, reschedule) => dispatch(removeSubscription(domainNameToEnsName(domainName), reschedule)),
+  onSubscribe: (ensAddress, amount) => dispatch(addSubscription(ensAddress, amount)),
+  onUnsubscribe: (ensAddress, reschedule) => dispatch(removeSubscription(ensAddress, reschedule)),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex)),
-  onWithdraw: async (from, domainName, tokenAddr, amount, tokenSymbol) => {
-    const ensName = domainNameToEnsName(domainName)
-    const tx = await createTxWithdraw(from, tokenAddr, ensName, amount)
-    dispatch(reviewTx([tx], [ensName], [{ [tokenSymbol]: amount }]))
+  onWithdraw: async (from, ensAddress, tokenAddr, amount, tokenSymbol) => {
+    const tx = await createTxWithdraw(from, tokenAddr, ensAddress, amount)
+    dispatch(reviewTx([tx], [ensAddress], [{ [tokenSymbol]: amount }]))
   },
-  onWithdrawETH: async (from, domainName, amount) => {
-    const ensName = domainNameToEnsName(domainName)
-    const tx = await createTxWithdrawETH(from, ensName, amount)
-    dispatch(reviewTx([tx], [ensName], [{ 'ETH': amount }]))
+  onWithdrawETH: async (from, ensAddress, amount) => {
+    const tx = await createTxWithdrawETH(from, ensAddress, amount)
+    dispatch(reviewTx([tx], [ensAddress], [{ 'ETH': amount }]))
   }
 })
 

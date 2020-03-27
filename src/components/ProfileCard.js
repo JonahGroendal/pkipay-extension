@@ -6,6 +6,7 @@ import Avatar from '@material-ui/core/Avatar'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 // import getPixels from 'get-pixels'
+import { truncateForDisplay } from '../api/utils'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -79,7 +80,7 @@ function ProfileCard(props) {
             >
             </Avatar> :
             <Avatar style={{ height: 57, width: 57 }}>
-              { props.avatarLetter }
+              {props.displayName.slice(0, 2) === '0x' ? '0x' : props.displayName.charAt(0).toUpperCase()}
             </Avatar>
             /*<svg height="57" width="57">
               <style>
@@ -87,13 +88,13 @@ function ProfileCard(props) {
               </style>
               <circle cx="28" cy="28" r="28" fill="red" />
               <text text-anchor="middle" x="28" y="46" fill="white" class="heavy">
-                { avatarLetter }
+                { props.displayName.charAt(0).toUpperCase() }
               </text>
             </svg>*/}
           </div>
-          <Tooltip title={props.hostname} enterDelay={300}>
+          <Tooltip title={props.tooltipName} enterDelay={300}>
             <Typography variant="h4" align="center">
-              { props.displayName || String.fromCharCode('&nbsp') }
+              {truncateForDisplay(props.displayName, 18) || String.fromCharCode('&nbsp')}
             </Typography>
           </Tooltip>
           <div>

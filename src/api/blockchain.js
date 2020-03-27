@@ -71,14 +71,14 @@ export function createTxApproveApiContract(from, tokenAddr) {
   }
 }
 
-export function createTxDonate(from, tokenAddr, ensNames, amounts) {
+export function createTxDonate(from, tokenAddr, ensAddresses, amounts) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxDonate')
-  if (!Array.isArray(ensNames)) ensNames = [ensNames];
+  if (!Array.isArray(ensAddresses)) ensAddresses = [ensAddresses];
   if (!Array.isArray(amounts)) amounts = [amounts];
-  if (amounts.length !== ensNames.length)
+  if (amounts.length !== ensAddresses.length)
     throw new Error("Parallel arrays have unequal lengths")
-  const ensNodes = ensNames.map(namehash.hash)
+  const ensNodes = ensAddresses.map(toEnsNode)
   const values = amounts.map(amount => web3js.utils.toWei(amount.toString()))
 
   return {
@@ -89,34 +89,36 @@ export function createTxDonate(from, tokenAddr, ensNames, amounts) {
   }
 }
 
-export function createTxDonateETH(from, ensNames, amounts) {
+export function createTxDonateETH(from, ensAddresses, amounts) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxDonateETH')
-  if (!Array.isArray(ensNames)) ensNames = [ensNames];
+  if (!Array.isArray(ensAddresses)) ensAddresses = [ensAddresses];
   if (!Array.isArray(amounts)) amounts = [amounts];
-  if (amounts.length !== ensNames.length)
+  if (amounts.length !== ensAddresses.length)
     throw new Error("Parallel arrays have unequal lengths")
-  const ensNodes = ensNames.map(namehash.hash)
+  const ensNodes = ensAddresses.map(toEnsNode)
   const values = amounts.map(amount => web3js.utils.toWei(amount.toString()))
   const totalValue = web3js.utils.toWei(amounts.reduce((a, b) => a + b).toString())
 
   return {
     from,
     to: api.options.address,
-    gas: 60000 + (42000 * ensNames.length), // Exact calculation: 22655 + (40795 * length)
+    gas: 60000 + (42000 * ensNodes.length), // Exact calculation: 22655 + (40795 * length)
     value: totalValue,
     data: api.methods.multiDonateETH(ensNodes, values).encodeABI()
   }
 }
 
-export function createTxBuyTokens(from, ensNames, amounts) {
+export function createTxBuyTokens(from, ensAddresses, amounts) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxBuyTokens');
-  if (!Array.isArray(ensNames)) ensNames = [ensNames];
+  if (!Array.isArray(ensAddresses)) ensAddresses = [ensAddresses];
   if (!Array.isArray(amounts)) amounts = [amounts];
-  if (amounts.length !== ensNames.length)
+  if (amounts.length !== ensAddresses.length)
     throw new Error("Parallel arrays have unequal lengths")
-  const ensNodes = ensNames.map(namehash.hash)
+  const ensNodes = ensAddresses.map(toEnsNode)
+  console.log('ensAddresses', ensAddresses)
+  console.log('ensNodes', ensNodes)
   const weiValues = amounts.map(a => web3js.utils.toWei(a.toString()));
   return {
     from,
@@ -167,11 +169,11 @@ export async function createTxWithdraw(from, tokenAddr, tokenSaleEnsName, amount
   }
 }
 
-export async function createTxWithdrawETH(from, tokenSaleEnsName, amount) {
+export async function createTxWithdrawETH(from, tokenSaleEnsAddress, amount) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxWithdrawETH')
   const weiAmount = web3js.utils.toWei(amount.toString())
-  const ensNode = namehash.hash(tokenSaleEnsName)
+  const ensNode = toEnsNode(tokenSaleEnsAddress)
   const saleAddr = await resolver.methods.tokenSale(ensNode).call()
   if (saleAddr === '0x0000000000000000000000000000000000000000')
     throw new Error('Token sale does not exist');
@@ -206,10 +208,10 @@ export function createTxReclaimDonationsETH(from, ensNode) {
   }
 }
 
-export function createTxWithdrawDonations(from, tokenAddr, ensName, donors) {
+export function createTxWithdrawDonations(from, tokenAddr, ensAddress, donors) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxWithdrawDonations')
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   return {
     from,
     to: escrow.options.address,
@@ -218,10 +220,10 @@ export function createTxWithdrawDonations(from, tokenAddr, ensName, donors) {
   }
 }
 
-export function createTxWithdrawDonationsETH(from, ensName, donors) {
+export function createTxWithdrawDonationsETH(from, ensAddress, donors) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxWithdrawDonationsETH')
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   return {
     from,
     to: escrow.options.address,
@@ -276,11 +278,14 @@ export function domainNameToEnsName(domainName) {
   return domainName.concat('.', dnsRootEnsAddress)
 }
 
-export async function resolveAddress(ensName) {
+/**
+ * @param {string} ensAddress - The ENS name or ENS node of the token
+ */
+export async function resolveAddress(ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('resolveAddress')
   let resolvedAddr = '0x0000000000000000000000000000000000000000'
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   const ensResolverAddr = await ens.methods.resolver(ensNode).call()
   if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
     const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
@@ -290,14 +295,14 @@ export async function resolveAddress(ensName) {
 }
 
 /**
- * @param {string} ensName - The ENS address of the token
- * @returns {string|undefined} - The address of the token that ensName resolves to, or undefined if there's no resolver
+ * @param {string} ensAddress - The ENS name or ENS node of the token
+ * @returns {string|undefined} - The address of the token that ensAddress resolves to, or undefined if there's no resolver
  */
-export async function resolveToken(ensName, options={ usePublicResolver: false }) {
+export async function resolveToken(ensAddress, options={ usePublicResolver: false }) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('resolveToken')
   let address
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   if (options.usePublicResolver) {
     address = await resolver.methods.token(ensNode).call()
   } else {
@@ -311,14 +316,14 @@ export async function resolveToken(ensName, options={ usePublicResolver: false }
 }
 
 /**
- * @param {string} ensName - The ENS address of the token
- * @returns {string|undefined} - The address of the token sale that ensName resolves to, or undefined if there's no resolver
+ * @param {string} ensAddress - The ENS name or ENS node of the token
+ * @returns {string|undefined} - The address of the token sale that ensAddress resolves to, or undefined if there's no resolver
  */
-export async function resolveTokenSale(ensName, options={ usePublicResolver: false }) {
+export async function resolveTokenSale(ensAddress, options={ usePublicResolver: false }) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('resolveTokenSale')
   let address
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   if (options.usePublicResolver) {
     address = await resolver.methods.tokenSale(ensNode).call()
   } else {
@@ -338,10 +343,10 @@ export async function getTokenOwner(tokenAddr) {
   return await ownedContract.methods.owner().call();
 }
 
-export async function getEnsNodeOwner(ensName) {
+export async function getEnsNodeOwner(ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('getEnsNodeOwner')
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   return await ens.methods.owner(ensNode).call();
 }
 
@@ -369,10 +374,10 @@ export async function getPendingDonations(from) {
   return pendingDonations
 }
 
-export async function getPendingWithdrawals(ensName) {
+export async function getPendingWithdrawals(ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('getPendingWithdrawals')
-  const donee = namehash.hash(ensName)
+  const donee = toEnsNode(ensAddress)
   const donations = await escrow.getPastEvents('Donation', {
     filter: { donee },
     fromBlock: 0
@@ -431,6 +436,8 @@ export async function getTokenName(tokenAddr) {
 }
 
 export async function getTokenBalance(from, tokenAddr) {
+  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+    console.log('getTokenBalance')
   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
   const weiBalance = await token.methods.balanceOf(from).call()
   return parseFloat(web3js.utils.fromWei(weiBalance.toString()))
@@ -454,10 +461,10 @@ export async function registerAsDomainOwner(from, domainName) {
   }
 }
 
-export async function pointEnsNodeToResolver(from, ensName) {
+export async function pointEnsNodeToResolver(from, ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('pointEnsNodeToResolver')
-  const ensNode = namehash.hash(ensName) // domain.tld.dnsroot.eth
+  const ensNode = toEnsNode(ensAddress) // domain.tld.dnsroot.eth
   const currentResolver = await ens.methods.resolver(ensNode).call();
   if (currentResolver !== resolver.options.address) {
     // setResolver(bytes32 node, address resolver)
@@ -465,10 +472,10 @@ export async function pointEnsNodeToResolver(from, ensName) {
   }
 }
 
-export async function pointResolverAddrToTokenSale(from, ensName) {
+export async function pointResolverAddrToTokenSale(from, ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('pointResolverAddrToTokenSale')
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   let tokenSaleAddr = await resolver.methods.tokenSale(ensNode).call()
   if (tokenSaleAddr === '0x0000000000000000000000000000000000000000') {
     await resolver.methods.createTokenAndSale(ensNode).send({ from, gas: 400000 })
@@ -477,21 +484,21 @@ export async function pointResolverAddrToTokenSale(from, ensName) {
   await resolver.methods.setAddr(ensNode, tokenSaleAddr).send({ from, gas: 100000 })
 }
 
-export async function pointResolverAddrToSelf(from, ensName) {
+export async function pointResolverAddrToSelf(from, ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('pointResolverAddrToSelf')
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   await resolver.methods.setAddr(ensNode, from).send({ from, gas: 100000 })
 }
 
-export async function getTokenSaleInfo(ensName) {
+export async function getTokenSaleInfo(ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('getTokenSaleInfo')
   let buyPrice = 1
   let sellPrice = 1
   let reservesDAI = 0
   let reservesETH = 0
-  const node = namehash.hash(ensName)
+  const node = toEnsNode(ensAddress)
   const tokenSaleAddr = await resolver.methods.tokenSale(node).call()
   if (tokenSaleAddr !== '0x0000000000000000000000000000000000000000') {
     const tokenSale = new web3js.eth.Contract(TokenSale.abi, tokenSaleAddr)
@@ -505,11 +512,11 @@ export async function getTokenSaleInfo(ensName) {
   return { buyPrice, sellPrice, reservesDAI, reservesETH }
 }
 
-export async function getTokenInfo(ensName) {
+export async function getTokenInfo(ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('getTokenInfo')
   let totalSupply = 0
-  const ensNode = namehash.hash(ensName)
+  const ensNode = toEnsNode(ensAddress)
   const address = await resolver.methods.token(ensNode).call()
   if (address !== '0x0000000000000000000000000000000000000000') {
     const token = new web3js.eth.Contract(ERC20.abi, address)
@@ -553,10 +560,10 @@ export async function subscribeToDaiTransfer(from, onTransfer) {
   return subscription.unsubscribe;
 }
 
-export async function getTotalContributions(ensName, fromBlock = 0) {
+export async function getTotalContributions(ensAddress, fromBlock = 0) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('getTotalContributions')
-  const ensNode = namehash.hash(ensName);
+  const ensNode = toEnsNode(ensAddress)
 
   const donationEvents = await api.getPastEvents('Donation', {
     filter: { node: ensNode },
@@ -603,4 +610,41 @@ export async function timestampToBlockNum(msSinceUnixEpoch) {
   let fromBlock = Math.floor(currentBlockNum - secondsAgo/secondsPerBlock);
   if (fromBlock < 0) fromBlock = 0;
   return fromBlock
+}
+
+/**
+ * @returns {String[]} an array of ens nodes corresponding to tokens where `from` has a balance
+ */
+export async function scanForTokens(from) {
+  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+    console.log('scanForTokenBalances')
+  const events = await resolver.getPastEvents(
+    'TokenChanged',
+    { fromBlock: 'earliest', toBlock: 'latest' }
+  )
+  const ensNodes = events.map(event => event.returnValues.node)
+  const tokenAddrs = events.map(event => event.returnValues.token)
+  const weiBalances = await Promise.all(
+    tokenAddrs.map(tokenAddr => (
+      (new web3js.eth.Contract(ERC20.abi, tokenAddr)).methods.balanceOf(from).call()
+    ))
+  )
+  const tokenEnsNodes = []
+  weiBalances.forEach((weiBalance, i) => {
+    if (parseFloat(weiBalance.toString()) > 0) {
+      tokenEnsNodes.push(ensNodes[i])
+    }
+  })
+  return tokenEnsNodes
+}
+
+function toEnsNode(ensAddress) {
+  const isEnsNode = ensAddress.slice(0, 2) === '0x' && ensAddress.length === 66
+  const isEnsName = ensAddress.slice(-4) === '.eth' || ensAddress.slice(-5) === '.test'
+  if ((!isEnsNode && !isEnsName) || (isEnsNode && isEnsName))
+    throw new Error("The ensAddress parameter must be either an ENS node or an ENS name")
+
+  if (isEnsName)
+    return namehash.hash(ensAddress)
+  return ensAddress
 }

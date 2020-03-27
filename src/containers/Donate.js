@@ -8,7 +8,7 @@ import {
   createTxDonate,
   createTxDonateETH,
   addresses,
-  domainNameToEnsName,
+  // domainNameToEnsName,
   // resolveAddress,
   resolveToken
 } from '../api/blockchain'
@@ -21,14 +21,14 @@ const buttonText = {
   'Monthly': 'Subscribe'
 }
 
-function Donate({ domainName, ...mapped }) {
+function Donate({ ensAddress, ...mapped }) {
   const [amount, setAmount] = React.useState('')
   const [error, setError] = React.useState(false);
   const parsedAmount = isNaN(amount)
     ? 0
     : Number(amount)
   // const address = useEnsResolver(domainName)
-  const tokenAddress = useEnsTokenResolver(domainName)
+  const tokenAddress = useEnsTokenResolver(ensAddress)
   const tokenOptions = [...Object.keys(addresses)]
   const tokenAddresses = { ...addresses }
   if (tokenAddress !== ZERO_ADDRESS) {
@@ -52,9 +52,9 @@ function Donate({ domainName, ...mapped }) {
     else {
       if (schedule === 'Once') {
         if (token === 'ETH')
-          mapped.onDonateETH(mapped.address, domainName, parsedAmount)
+          mapped.onDonateETH(mapped.address, ensAddress, parsedAmount)
         else
-          mapped.onDonate(mapped.address, domainName, parsedAmount, addresses[token], token)
+          mapped.onDonate(mapped.address, ensAddress, parsedAmount, addresses[token], token)
       }
       else if (schedule === 'Monthly') {
         // TODO
@@ -63,12 +63,12 @@ function Donate({ domainName, ...mapped }) {
   }
 
   function tooltip() {
-    if (!domainName)
+    if (!ensAddress)
       return ''
     else if (schedule === 'Monthly')
       return "Feature coming soon"
     else
-      return "Donate ".concat(parsedAmount.toFixed(2), " ", token, " to ", domainName)
+      return "Donate ".concat(parsedAmount.toFixed(2), " ", token, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''))
   }
 
   return React.createElement(PresentationalComponent, {
@@ -83,7 +83,7 @@ function Donate({ domainName, ...mapped }) {
     onChangeSchedule: setSchedule,
     onClickButton: handleClickButton,
     buttonText: buttonText[schedule],
-    buttonDisabled: (schedule === 'Monthly') || (token === 'tokens' && tokenAddress === ZERO_ADDRESS) || !domainName,
+    buttonDisabled: (schedule === 'Monthly') || (token === 'tokens' && tokenAddress === ZERO_ADDRESS) || !ensAddress,
     tooltip: tooltip(),
   })
 }
@@ -102,18 +102,18 @@ function Donate({ domainName, ...mapped }) {
 //   return address
 // }
 
-function useEnsTokenResolver(domainName) {
+function useEnsTokenResolver(ensAddress) {
   const [tokenAddress, setTokenAddress] = React.useState(ZERO_ADDRESS)
   React.useEffect(() => {
-    if (domainName) {
-      resolveToken(domainNameToEnsName(domainName))
+    if (ensAddress) {
+      resolveToken(ensAddress)
       .then(setTokenAddress)
       .catch(() => {
         // No resolver set
         setTokenAddress(ZERO_ADDRESS)
       })
     }
-  }, [domainName])
+  }, [ensAddress])
   return tokenAddress
 }
 
@@ -122,23 +122,21 @@ const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = (dispatch) => ({
-  onDonate: async (from, domainName, amount, tokenAddr, tokenSymbol) => {
-    const ensName = domainNameToEnsName(domainName)
-    dispatch(addCounterparty(ensName))
+  onDonate: async (from, ensAddress, amount, tokenAddr, tokenSymbol) => {
+    dispatch(addCounterparty(ensAddress))
     const txs = []
     const approved = await apiContractApproved(from, tokenAddr)
     if (!approved)
       txs.push(createTxApproveApiContract(from, tokenAddr))
-    txs.push(createTxDonate(from, tokenAddr, ensName, amount))
-    dispatch(reviewTx(txs, [ensName], [{ [tokenSymbol]: amount*-1 }]))
+    txs.push(createTxDonate(from, tokenAddr, ensAddress, amount))
+    dispatch(reviewTx(txs, [ensAddress], [{ [tokenSymbol]: amount*-1 }]))
   },
-  onDonateETH: (from, domainName, amount) => {
-    const ensName = domainNameToEnsName(domainName)
-    dispatch(addCounterparty(ensName))
-    const tx = createTxDonateETH(from, ensName, amount)
-    dispatch(reviewTx([tx], [ensName], [{ 'ETH': amount*-1 }]))
+  onDonateETH: (from, ensAddress, amount) => {
+    dispatch(addCounterparty(ensAddress))
+    const tx = createTxDonateETH(from, ensAddress, amount)
+    dispatch(reviewTx([tx], [ensAddress], [{ 'ETH': amount*-1 }]))
   },
-  onSubscribe: (domainName, amount) => dispatch(addSubscription(domainNameToEnsName(domainName), amount)),
+  onSubscribe: (ensAddress, amount) => dispatch(addSubscription(ensAddress, amount)),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
 })
 

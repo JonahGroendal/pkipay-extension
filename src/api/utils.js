@@ -15,3 +15,15 @@ export function truncateForDisplay(str, maxLen) {
     return str
   }
 }
+
+export const isEnsName = str => (
+  !!str && (str.slice(-4) === '.eth' || str.slice(-5) === '.test')
+)
+
+export const isDomainName = str => (
+  !!str && str.includes('.') && !isEnsName(str)
+)
+
+export const isEnsNode = str => (
+  !!str && str.slice(0, 2) === '0x' && str.length === 66
+)

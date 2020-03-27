@@ -3,25 +3,23 @@ import PresentationalComponent from '../components/ProfileCard'
 import { connect } from 'react-redux'
 import {
   getTotalContributions,
-  domainNameToEnsName,
   getPriceOfETHInUSD,
   addresses
 } from '../api/blockchain'
 import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function ProfileCard({ hostname, currency, txScreenOpen, square }) {
-  const domainName = hostname.split('.').slice(-2).join('.')
+function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square }) {
   const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
   const [largeFaviconExists, setLargeFaviconExists] = React.useState(false)
   const [totalDonations, setTotalDonations] = React.useState(0)
   const [totalDonationsOneMonth, setTotalDonationsOneMonth] = React.useState(0)
 
   React.useEffect(() => {
-    if (domainName) {
+    if (ensAddress) {
       if (!txScreenOpen) {
         Promise.all([
-          getTotalContributions(domainNameToEnsName(domainName)),
+          getTotalContributions(ensAddress),
           getPriceOfETHInUSD()
         ])
         .then(([contribs, ethPrice]) => {
@@ -120,19 +118,18 @@ function ProfileCard({ hostname, currency, txScreenOpen, square }) {
   // let siteUrl = ''
   // if (parts.length >= 2)
   //   siteUrl = hostname.includes("#") ? hostname : parts[parts.length-2]+'.'+parts[parts.length-1]
-  const truncate = (str, len) => Array.from(str.substring(0, len)).map((c, i) => i!==len-1 ? c : String.fromCharCode(8230)).join('')
+  // const truncate = (str, len) => Array.from(str.substring(0, len)).map((c, i) => i!==len-1 ? c : String.fromCharCode(8230)).join('')
 
   return React.createElement(PresentationalComponent, {
     hostname,
     square,
     largeFaviconExists,
     setLargeFaviconExists,
-    domainName,
     totalDonations,
     totalDonationsOneMonth,
     faviconUrl,
-    displayName: truncate(domainName, 23),
-    avatarLetter: domainName.charAt(0).toUpperCase(),
+    displayName: ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''),
+    tooltipName: ensAddress,
     currencySymbol: currencySymbols[currency],
   })
 }

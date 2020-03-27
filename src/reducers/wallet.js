@@ -3,7 +3,8 @@ const initialState = {
   tokens: [],
   counterparties: [],
   keystore: [],
-  defaultAccount: -1
+  defaultAccount: -1,
+  tokenScanComplete: false
 }
 
 function wallet(state=initialState, action) {
@@ -54,6 +55,11 @@ function wallet(state=initialState, action) {
       return {
         ...state,
         counterparties: state.counterparties.filter(address => address !== action.payload.address)
+      }
+    case 'TOKEN_SCAN_COMPLETE':
+      return {
+        ...state,
+        tokenScanComplete: true
       }
     default:
       return state

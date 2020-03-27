@@ -125,6 +125,10 @@ export const addToken = (address) => ({
   }
 })
 
+export const completeTokenScan = () => ({
+  type: 'TOKEN_SCAN_COMPLETE'
+})
+
 export const removeToken = (address) => ({
   type: 'REMOVE_TOKEN',
   payload: {

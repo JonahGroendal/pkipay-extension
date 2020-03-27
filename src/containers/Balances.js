@@ -1,13 +1,35 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
-import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken } from '../api/blockchain'
-import { setTarget } from '../actions'
+import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken, scanForTokens } from '../api/blockchain'
+import { setTarget, addToken, completeTokenScan } from '../actions'
 
-function Balances({ onChangeIndex, address, tokens, txScreenOpen, tabIndex, setTarget }) {
+function Balances(props) {
+  const {
+    onChangeIndex,
+    address,
+    tokens,
+    addToken,
+    tokenScanComplete,
+    completeTokenScan,
+    txScreenOpen,
+    tabIndex,
+    setTarget
+  } = props
+
   const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, tabIndex)
   const ethBalance = useEthBalance(address, txScreenOpen, tabIndex)
   const daiBalance = useDaiBalance(address, txScreenOpen, tabIndex)
+
+  React.useEffect(() => {
+    if (!tokenScanComplete && address) {
+      scanForTokens(address)
+      .then(tokenAddrs => {
+        tokenAddrs.forEach(addToken)
+        completeTokenScan()
+      })
+    }
+  }, [address])
 
   return React.createElement(PresentationalComponent, {
     balances: [ethBalance, daiBalance, ...tokenBalances],
@@ -18,12 +40,15 @@ function Balances({ onChangeIndex, address, tokens, txScreenOpen, tabIndex, setT
 const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount],
   tokens: state.wallet.tokens,
+  tokenScanComplete: state.wallet.tokenScanComplete,
   txScreenOpen: state.transactionScreen.isOpen,
   tabIndex: state.pages.tabIndex
 })
 
 const mapDispatchToProps = dispatch => ({
-  setTarget: target => dispatch(setTarget(target))
+  setTarget: target => dispatch(setTarget(target)),
+  addToken: tokenAddr => dispatch(addToken(tokenAddr)),
+  completeTokenScan: () => dispatch(completeTokenScan())
 })
 
 export default connect(
@@ -36,7 +61,7 @@ function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
   const [tokenBalances, setTokenBalances] = React.useState([])
   React.useEffect(() => {
     if (!txScreenOpen && address && tabIndex === 1) {
-      Promise.all(tokens.map(ensName => resolveToken(ensName, { usePublicResolver: true })))
+      Promise.all(tokens.map(ensAddress => resolveToken(ensAddress, { usePublicResolver: true })))
       .then(tokenAddrs => {
         return Promise.all(tokenAddrs.map(tokenAddr => (
           (tokenAddr && tokenAddr !== '0x0000000000000000000000000000000000000000')
@@ -75,7 +100,7 @@ function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
         setTokenBalances(tokenDetailsObjs)
       })
     }
-  }, [txScreenOpen, address, tabIndex])
+  }, [txScreenOpen, address, tabIndex, tokens])
 
   return tokenBalances
 }

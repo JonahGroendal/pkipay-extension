@@ -18,6 +18,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import DoneIcon from '@material-ui/icons/Done';
 import ErrorIcon from '@material-ui/icons/Error';
 import Badge from '@material-ui/core/Badge';
+import { truncateForDisplay } from '../api/utils'
 
 const useStyles = makeStyles(theme => ({
   contentRoot: {},
@@ -165,7 +166,7 @@ function TransactionScreen(props) {
                       ))}
                     </div>
                     <Tooltip title={to} enterDelay={300}>
-                      <ListItemText primary={Array.from(to.replace('.dnsroot.eth', '').replace('.dnsroot.test', '').substring(0, 17)).map((c, i) => i!==16 ? c : String.fromCharCode(8230)).join('')} />
+                      <ListItemText primary={truncateForDisplay(to.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), 18)} />
                     </Tooltip>
                   </ListItem>
                 ))}

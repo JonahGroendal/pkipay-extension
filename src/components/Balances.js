@@ -6,7 +6,7 @@ import TableRow from '@material-ui/core/TableRow'
 import TableCell from '@material-ui/core/TableCell'
 import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
-import { truncateForDisplay } from '../api/utils'
+import { truncateForDisplay, isEnsName, isEnsNode } from '../api/utils'
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -26,6 +26,7 @@ const headerCells = [
   {label: 'Balance', width: '25%', sortable: true, cellProps: {key: 'balance', padding: 'default', numeric: true}},
 ]
 
+
 function Balances({ balances, onClickBalance }) {
   const classes = useStyles()
   return (
@@ -43,14 +44,14 @@ function Balances({ balances, onClickBalance }) {
           className={classes.tableRow}
           hover
           onClick={() => {
-            if (holding.name.slice(-4) === '.eth' || holding.name.slice(-5) === '.test')
+            if (isEnsName(holding.name) || isEnsNode(holding.name))
               onClickBalance(holding.name)
           }}
         >
           <TableCell className={classes.tableCell}>
             <Tooltip title={holding.name}>
               <Typography variant="subtitle1">
-                {truncateForDisplay(holding.name, 30)}
+                {truncateForDisplay(holding.name.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), 16)}
               </Typography>
             </Tooltip>
           </TableCell>

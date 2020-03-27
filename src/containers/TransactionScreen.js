@@ -68,6 +68,33 @@ function TransactionScreen(props) {
   })
 }
 
+const mapStateToProps = state => ({
+  isOpen:         state.transactionScreen.isOpen,
+  counterparties: state.transactionScreen.counterparties,
+  values:         state.transactionScreen.values,
+  txHashes:       state.transactionScreen.txHashes,
+  txError:        state.transactionScreen.txError,
+  txReverted:     state.transactionScreen.txReverted,
+  txConfirmed:    state.transactionScreen.txConfirmed,
+  txObjects:      state.transactionScreen.txObjects,
+  currency:       state.settings['Currency'],
+})
+
+const mapDispatchToProps = (dispatch, ownProps) => ({
+  onSend: txObjects => dispatch(sendTx(txObjects)),
+  onClickCancel: () => dispatch(cancelTx()),
+  onClickClose: () => dispatch(closeTx()),
+  onClickOpen: () => dispatch(openTx()),
+  onTxConfirmation: () => dispatch(txConfirmed()),
+  onTxRevert: () => dispatch(txReverted())
+})
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(TransactionScreen)
+
+
 function useGasValues(txObjects) {
   const [isApproximation, setIsApproximation] = React.useState(0)
   const [gasValueETH, setGasValueETH] = React.useState(0)
@@ -123,29 +150,3 @@ function useGasValues(txObjects) {
     isApproximation
   }
 }
-
-const mapStateToProps = state => ({
-  isOpen:         state.transactionScreen.isOpen,
-  counterparties: state.transactionScreen.counterparties,
-  values:         state.transactionScreen.values,
-  txHashes:       state.transactionScreen.txHashes,
-  txError:        state.transactionScreen.txError,
-  txReverted:     state.transactionScreen.txReverted,
-  txConfirmed:    state.transactionScreen.txConfirmed,
-  txObjects:      state.transactionScreen.txObjects,
-  currency:       state.settings['Currency'],
-})
-
-const mapDispatchToProps = (dispatch, ownProps) => ({
-  onSend: txObjects => dispatch(sendTx(txObjects)),
-  onClickCancel: () => dispatch(cancelTx()),
-  onClickClose: () => dispatch(closeTx()),
-  onClickOpen: () => dispatch(openTx()),
-  onTxConfirmation: () => dispatch(txConfirmed()),
-  onTxRevert: () => dispatch(txReverted())
-})
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(TransactionScreen)

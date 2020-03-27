@@ -9,6 +9,7 @@ import Donate from '../containers/Donate'
 import ClaimWebsiteCard from './ClaimWebsiteCard'
 import Typography from '@material-ui/core/Typography'
 import Switch from '@material-ui/core/Switch'
+import { isEnsNode } from '../api/utils'
 
 const NAV_HEIGHT = 104
 
@@ -33,8 +34,8 @@ const useStyles = makeStyles(theme => ({
 function PageProfile(props) {
   const {
     hostname,
-    domainName,
-    domainOwner,
+    ensAddress,
+    ensAddressOwner,
     address,
     pendingWithdrawals,
     setPendingWithdrawals,
@@ -42,7 +43,7 @@ function PageProfile(props) {
   } = props
   const classes = useStyles();
 
-  const showAdminViewOption = (domainOwner === address)
+  const showAdminViewOption = (ensAddressOwner === address)
   let [adminViewEnabled, setAdminViewEnabled] = React.useState(true)
   adminViewEnabled = adminViewEnabled && showAdminViewOption
 
@@ -79,6 +80,7 @@ function PageProfile(props) {
         <div className={classes.profileCardContainerRel}>
           <div ref={profileCardRef} className={classes.profileCardContainerAbs}>
             <ProfileCard
+              ensAddress={ensAddress}
               hostname={hostname}
               square={true}
             />
@@ -87,10 +89,10 @@ function PageProfile(props) {
         <Page height={appConfig.height - NAV_HEIGHT - adminViewRenderHeight}>
           <div style={{ height: profileCardRenderHeight }}></div>
           {!adminViewEnabled && (
-            <Donate domainName={domainName} />
+            <Donate ensAddress={ensAddress} />
           )}
           <div>
-            {!!domainName && (isZero(domainOwner) || pendingWithdrawalsExist) && (
+            {!!ensAddress && !isEnsNode(ensAddress) && (isZero(ensAddressOwner) || pendingWithdrawalsExist) && (
               <ClaimWebsiteCard
                 onClickButton={() => setDnsChalScreenOpen(true)}
               />
@@ -99,12 +101,12 @@ function PageProfile(props) {
               open={dnsChalScreenOpen}
               onClose={() => setDnsChalScreenOpen(false)}
               onOpen={() => setDnsChalScreenOpen(true)}
-              domainOwner={domainOwner}
+              ensAddressOwner={ensAddressOwner}
               pendingWithdrawals={pendingWithdrawals}
               setPendingWithdrawals={setPendingWithdrawals}
             />
           </div>
-          <Token domainName={domainName} adminViewEnabled={adminViewEnabled}/>
+          <Token ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>
         </Page>
       </div>
     </div>
