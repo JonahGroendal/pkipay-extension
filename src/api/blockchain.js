@@ -11,11 +11,11 @@ import OwnedByENSNode from 'pkipay-blockchain/build/contracts/OwnedByENSNode.jso
 import ERC20 from 'pkipay-blockchain/build/contracts/ERC20.json'
 import ERC20DetailedString from 'pkipay-blockchain/build/contracts/ERC20DetailedString.json'
 import ERC20DetailedBytes32 from 'pkipay-blockchain/build/contracts/ERC20DetailedBytes32.json'
-import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
-import X509ForestOfTrust from 'x509-forest-of-trust/build/contracts/X509ForestOfTrust.json'
+// import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
+// import X509ForestOfTrust from 'x509-forest-of-trust/build/contracts/X509ForestOfTrust.json'
 import ENSRegistry from '@ensdomains/ens/build/contracts/ENSRegistry.json'
 import IExchangeRates from 'pkipay-blockchain/build/contracts/IExchangeRates.json'
-import IMedianizer from 'pkipay-blockchain/build/contracts/IMedianizer.json'
+// import IMedianizer from 'pkipay-blockchain/build/contracts/IMedianizer.json'
 
 const contractAddrs = {
   dai: {
@@ -38,7 +38,7 @@ const api = new web3js.eth.Contract(API.abi, API.networks[chainId].address);
 const escrow = new web3js.eth.Contract(ENSDonationEscrow.abi, ENSDonationEscrow.networks[chainId].address);
 const ens = new web3js.eth.Contract(ENSRegistry.abi, ENSRegistry.networks[chainId].address);
 const dai = new web3js.eth.Contract(ERC20.abi, contractAddrs.dai[chainId]);
-const medianizer = new web3js.eth.Contract(IMedianizer.abi, contractAddrs.medianizer[chainId])
+// const medianizer = new web3js.eth.Contract(IMedianizer.abi, contractAddrs.medianizer[chainId])
 
 const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
   ? 'dnsroot.eth'

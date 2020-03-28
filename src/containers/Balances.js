@@ -1,8 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
-import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken, scanForTokens } from '../api/blockchain'
-import { setTarget, addToken, completeTokenScan } from '../actions'
+import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken, scanForTokens, domainNameToEnsName } from '../api/blockchain'
+import { setTarget, addToken, removeToken, completeTokenScan } from '../actions'
+import { isDomainName } from '../api/utils'
+import namehash from 'eth-ens-namehash'
 
 function Balances(props) {
   const {
@@ -14,6 +16,7 @@ function Balances(props) {
     completeTokenScan,
     txScreenOpen,
     tabIndex,
+    target,
     setTarget
   } = props
 
@@ -21,6 +24,7 @@ function Balances(props) {
   const ethBalance = useEthBalance(address, txScreenOpen, tabIndex)
   const daiBalance = useDaiBalance(address, txScreenOpen, tabIndex)
 
+  // If the app's data get's wiped, this will run once to look for tokens
   React.useEffect(() => {
     if (!tokenScanComplete && address) {
       scanForTokens(address)
@@ -30,6 +34,20 @@ function Balances(props) {
       })
     }
   }, [address])
+
+  // In case the ENS names of some tokens are not known (but only its namehash
+  // is known), as is the case after the above useEffect hook runs, this method
+  // will check if the current target is a token
+  React.useEffect(() => {
+    if (target && isDomainName(target)) {
+      const ensName = domainNameToEnsName(target.split('.').slice(-2).join('.'))
+      const ensNode = namehash.hash(ensName)
+      if (tokens.includes(ensNode)) {
+        addToken(ensName)
+        removeToken(ensNode)
+      }
+    }
+  }, [target, tokens])
 
   return React.createElement(PresentationalComponent, {
     balances: [ethBalance, daiBalance, ...tokenBalances],
@@ -42,12 +60,14 @@ const mapStateToProps = state => ({
   tokens: state.wallet.tokens,
   tokenScanComplete: state.wallet.tokenScanComplete,
   txScreenOpen: state.transactionScreen.isOpen,
-  tabIndex: state.pages.tabIndex
+  tabIndex: state.pages.tabIndex,
+  target: state.target
 })
 
 const mapDispatchToProps = dispatch => ({
   setTarget: target => dispatch(setTarget(target)),
   addToken: tokenAddr => dispatch(addToken(tokenAddr)),
+  removeToken: tokenAddr => dispatch(removeToken(tokenAddr)),
   completeTokenScan: () => dispatch(completeTokenScan())
 })
 

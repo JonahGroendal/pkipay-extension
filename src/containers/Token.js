@@ -68,6 +68,9 @@ function Token(props) {
         mapped.onChangeTab(1);
         setAmount('');
         setOrderType(orderTypeOptions[0]);
+        break;
+      default:
+        // pass
     }
   }
 
