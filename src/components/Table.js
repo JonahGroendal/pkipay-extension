@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { makeStyles } from '@material-ui/styles'
 import MuiTable from '@material-ui/core/Table'
 import TableRow from '@material-ui/core/TableRow'
@@ -76,18 +75,20 @@ function sort(data, order, orderBy, fixedIndices) {
 function Table(props) {
   const {
     children,
-    title,
-    subtitle,
+    title='',
+    subtitle='',
     headerCells,
     rowsData,
-    fixedIndices,
-    rowsPerPage,
+    fixedIndices=[],
+    rowsPerPage=4,
     highlightedRowIndex,
-    titleComponent
+    titleComponent,
+    initOrder='desc',
+    initOrderBy
   } = props
   const classes = useStyles()
-  const [order, setOrder] = React.useState(props.initOrder)
-  const [orderBy, setOrderBy] = React.useState(props.initOrderBy)
+  const [order, setOrder] = React.useState(initOrder)
+  const [orderBy, setOrderBy] = React.useState(initOrderBy)
   const rowsDataSorted = sort(rowsData, order, orderBy, fixedIndices)
   const [page, setPage] = React.useState(0)
   const stortedIndex = rowsDataSorted.findIndex(row => row === rowsData[highlightedRowIndex])
@@ -199,23 +200,6 @@ function Table(props) {
       />
     </Paper>
   )
-}
-
-Table.propTypes = {
-  children: PropTypes.func.isRequired, //render prop
-  fixedIndices: PropTypes.array.isRequired,
-  headerCells: PropTypes.array.isRequired,
-  title: PropTypes.string,
-  subtitle: PropTypes.string,
-  rowsPerPage: PropTypes.number,
-}
-
-Table.defaultProps = {
-  fixedIndices: [],
-  initOrder: 'desc',
-  rowsPerPage: 4,
-  title: '',
-  subtitle: '',
 }
 
 export default Table
