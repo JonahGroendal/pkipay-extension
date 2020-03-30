@@ -27,6 +27,8 @@ function QRCodeScreen({ address, onCopy: handleCopy }) {
   return (
     <div>
       <Button
+        variant="outlined"
+        size="small"
         onClick={() => setIsOpen(!isOpen)}
       >
         Add funds

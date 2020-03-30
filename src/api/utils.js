@@ -1,6 +1,6 @@
 export function truncateForDisplay(str, maxLen) {
   if (str.length > maxLen) {
-    if (str.slice(0, 2) === '0x') {
+    if (str.slice(0, 2) === '0x' && str.length === 66) {
       // discard middle of string
       const numBeginChars = parseInt(maxLen/2)
       const numEndChars = maxLen - numBeginChars - 1

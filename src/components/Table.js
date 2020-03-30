@@ -29,6 +29,13 @@ const useStyles = makeStyles(theme => ({
   tableRowHead: {
     height: theme.spacing(4)
   },
+  titleComponentsContainer: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+  titleComponentContainer: {
+    marginLeft: theme.spacing(2)
+  },
   tableRow: {
     height: theme.spacing(5)
   },
@@ -82,7 +89,7 @@ function Table(props) {
     fixedIndices=[],
     rowsPerPage=4,
     highlightedRowIndex,
-    titleComponent,
+    titleComponents=[],
     initOrder='desc',
     initOrderBy
   } = props
@@ -118,7 +125,7 @@ function Table(props) {
   const classCellNumericLast = classNames(classes.tableCell, classes.tableCellNumeric, classes.tableCellLast)
   return (
     <Paper>
-      {(!!title || !!subtitle || !!titleComponent) && <Toolbar className={classes.toolbar}>
+      {(!!title || !!subtitle || titleComponents.length > 0) && <Toolbar className={classes.toolbar}>
         <div className={classes.title}>
           <Typography variant="h6" id="tabletitle">
             {title}
@@ -127,8 +134,12 @@ function Table(props) {
             {subtitle}
           </Typography> : false}
         </div>
-        <div>
-          {titleComponent}
+        <div className={classes.titleComponentsContainer}>
+          {titleComponents.map((titleComponent, i) => (
+            <div key={i} className={classes.titleComponentContainer}>
+              {titleComponent}
+            </div>
+          ))}
         </div>
       </Toolbar>}
       <MuiTable className={classes.table} padding="none" aria-labelledby="tableTitle">

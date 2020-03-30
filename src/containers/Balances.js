@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
 import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken, scanForTokens, domainNameToEnsName } from '../api/blockchain'
 import { setTarget, addToken, removeToken, completeTokenScan } from '../actions'
-import { isDomainName } from '../api/utils'
+import { isDomainName, isEnsName, isEnsNode } from '../api/utils'
 import namehash from 'eth-ens-namehash'
 
 function Balances(props) {
@@ -23,6 +23,8 @@ function Balances(props) {
   const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, tabIndex)
   const ethBalance = useEthBalance(address, txScreenOpen, tabIndex)
   const daiBalance = useDaiBalance(address, txScreenOpen, tabIndex)
+
+  const [dexScreenOpen, setDexScreenOpen] = React.useState(false)
 
   // If the app's data get's wiped, this will run once to look for tokens
   React.useEffect(() => {
@@ -51,7 +53,18 @@ function Balances(props) {
 
   return React.createElement(PresentationalComponent, {
     balances: [ethBalance, daiBalance, ...tokenBalances],
-    onClickBalance: address => {setTarget(address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeIndex(0)},
+    onClickBalance: name => {
+      if (name === 'Ether' || name === "Dai Stablecoin") {
+        setDexScreenOpen(true)
+      }
+      else if (isEnsName(name) || isEnsNode(name)) {
+        setTarget(name.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''))
+        onChangeIndex(0)
+      }
+    },
+    onClickExchange: () => setDexScreenOpen(true),
+    dexScreenOpen,
+    onCloseDexScreen: () => setDexScreenOpen(false)
   })
 }
 

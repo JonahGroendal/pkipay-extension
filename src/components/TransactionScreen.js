@@ -77,9 +77,13 @@ const useStyles = makeStyles(theme => ({
     flexDirection: 'column',
     width: theme.spacing(19),
   },
+  listItemRight: {
+    maxWidth: theme.spacing(21)
+  },
   listItemValue: {
     display: 'flex',
-    flexDirection: 'row'
+    flexDirection: 'row',
+    textAlign: 'center'
   },
   rightIcon: {
     marginLeft: theme.spacing(1),
@@ -165,9 +169,11 @@ function TransactionScreen(props) {
                         </div>
                       ))}
                     </div>
-                    <Tooltip title={to} enterDelay={300}>
-                      <ListItemText primary={truncateForDisplay(to.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), 18)} />
-                    </Tooltip>
+                    <div className={classes.listItemRight}>
+                      <Tooltip title={to} enterDelay={300}>
+                        <Typography align="center">{truncateForDisplay(to.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), 50)}</Typography>
+                      </Tooltip>
+                    </div>
                   </ListItem>
                 ))}
               </List>}
