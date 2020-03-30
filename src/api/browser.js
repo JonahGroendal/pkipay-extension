@@ -66,7 +66,7 @@ export function getUrl() {
 }
 
 export function getHostname(url) {
-   if (url.match(/https:\/\/[^0-9.]+/)) {
+   if (url.match(/https?:\/\/.+/)) {
       var a = document.createElement("a");
       a.href = url;
 
