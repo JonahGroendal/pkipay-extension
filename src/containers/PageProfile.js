@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/PageProfile'
 import { getUrl, getHostname } from '../api/browser'
-import { domainNameToEnsName, getEnsNodeOwner, getPendingWithdrawals } from '../api/blockchain'
+import { domainNameToEnsName, getEnsNodeOwner, resolveAddress, getPendingWithdrawals } from '../api/blockchain'
 import { setTarget } from '../actions'
 import { isDomainName, isEnsName, isEnsNode } from '../api/utils'
 
@@ -14,7 +14,7 @@ function PageProfile({ target, dnsChallengeChanged, address, onChangeTarget }) {
       ? target
       : ''
 
-  const [ensAddressOwner, setEnsAddressOwner] = React.useState('0x0000000000000000000000000000000000000000')
+  const [resolvedAddress, setResolvedAddress] = React.useState('0x0000000000000000000000000000000000000000')
   const [pendingWithdrawals, setPendingWithdrawals] = React.useState(null)
   const pendingWithdrawalsExist = pendingWithdrawals !== null && Object.keys(pendingWithdrawals).length > 0
 
@@ -24,9 +24,9 @@ function PageProfile({ target, dnsChallengeChanged, address, onChangeTarget }) {
 
   React.useEffect(() => {
     if (ensAddress) {
-      getEnsNodeOwner(ensAddress).then(owner => {
-        setEnsAddressOwner(owner)
-        if (owner === address) {
+      resolveAddress(ensAddress).then(resolvedAddr => {
+        setResolvedAddress(resolvedAddr)
+        if (resolvedAddr === address) {
           getPendingWithdrawals(ensAddress)
           .then(setPendingWithdrawals)
         }
@@ -37,7 +37,7 @@ function PageProfile({ target, dnsChallengeChanged, address, onChangeTarget }) {
   return React.createElement(PresentationalComponent, {
     hostname,
     ensAddress,
-    ensAddressOwner,
+    resolvedAddress,
     address,
     pendingWithdrawals,
     setPendingWithdrawals,

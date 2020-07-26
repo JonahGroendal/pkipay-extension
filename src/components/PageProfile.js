@@ -37,7 +37,7 @@ function PageProfile(props) {
   const {
     hostname,
     ensAddress,
-    ensAddressOwner,
+    resolvedAddress,
     address,
     pendingWithdrawals,
     setPendingWithdrawals,
@@ -45,7 +45,7 @@ function PageProfile(props) {
   } = props
   const classes = useStyles();
 
-  const showAdminViewOption = (ensAddressOwner === address)
+  const showAdminViewOption = (resolvedAddress === address)
   let [adminViewEnabled, setAdminViewEnabled] = React.useState(true)
   adminViewEnabled = adminViewEnabled && showAdminViewOption
 
@@ -94,7 +94,7 @@ function PageProfile(props) {
             <Donate ensAddress={ensAddress} />
           )}
           <div>
-            {!!ensAddress && !isEnsNode(ensAddress) && (isZero(ensAddressOwner) || pendingWithdrawalsExist) && (
+            {!!ensAddress && !isEnsNode(ensAddress) && (isZero(resolvedAddress) || pendingWithdrawalsExist) && (
               <ClaimWebsiteCard
                 onClickButton={() => setDnsChalScreenOpen(true)}
               />
@@ -103,12 +103,12 @@ function PageProfile(props) {
               open={dnsChalScreenOpen}
               onClose={() => setDnsChalScreenOpen(false)}
               onOpen={() => setDnsChalScreenOpen(true)}
-              ensAddressOwner={ensAddressOwner}
+              resolvedAddress={resolvedAddress}
               pendingWithdrawals={pendingWithdrawals}
               setPendingWithdrawals={setPendingWithdrawals}
             />
           </div>
-          {/*old - not in 1.0: <Token ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>*/}
+          {/*old - not going into 1.0: <Token ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>*/}
         </Page>
       </div>
     </div>

@@ -28,9 +28,9 @@ import { navigateTo } from '../api/browser'
 import { decrypt } from '../api/symmetricCrypto'
 import PresentationalComponent from '../components/DnsChallengeScreen'
 
-function DnsChallengeScreen({ open, onClose, onOpen, ensAddressOwner, pendingWithdrawals, setPendingWithdrawals, ...mapped }) {
+function DnsChallengeScreen({ open, onClose, onOpen, resolvedAddress, pendingWithdrawals, setPendingWithdrawals, ...mapped }) {
   const initStepIndex = () => {
-    if (mapped.address === ensAddressOwner)
+    if (mapped.address === resolvedAddress)
       return 3;
     if (mapped.pemCertChain)
       return 2;
