@@ -2,20 +2,33 @@
 
 import web3js from './web3js'
 import namehash from 'eth-ens-namehash'
-import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
-import TokenResolver from 'pkipay-blockchain/build/contracts/TokenResolver.json'
+
 import DNSRegistrar from 'dns-over-ens/build/contracts/DNSRegistrar.json'
-import API from 'pkipay-blockchain/build/contracts/API.json'
-import ENSDonationEscrow from 'pkipay-blockchain/build/contracts/ENSDonationEscrow.json'
-import OwnedByENSNode from 'pkipay-blockchain/build/contracts/OwnedByENSNode.json'
-import ERC20 from 'pkipay-blockchain/build/contracts/ERC20.json'
-import ERC20DetailedString from 'pkipay-blockchain/build/contracts/ERC20DetailedString.json'
-import ERC20DetailedBytes32 from 'pkipay-blockchain/build/contracts/ERC20DetailedBytes32.json'
+import ENSRegistry from '@ensdomains/ens/build/contracts/ENSRegistry.json'
+import ENSResolver from '@ensdomains/resolver/build/contracts/PublicResolver.json'
+
 // import ERC20Mock from 'pkipay-blockchain/build/contracts/ERC20Mock.json'
 // import X509ForestOfTrust from 'x509-forest-of-trust/build/contracts/X509ForestOfTrust.json'
-import ENSRegistry from '@ensdomains/ens/build/contracts/ENSRegistry.json'
-import IExchangeRates from 'pkipay-blockchain/build/contracts/IExchangeRates.json'
 // import IMedianizer from 'pkipay-blockchain/build/contracts/IMedianizer.json'
+
+import ENSDonationEscrow from 'ens-donation-escrow/build/contracts/ENSDonationEscrow.json'
+import DonationsAPI from 'ens-donation-escrow/build/contracts/DonationsAPI.json'
+import ENSResolverMock from 'ens-donation-escrow/build/contracts/ResolverMock.json'
+
+import ERC20 from 'pkipay-eth/build/contracts/ERC20.json'
+import ERC20DetailedString from 'pkipay-eth/build/contracts/ERC20DetailedString.json'
+import ERC20DetailedBytes32 from 'pkipay-eth/build/contracts/ERC20DetailedBytes32.json'
+
+// old contracts:
+// import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
+// import TokenResolver from 'pkipay-blockchain/build/contracts/TokenResolver.json'
+// import API from 'pkipay-blockchain/build/contracts/API.json'
+// import ENSDonationEscrow from 'pkipay-blockchain/build/contracts/ENSDonationEscrow.json'
+// import OwnedByENSNode from 'pkipay-blockchain/build/contracts/OwnedByENSNode.json'
+// import ERC20 from 'pkipay-blockchain/build/contracts/ERC20.json'
+// import ERC20DetailedString from 'pkipay-blockchain/build/contracts/ERC20DetailedString.json'
+// import ERC20DetailedBytes32 from 'pkipay-blockchain/build/contracts/ERC20DetailedBytes32.json'
+// import IExchangeRates from 'pkipay-blockchain/build/contracts/IExchangeRates.json'
 
 const contractAddrs = {
   dai: {
@@ -25,6 +38,16 @@ const contractAddrs = {
   medianizer: {
     1: '0x64DE91F5A373Cd4c28de3600cB34C7C6cE410C85',
     42: '0x0E30F0FC91FDbc4594b1e2E5d64E6F1f94cAB23D'
+  },
+  ens: {
+    registry: {
+      1: '0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e',
+      42: ENSRegistry.networks[42].address
+    },
+    resolver: {
+      1: '0xDaaF96c344f63131acadD0Ea35170E7892d3dfBA',
+      42: ENSResolverMock.networks[42].address
+    }
   }
 }
 
@@ -32,13 +55,16 @@ export const chainId = process.env.REACT_APP_ACTUAL_ENV === 'production'
   ? 1
   : 42
 
-const resolver = new web3js.eth.Contract(TokenResolver.abi, TokenResolver.networks[chainId].address);
 const registrar = new web3js.eth.Contract(DNSRegistrar.abi, DNSRegistrar.networks[chainId].address);
-const api = new web3js.eth.Contract(API.abi, API.networks[chainId].address);
+const donationsAPI = new web3js.eth.Contract(DonationsAPI.abi, DonationsAPI.networks[chainId].address);
 const escrow = new web3js.eth.Contract(ENSDonationEscrow.abi, ENSDonationEscrow.networks[chainId].address);
-const ens = new web3js.eth.Contract(ENSRegistry.abi, ENSRegistry.networks[chainId].address);
+const ens = new web3js.eth.Contract(ENSRegistry.abi, contractAddrs.ens.registry[chainId]);
 const dai = new web3js.eth.Contract(ERC20.abi, contractAddrs.dai[chainId]);
 // const medianizer = new web3js.eth.Contract(IMedianizer.abi, contractAddrs.medianizer[chainId])
+
+// old:
+// const resolver = new web3js.eth.Contract(TokenResolver.abi, TokenResolver.networks[chainId].address);
+// const api = new web3js.eth.Contract(API.abi, API.networks[chainId].address);
 
 const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
   ? 'dnsroot.eth'
@@ -67,7 +93,7 @@ export function createTxApproveApiContract(from, tokenAddr) {
     to: tokenAddr,
     from,
     gas: 50000,
-    data: token.methods.approve(api.options.address, maxUint).encodeABI()
+    data: token.methods.approve(donationsAPI.options.address, maxUint).encodeABI()
   }
 }
 
@@ -83,9 +109,9 @@ export function createTxDonate(from, tokenAddr, ensAddresses, amounts) {
 
   return {
     from,
-    to: api.options.address,
+    to: donationsAPI.options.address,
     gas: 150000 + (32000 * ensNodes.length),  // Exact calculation: 97731 + (30282 * length)
-    data: api.methods.multiDonate(dai.options.address, ensNodes, values).encodeABI() // escrow.methods.donate(tokenAddr, ensNode, value).encodeABI()
+    data: donationsAPI.methods.multiDonate(dai.options.address, ensNodes, values).encodeABI() // escrow.methods.donate(tokenAddr, ensNode, value).encodeABI()
   }
 }
 
@@ -102,89 +128,92 @@ export function createTxDonateETH(from, ensAddresses, amounts) {
 
   return {
     from,
-    to: api.options.address,
+    to: donationsAPI.options.address,
     gas: 60000 + (42000 * ensNodes.length), // Exact calculation: 22655 + (40795 * length)
     value: totalValue,
-    data: api.methods.multiDonateETH(ensNodes, values).encodeABI()
+    data: donationsAPI.methods.multiDonateETH(ensNodes, values).encodeABI()
   }
 }
+// old
+// export function createTxBuyTokens(from, ensAddresses, amounts) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('createTxBuyTokens');
+//   if (!Array.isArray(ensAddresses)) ensAddresses = [ensAddresses];
+//   if (!Array.isArray(amounts)) amounts = [amounts];
+//   if (amounts.length !== ensAddresses.length)
+//     throw new Error("Parallel arrays have unequal lengths")
+//   const ensNodes = ensAddresses.map(toEnsNode)
+//   console.log('ensAddresses', ensAddresses)
+//   console.log('ensNodes', ensNodes)
+//   const weiValues = amounts.map(a => web3js.utils.toWei(a.toString()));
+//   return {
+//     from,
+//     to: api.options.address,
+//     gas: (300000 + (300000 * weiValues.length)).toString(),
+//     data: api.methods.multiBuy(dai.options.address, ensNodes, weiValues).encodeABI()
+//   }
+// }
 
-export function createTxBuyTokens(from, ensAddresses, amounts) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('createTxBuyTokens');
-  if (!Array.isArray(ensAddresses)) ensAddresses = [ensAddresses];
-  if (!Array.isArray(amounts)) amounts = [amounts];
-  if (amounts.length !== ensAddresses.length)
-    throw new Error("Parallel arrays have unequal lengths")
-  const ensNodes = ensAddresses.map(toEnsNode)
-  console.log('ensAddresses', ensAddresses)
-  console.log('ensNodes', ensNodes)
-  const weiValues = amounts.map(a => web3js.utils.toWei(a.toString()));
-  return {
-    from,
-    to: api.options.address,
-    gas: (300000 + (300000 * weiValues.length)).toString(),
-    data: api.methods.multiBuy(dai.options.address, ensNodes, weiValues).encodeABI()
-  }
-}
+// old
+// export async function createTxSellToken(from, tokenAddr, tokenSaleAddr, amount) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('createTxSellToken')
+//   const txs = []
+//   const weiValue = web3js.utils.toWei(amount.toString())
+//   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+//   const tokenSale = new web3js.eth.Contract(TokenSale.abi, tokenSaleAddr)
+//   const allowance = await token.methods.allowance(from, tokenSaleAddr).call()
+//   if (BigInt(allowance) < BigInt(weiValue))
+//     txs.push({
+//       from,
+//       to: tokenAddr,
+//       gas: "100000",
+//       data: token.methods.approve(tokenSaleAddr, weiValue).encodeABI()
+//     })
+//   txs.push({
+//     from,
+//     to: tokenSaleAddr,
+//     gas: "100000",
+//     data: tokenSale.methods.sell(dai.options.address, from, weiValue).encodeABI()
+//   })
+//   return txs
+// }
 
-export async function createTxSellToken(from, tokenAddr, tokenSaleAddr, amount) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('createTxSellToken')
-  const txs = []
-  const weiValue = web3js.utils.toWei(amount.toString())
-  const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
-  const tokenSale = new web3js.eth.Contract(TokenSale.abi, tokenSaleAddr)
-  const allowance = await token.methods.allowance(from, tokenSaleAddr).call()
-  if (BigInt(allowance) < BigInt(weiValue))
-    txs.push({
-      from,
-      to: tokenAddr,
-      gas: "100000",
-      data: token.methods.approve(tokenSaleAddr, weiValue).encodeABI()
-    })
-  txs.push({
-    from,
-    to: tokenSaleAddr,
-    gas: "100000",
-    data: tokenSale.methods.sell(dai.options.address, from, weiValue).encodeABI()
-  })
-  return txs
-}
+// old
+// export async function createTxWithdraw(from, tokenAddr, tokenSaleEnsName, amount) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('createTxWithdrawDAI')
+//   const weiAmount = web3js.utils.toWei(amount.toString())
+//   const ensNode = namehash.hash(tokenSaleEnsName)
+//   const saleAddr = await resolver.methods.tokenSale(ensNode).call()
+//   if (saleAddr === '0x0000000000000000000000000000000000000000')
+//     throw new Error('Token sale does not exist');
+//   let tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr);
+//   return {
+//     from,
+//     to: saleAddr,
+//     gas: 100000,
+//     data: await tokenSale.methods.withdraw(tokenAddr, from, weiAmount).encodeABI()
+//   }
+// }
 
-export async function createTxWithdraw(from, tokenAddr, tokenSaleEnsName, amount) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('createTxWithdrawDAI')
-  const weiAmount = web3js.utils.toWei(amount.toString())
-  const ensNode = namehash.hash(tokenSaleEnsName)
-  const saleAddr = await resolver.methods.tokenSale(ensNode).call()
-  if (saleAddr === '0x0000000000000000000000000000000000000000')
-    throw new Error('Token sale does not exist');
-  let tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr);
-  return {
-    from,
-    to: saleAddr,
-    gas: 100000,
-    data: await tokenSale.methods.withdraw(tokenAddr, from, weiAmount).encodeABI()
-  }
-}
-
-export async function createTxWithdrawETH(from, tokenSaleEnsAddress, amount) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('createTxWithdrawETH')
-  const weiAmount = web3js.utils.toWei(amount.toString())
-  const ensNode = toEnsNode(tokenSaleEnsAddress)
-  const saleAddr = await resolver.methods.tokenSale(ensNode).call()
-  if (saleAddr === '0x0000000000000000000000000000000000000000')
-    throw new Error('Token sale does not exist');
-  let tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr);
-  return {
-    from,
-    to: saleAddr,
-    gas: 100000,
-    data: await tokenSale.methods.withdrawETH(from, weiAmount).encodeABI()
-  }
-}
+// old
+// export async function createTxWithdrawETH(from, tokenSaleEnsAddress, amount) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('createTxWithdrawETH')
+//   const weiAmount = web3js.utils.toWei(amount.toString())
+//   const ensNode = toEnsNode(tokenSaleEnsAddress)
+//   const saleAddr = await resolver.methods.tokenSale(ensNode).call()
+//   if (saleAddr === '0x0000000000000000000000000000000000000000')
+//     throw new Error('Token sale does not exist');
+//   let tokenSale = new web3js.eth.Contract(TokenSale.abi, saleAddr);
+//   return {
+//     from,
+//     to: saleAddr,
+//     gas: 100000,
+//     data: await tokenSale.methods.withdrawETH(from, weiAmount).encodeABI()
+//   }
+// }
 
 export function createTxReclaimDonations(from, ensNode, tokenAddr) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
@@ -288,60 +317,63 @@ export async function resolveAddress(ensAddress) {
   const ensNode = toEnsNode(ensAddress)
   const ensResolverAddr = await ens.methods.resolver(ensNode).call()
   if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
-    const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
+    const ensResolver = new web3js.eth.Contract(ENSResolver.abi, ensResolverAddr)
     resolvedAddr = await ensResolver.methods.addr(ensNode).call()
   }
   return resolvedAddr
 }
 
-/**
- * @param {string} ensAddress - The ENS name or ENS node of the token
- * @returns {string|undefined} - The address of the token that ensAddress resolves to, or undefined if there's no resolver
- */
-export async function resolveToken(ensAddress, options={ usePublicResolver: false }) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('resolveToken')
-  let address
-  const ensNode = toEnsNode(ensAddress)
-  if (options.usePublicResolver) {
-    address = await resolver.methods.token(ensNode).call()
-  } else {
-    const ensResolverAddr = await ens.methods.resolver(ensNode).call()
-    if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
-      const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
-      address = await ensResolver.methods.token(ensNode).call()
-    }
-  }
-  return address
-}
+// old
+// /**
+//  * @param {string} ensAddress - The ENS name or ENS node of the token
+//  * @returns {string|undefined} - The address of the token that ensAddress resolves to, or undefined if there's no resolver
+//  */
+// export async function resolveToken(ensAddress, options={ usePublicResolver: false }) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('resolveToken')
+//   let address
+//   const ensNode = toEnsNode(ensAddress)
+//   if (options.usePublicResolver) {
+//     address = await resolver.methods.token(ensNode).call()
+//   } else {
+//     const ensResolverAddr = await ens.methods.resolver(ensNode).call()
+//     if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
+//       const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
+//       address = await ensResolver.methods.token(ensNode).call()
+//     }
+//   }
+//   return address
+// }
 
-/**
- * @param {string} ensAddress - The ENS name or ENS node of the token
- * @returns {string|undefined} - The address of the token sale that ensAddress resolves to, or undefined if there's no resolver
- */
-export async function resolveTokenSale(ensAddress, options={ usePublicResolver: false }) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('resolveTokenSale')
-  let address
-  const ensNode = toEnsNode(ensAddress)
-  if (options.usePublicResolver) {
-    address = await resolver.methods.tokenSale(ensNode).call()
-  } else {
-    const ensResolverAddr = await ens.methods.resolver(ensNode).call()
-    if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
-      const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
-      address = await ensResolver.methods.tokenSale(ensNode).call()
-    }
-  }
-  return address
-}
+// old
+// /**
+//  * @param {string} ensAddress - The ENS name or ENS node of the token
+//  * @returns {string|undefined} - The address of the token sale that ensAddress resolves to, or undefined if there's no resolver
+//  */
+// export async function resolveTokenSale(ensAddress, options={ usePublicResolver: false }) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('resolveTokenSale')
+//   let address
+//   const ensNode = toEnsNode(ensAddress)
+//   if (options.usePublicResolver) {
+//     address = await resolver.methods.tokenSale(ensNode).call()
+//   } else {
+//     const ensResolverAddr = await ens.methods.resolver(ensNode).call()
+//     if (ensResolverAddr !== '0x0000000000000000000000000000000000000000') {
+//       const ensResolver = new web3js.eth.Contract(TokenResolver.abi, ensResolverAddr)
+//       address = await ensResolver.methods.tokenSale(ensNode).call()
+//     }
+//   }
+//   return address
+// }
 
-export async function getTokenOwner(tokenAddr) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('getTokenOwner')
-  const ownedContract = new web3js.eth.Contract(OwnedByENSNode.abi, tokenAddr);
-  return await ownedContract.methods.owner().call();
-}
+// old
+// export async function getTokenOwner(tokenAddr) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('getTokenOwner')
+//   const ownedContract = new web3js.eth.Contract(OwnedByENSNode.abi, tokenAddr);
+//   return await ownedContract.methods.owner().call();
+// }
 
 export async function getEnsNodeOwner(ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
@@ -466,64 +498,68 @@ export async function pointEnsNodeToResolver(from, ensAddress) {
     console.log('pointEnsNodeToResolver')
   const ensNode = toEnsNode(ensAddress) // domain.tld.dnsroot.eth
   const currentResolver = await ens.methods.resolver(ensNode).call();
-  if (currentResolver !== resolver.options.address) {
+  if (currentResolver !== contractAddrs.ens.resolver[chainId]) {
     // setResolver(bytes32 node, address resolver)
-    await ens.methods.setResolver(ensNode, resolver.options.address).send({ from, gas: 100000 })
+    await ens.methods.setResolver(ensNode, contractAddrs.ens.resolver[chainId]).send({ from, gas: 100000 })
   }
 }
 
-export async function pointResolverAddrToTokenSale(from, ensAddress) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('pointResolverAddrToTokenSale')
-  const ensNode = toEnsNode(ensAddress)
-  let tokenSaleAddr = await resolver.methods.tokenSale(ensNode).call()
-  if (tokenSaleAddr === '0x0000000000000000000000000000000000000000') {
-    await resolver.methods.createTokenAndSale(ensNode).send({ from, gas: 400000 })
-    tokenSaleAddr = await resolver.methods.tokenSale(ensNode).call()
-  }
-  await resolver.methods.setAddr(ensNode, tokenSaleAddr).send({ from, gas: 100000 })
-}
+// old
+// export async function pointResolverAddrToTokenSale(from, ensAddress) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('pointResolverAddrToTokenSale')
+//   const ensNode = toEnsNode(ensAddress)
+//   let tokenSaleAddr = await resolver.methods.tokenSale(ensNode).call()
+//   if (tokenSaleAddr === '0x0000000000000000000000000000000000000000') {
+//     await resolver.methods.createTokenAndSale(ensNode).send({ from, gas: 400000 })
+//     tokenSaleAddr = await resolver.methods.tokenSale(ensNode).call()
+//   }
+//   await resolver.methods.setAddr(ensNode, tokenSaleAddr).send({ from, gas: 100000 })
+// }
 
 export async function pointResolverAddrToSelf(from, ensAddress) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('pointResolverAddrToSelf')
   const ensNode = toEnsNode(ensAddress)
+  const resolver = new web3js.eth.Contract(ENSResolver.abi, contractAddrs.ens.resolver[chainId]);
   await resolver.methods.setAddr(ensNode, from).send({ from, gas: 100000 })
 }
 
-export async function getTokenSaleInfo(ensAddress) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('getTokenSaleInfo')
-  let buyPrice = 1
-  let sellPrice = 1
-  let reservesDAI = 0
-  let reservesETH = 0
-  const node = toEnsNode(ensAddress)
-  const tokenSaleAddr = await resolver.methods.tokenSale(node).call()
-  if (tokenSaleAddr !== '0x0000000000000000000000000000000000000000') {
-    const tokenSale = new web3js.eth.Contract(TokenSale.abi, tokenSaleAddr)
-    const ratesAddr = await tokenSale.methods.rates().call()
-    const rates = new web3js.eth.Contract(IExchangeRates.abi, ratesAddr)
-    reservesDAI = parseFloat(web3js.utils.fromWei(await dai.methods.balanceOf(tokenSaleAddr).call()))
-    reservesETH = parseFloat(web3js.utils.fromWei((await web3js.eth.getBalance(tokenSaleAddr)).toString()))
-    buyPrice = parseFloat(web3js.utils.fromWei(await rates.methods.buy(dai.options.address).call()))
-    sellPrice = parseFloat(web3js.utils.fromWei(await rates.methods.sell(dai.options.address).call()))
-  }
-  return { buyPrice, sellPrice, reservesDAI, reservesETH }
-}
+// old
+// export async function getTokenSaleInfo(ensAddress) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('getTokenSaleInfo')
+//   let buyPrice = 1
+//   let sellPrice = 1
+//   let reservesDAI = 0
+//   let reservesETH = 0
+//   const node = toEnsNode(ensAddress)
+//   const tokenSaleAddr = await resolver.methods.tokenSale(node).call()
+//   if (tokenSaleAddr !== '0x0000000000000000000000000000000000000000') {
+//     const tokenSale = new web3js.eth.Contract(TokenSale.abi, tokenSaleAddr)
+//     const ratesAddr = await tokenSale.methods.rates().call()
+//     const rates = new web3js.eth.Contract(IExchangeRates.abi, ratesAddr)
+//     reservesDAI = parseFloat(web3js.utils.fromWei(await dai.methods.balanceOf(tokenSaleAddr).call()))
+//     reservesETH = parseFloat(web3js.utils.fromWei((await web3js.eth.getBalance(tokenSaleAddr)).toString()))
+//     buyPrice = parseFloat(web3js.utils.fromWei(await rates.methods.buy(dai.options.address).call()))
+//     sellPrice = parseFloat(web3js.utils.fromWei(await rates.methods.sell(dai.options.address).call()))
+//   }
+//   return { buyPrice, sellPrice, reservesDAI, reservesETH }
+// }
 
-export async function getTokenInfo(ensAddress) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('getTokenInfo')
-  let totalSupply = 0
-  const ensNode = toEnsNode(ensAddress)
-  const address = await resolver.methods.token(ensNode).call()
-  if (address !== '0x0000000000000000000000000000000000000000') {
-    const token = new web3js.eth.Contract(ERC20.abi, address)
-    totalSupply = parseFloat(web3js.utils.fromWei(await token.methods.totalSupply().call()))
-  }
-  return { totalSupply }
-}
+// old
+// export async function getTokenInfo(ensAddress) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('getTokenInfo')
+//   let totalSupply = 0
+//   const ensNode = toEnsNode(ensAddress)
+//   const address = await resolver.methods.token(ensNode).call()
+//   if (address !== '0x0000000000000000000000000000000000000000') {
+//     const token = new web3js.eth.Contract(ERC20.abi, address)
+//     totalSupply = parseFloat(web3js.utils.fromWei(await token.methods.totalSupply().call()))
+//   }
+//   return { totalSupply }
+// }
 
 export async function getBalanceETH(from) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
@@ -565,11 +601,11 @@ export async function getTotalContributions(ensAddress, fromBlock = 0) {
     console.log('getTotalContributions')
   const ensNode = toEnsNode(ensAddress)
 
-  const donationEvents = await api.getPastEvents('Donation', {
+  const donationEvents = await donationsAPI.getPastEvents('Donation', {
     filter: { node: ensNode },
     fromBlock: 0
   })
-  const buyEvents = await api.getPastEvents('Donation', {
+  const buyEvents = await donationsAPI.getPastEvents('Donation', {
     filter: { node: ensNode },
     fromBlock: 0
   })
@@ -612,31 +648,32 @@ export async function timestampToBlockNum(msSinceUnixEpoch) {
   return fromBlock
 }
 
-/**
- * @returns {String[]} an array of ens nodes corresponding to tokens where `from` has a balance
- */
-export async function scanForTokens(from) {
-  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('scanForTokenBalances')
-  const events = await resolver.getPastEvents(
-    'TokenChanged',
-    { fromBlock: 'earliest', toBlock: 'latest' }
-  )
-  const ensNodes = events.map(event => event.returnValues.node)
-  const tokenAddrs = events.map(event => event.returnValues.token)
-  const weiBalances = await Promise.all(
-    tokenAddrs.map(tokenAddr => (
-      (new web3js.eth.Contract(ERC20.abi, tokenAddr)).methods.balanceOf(from).call()
-    ))
-  )
-  const tokenEnsNodes = []
-  weiBalances.forEach((weiBalance, i) => {
-    if (parseFloat(weiBalance.toString()) > 0) {
-      tokenEnsNodes.push(ensNodes[i])
-    }
-  })
-  return tokenEnsNodes
-}
+// old
+// /**
+//  * @returns {String[]} an array of ens nodes corresponding to tokens where `from` has a balance
+//  */
+// export async function scanForTokens(from) {
+//   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+//     console.log('scanForTokenBalances')
+//   const events = await resolver.getPastEvents(
+//     'TokenChanged',
+//     { fromBlock: 'earliest', toBlock: 'latest' }
+//   )
+//   const ensNodes = events.map(event => event.returnValues.node)
+//   const tokenAddrs = events.map(event => event.returnValues.token)
+//   const weiBalances = await Promise.all(
+//     tokenAddrs.map(tokenAddr => (
+//       (new web3js.eth.Contract(ERC20.abi, tokenAddr)).methods.balanceOf(from).call()
+//     ))
+//   )
+//   const tokenEnsNodes = []
+//   weiBalances.forEach((weiBalance, i) => {
+//     if (parseFloat(weiBalance.toString()) > 0) {
+//       tokenEnsNodes.push(ensNodes[i])
+//     }
+//   })
+//   return tokenEnsNodes
+// }
 
 function toEnsNode(ensAddress) {
   const isEnsNode = ensAddress.slice(0, 2) === '0x' && ensAddress.length === 66

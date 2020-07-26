@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
-import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, resolveToken, scanForTokens, domainNameToEnsName } from '../api/blockchain'
+import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, /* old - not going into 1.0: resolveToken, scanForTokens, */domainNameToEnsName } from '../api/blockchain'
 import { setTarget, addToken, removeToken, completeTokenScan } from '../actions'
 import { isDomainName, isEnsName, isEnsNode } from '../api/utils'
 import namehash from 'eth-ens-namehash'
@@ -20,39 +20,41 @@ function Balances(props) {
     setTarget
   } = props
 
-  const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, tabIndex)
+  // old - not going into 1.0
+  // const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, tabIndex)
   const ethBalance = useEthBalance(address, txScreenOpen, tabIndex)
   const daiBalance = useDaiBalance(address, txScreenOpen, tabIndex)
 
   const [dexScreenOpen, setDexScreenOpen] = React.useState(false)
 
-  // If the app's data get's wiped, this will run once to look for tokens
-  React.useEffect(() => {
-    if (!tokenScanComplete && address) {
-      scanForTokens(address)
-      .then(tokenAddrs => {
-        tokenAddrs.forEach(addToken)
-        completeTokenScan()
-      })
-    }
-  }, [address])
-
-  // In case the ENS names of some tokens are not known (but only its namehash
-  // is known), as is the case after the above useEffect hook runs, this method
-  // will check if the current target is a token
-  React.useEffect(() => {
-    if (target && isDomainName(target)) {
-      const ensName = domainNameToEnsName(target.split('.').slice(-2).join('.'))
-      const ensNode = namehash.hash(ensName)
-      if (tokens.includes(ensNode)) {
-        addToken(ensName)
-        removeToken(ensNode)
-      }
-    }
-  }, [target, tokens])
+  // old - not going into 1.0 - note: if you remove this code in the future, be sure to remove its vestigaes as well like `addToken`and `tokenScanComplete`. I didn't bother commenting them out
+  // // If the app's data get's wiped, this will run once to look for tokens
+  // React.useEffect(() => {
+  //   if (!tokenScanComplete && address) {
+  //     scanForTokens(address)
+  //     .then(tokenAddrs => {
+  //       tokenAddrs.forEach(addToken)
+  //       completeTokenScan()
+  //     })
+  //   }
+  // }, [address])
+  //
+  // // In case the ENS names of some tokens are not known (but only its namehash
+  // // is known), as is the case after the above useEffect hook runs, this method
+  // // will check if the current target is a token
+  // React.useEffect(() => {
+  //   if (target && isDomainName(target)) {
+  //     const ensName = domainNameToEnsName(target.split('.').slice(-2).join('.'))
+  //     const ensNode = namehash.hash(ensName)
+  //     if (tokens.includes(ensNode)) {
+  //       addToken(ensName)
+  //       removeToken(ensNode)
+  //     }
+  //   }
+  // }, [target, tokens])
 
   return React.createElement(PresentationalComponent, {
-    balances: [ethBalance, daiBalance, ...tokenBalances],
+    balances: [ethBalance, daiBalance/*, old - not going into 1.0: ...tokenBalances*/],
     onClickBalance: name => {
       if (name === 'Ether' || name === "Dai Stablecoin") {
         setDexScreenOpen(true)
@@ -89,54 +91,54 @@ export default connect(
   mapDispatchToProps
 )(Balances)
 
-
-function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
-  const [tokenBalances, setTokenBalances] = React.useState([])
-  React.useEffect(() => {
-    if (!txScreenOpen && address && tabIndex === 1) {
-      Promise.all(tokens.map(ensAddress => resolveToken(ensAddress, { usePublicResolver: true })))
-      .then(tokenAddrs => {
-        return Promise.all(tokenAddrs.map(tokenAddr => (
-          (tokenAddr && tokenAddr !== '0x0000000000000000000000000000000000000000')
-            ? getTokenBalance(address, tokenAddr)
-            : 0
-        )))
-        .then(balances => {
-          return Promise.all([
-            balances,
-            Promise.all(tokenAddrs.map((v, i) => (
-              (balances[i] > 0)
-                ? getTokenName(tokenAddrs[i])
-                : ''
-            ))),
-            Promise.all(tokenAddrs.map((v, i) => (
-              (balances[i] > 0)
-                ? getTokenSymbol(tokenAddrs[i])
-                : ''
-            )))
-          ])
-          .then(([balances, names, symbols]) => {
-            const results = []
-            tokenAddrs.forEach((v, i) => {
-              if (balances[i] > 0)
-                results.push({
-                  name: names[i] ? names[i] : tokens[i],
-                  symbol: symbols[i],
-                  balance: balances[i]
-                })
-            })
-            return results
-          })
-        })
-      })
-      .then(tokenDetailsObjs => {
-        setTokenBalances(tokenDetailsObjs)
-      })
-    }
-  }, [txScreenOpen, address, tabIndex, tokens])
-
-  return tokenBalances
-}
+// old - not going into 1.0
+// function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
+//   const [tokenBalances, setTokenBalances] = React.useState([])
+//   React.useEffect(() => {
+//     if (!txScreenOpen && address && tabIndex === 1) {
+//       Promise.all(tokens.map(ensAddress => resolveToken(ensAddress, { usePublicResolver: true })))
+//       .then(tokenAddrs => {
+//         return Promise.all(tokenAddrs.map(tokenAddr => (
+//           (tokenAddr && tokenAddr !== '0x0000000000000000000000000000000000000000')
+//             ? getTokenBalance(address, tokenAddr)
+//             : 0
+//         )))
+//         .then(balances => {
+//           return Promise.all([
+//             balances,
+//             Promise.all(tokenAddrs.map((v, i) => (
+//               (balances[i] > 0)
+//                 ? getTokenName(tokenAddrs[i])
+//                 : ''
+//             ))),
+//             Promise.all(tokenAddrs.map((v, i) => (
+//               (balances[i] > 0)
+//                 ? getTokenSymbol(tokenAddrs[i])
+//                 : ''
+//             )))
+//           ])
+//           .then(([balances, names, symbols]) => {
+//             const results = []
+//             tokenAddrs.forEach((v, i) => {
+//               if (balances[i] > 0)
+//                 results.push({
+//                   name: names[i] ? names[i] : tokens[i],
+//                   symbol: symbols[i],
+//                   balance: balances[i]
+//                 })
+//             })
+//             return results
+//           })
+//         })
+//       })
+//       .then(tokenDetailsObjs => {
+//         setTokenBalances(tokenDetailsObjs)
+//       })
+//     }
+//   }, [txScreenOpen, address, tabIndex, tokens])
+//
+//   return tokenBalances
+// }
 
 function useEthBalance(address, txScreenOpen, tabIndex) {
   const [ethBalance, setEthBalance] = React.useState({

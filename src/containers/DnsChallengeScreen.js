@@ -8,7 +8,7 @@ import {
   resetDnsChallenge,
   completeDnsChallenge,
   reviewTx,
-  rescheduleSubscriptionsPayments
+  /* old - not going into 1.0: rescheduleSubscriptionsPayments*/
 } from '../actions'
 import {
   chainId,
@@ -92,7 +92,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, ensAddressOwner, pendingWit
         await pointEnsNodeToResolver(mapped.address, domainNameToEnsName(domainName));
         await pointResolverAddrToSelf(mapped.address, domainNameToEnsName(domainName));
         await mapped.onCompleteChallenge();
-        await mapped.onRescheduleSubscriptions();
+        // old - not going into 1.0: await mapped.onRescheduleSubscriptions();
         setPendingWithdrawals(await getPendingWithdrawals(domainNameToEnsName(domainName)))
         break;
       case 3:
@@ -162,7 +162,7 @@ const mapDispatchToProps = dispatch => ({
   onCancelChallenge: () => dispatch(cancelDnsChallenge()),
   onResetChallenge: () => dispatch(resetDnsChallenge()),
   onCompleteChallenge: () => dispatch(completeDnsChallenge()),
-  onRescheduleSubscriptions: () => dispatch(rescheduleSubscriptionsPayments()),
+  // old - not going into 1.0: onRescheduleSubscriptions: () => dispatch(rescheduleSubscriptionsPayments()),
   onUnlockWalletRequest: () => dispatch(unlockWalletRequest()),
   onReviewTx: async (txs, pendingWithdrawals) => {
     const tokenAddrs = Object.keys(pendingWithdrawals)

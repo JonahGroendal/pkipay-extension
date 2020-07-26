@@ -4,12 +4,14 @@ import appConfig from '../api/appConfig'
 import Page from './Page'
 import ProfileCard from '../containers/ProfileCard'
 import DnsChallengeScreen from '../containers/DnsChallengeScreen'
-import Token from '../containers/Token'
 import Donate from '../containers/Donate'
 import ClaimWebsiteCard from './ClaimWebsiteCard'
 import Typography from '@material-ui/core/Typography'
 import Switch from '@material-ui/core/Switch'
 import { isEnsNode } from '../api/utils'
+
+// old - not in 1.0
+//import Token from '../containers/Token'
 
 const NAV_HEIGHT = 104
 
@@ -106,7 +108,7 @@ function PageProfile(props) {
               setPendingWithdrawals={setPendingWithdrawals}
             />
           </div>
-          <Token ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>
+          {/*old - not in 1.0: <Token ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>*/}
         </Page>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Donate'
-import { reviewTx, addSubscription, setTabIndex, addCounterparty } from '../actions'
+import { reviewTx, setTabIndex, addCounterparty } from '../actions'
 import {
   apiContractApproved,
   createTxApproveApiContract,
@@ -10,7 +10,7 @@ import {
   addresses,
   // domainNameToEnsName,
   // resolveAddress,
-  resolveToken
+  /* old - not going into 1.0: resolveToken*/
 } from '../api/blockchain'
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
@@ -28,13 +28,17 @@ function Donate({ ensAddress, ...mapped }) {
     ? 0
     : Number(amount)
   // const address = useEnsResolver(domainName)
-  const tokenAddress = useEnsTokenResolver(ensAddress)
+
   const tokenOptions = [...Object.keys(addresses)]
-  const tokenAddresses = { ...addresses }
-  if (tokenAddress !== ZERO_ADDRESS) {
-    tokenOptions.push('tokens')
-    tokenAddresses['tokens'] = tokenAddress
-  }
+
+  // old - not going into 1.0
+  // const tokenAddress = useEnsTokenResolver(ensAddress)
+  // const tokenAddresses = { ...addresses }
+  // if (tokenAddress !== ZERO_ADDRESS) {
+  //   tokenOptions.push('tokens')
+  //   tokenAddresses['tokens'] = tokenAddress
+  // }
+
   const [token, setToken] = React.useState(tokenOptions[0])
   const [schedule, setSchedule] = React.useState(scheduleOptions[0])
 
@@ -83,7 +87,7 @@ function Donate({ ensAddress, ...mapped }) {
     onChangeSchedule: setSchedule,
     onClickButton: handleClickButton,
     buttonText: buttonText[schedule],
-    buttonDisabled: (schedule === 'Monthly') || (token === 'tokens' && tokenAddress === ZERO_ADDRESS) || !ensAddress,
+    buttonDisabled: (schedule === 'Monthly') || !ensAddress/* old - not in 1.0: || (token === 'tokens' && tokenAddress === ZERO_ADDRESS)*/,
     tooltip: tooltip(),
   })
 }
@@ -102,20 +106,21 @@ function Donate({ ensAddress, ...mapped }) {
 //   return address
 // }
 
-function useEnsTokenResolver(ensAddress) {
-  const [tokenAddress, setTokenAddress] = React.useState(ZERO_ADDRESS)
-  React.useEffect(() => {
-    if (ensAddress) {
-      resolveToken(ensAddress)
-      .then(setTokenAddress)
-      .catch(() => {
-        // No resolver set
-        setTokenAddress(ZERO_ADDRESS)
-      })
-    }
-  }, [ensAddress])
-  return tokenAddress
-}
+// old - not going into 1.0:
+// function useEnsTokenResolver(ensAddress) {
+//   const [tokenAddress, setTokenAddress] = React.useState(ZERO_ADDRESS)
+//   React.useEffect(() => {
+//     if (ensAddress) {
+//       resolveToken(ensAddress)
+//       .then(setTokenAddress)
+//       .catch(() => {
+//         // No resolver set
+//         setTokenAddress(ZERO_ADDRESS)
+//       })
+//     }
+//   }, [ensAddress])
+//   return tokenAddress
+// }
 
 const mapStateToProps = state => ({
   currency: state.settings['Currency'],
@@ -136,7 +141,6 @@ const mapDispatchToProps = (dispatch) => ({
     const tx = createTxDonateETH(from, ensAddress, amount)
     dispatch(reviewTx([tx], [ensAddress], [{ 'ETH': amount*-1 }]))
   },
-  onSubscribe: (ensAddress, amount) => dispatch(addSubscription(ensAddress, amount)),
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
 })
 

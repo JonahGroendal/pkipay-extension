@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "REACT_APP_ACTUAL_ENV=development react-scripts start",
-    "build": "REACT_APP_ACTUAL_ENV=production  react-scripts build",
+    "build-prod": "REACT_APP_ACTUAL_ENV=production  react-scripts build",
     "build-dev": "REACT_APP_ACTUAL_ENV=development react-scripts build",
     "test": "REACT_APP_ACTUAL_ENV=test react-scripts test --env=jsdom --verbose=false",
     "start:firefox": "web-ext run --source-dir ./build/",
@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ensdomains/ens": "github:JonahGroendal/ens",
+    "@ensdomains/resolver": "^0.2.4",
     "@material-ui/core": "^4.9.7",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/styles": "^4.9.6",
@@ -23,9 +24,11 @@
     "classnames": "^2.2.6",
     "dns-over-ens": "github:JonahGroendal/dns-over-ens",
     "ecb-currency-converter": "^1.0.0",
+    "ens-donation-escrow": "github:JonahGroendal/ens-donation-escrow",
     "eth-ens-namehash": "^2.0.8",
     "lodash": "^4.17.15",
     "pkipay-blockchain": "github:JonahGroendal/pkipay-blockchain",
+    "pkipay-eth": "github:JonahGroendal/pkipay-eth",
     "qrcode": "^1.4.4",
     "react": "^16.13.1",
     "react-chartjs-2": "^2.9.0",
