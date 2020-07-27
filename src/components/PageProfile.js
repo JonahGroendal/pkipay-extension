@@ -85,6 +85,7 @@ function PageProfile(props) {
               ensAddress={ensAddress}
               hostname={hostname}
               square={true}
+              targetRegistered={resolvedAddress !== '0x0000000000000000000000000000000000000000'}
             />
           </div>
         </div>
@@ -94,8 +95,9 @@ function PageProfile(props) {
             <Donate ensAddress={ensAddress} />
           )}
           <div>
-            {!!ensAddress && !isEnsNode(ensAddress) && (isZero(resolvedAddress) || pendingWithdrawalsExist) && (
+            {!!ensAddress && !isEnsNode(ensAddress) && (
               <ClaimWebsiteCard
+                alreadyClaimed={!isZero(resolvedAddress)}
                 onClickButton={() => setDnsChalScreenOpen(true)}
               />
             )}
@@ -107,6 +109,9 @@ function PageProfile(props) {
               setPendingWithdrawals={setPendingWithdrawals}
             />
           </div>
+          {/*pendingWithdrawalsExist && (
+            TODO: card for withdrawing in case there are pending withdrawals even tho this ENS address resolves to an eth address (not sure how but maybe it could happen)
+          )*/}
           {/*old - not going into 1.0: <Token ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>*/}
         </Page>
       </div>

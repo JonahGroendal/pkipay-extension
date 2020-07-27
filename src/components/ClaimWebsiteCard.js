@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function ClaimWebsiteCard({ onClickButton }) {
+function ClaimWebsiteCard({ onClickButton, alreadyClaimed }) {
   const classes = useStyles()
 
   return (
@@ -35,7 +35,7 @@ function ClaimWebsiteCard({ onClickButton }) {
                 onClick={onClickButton}
                 variant="contained" size="medium" color="primary"
               >
-                Claim donations
+                {!alreadyClaimed ? 'Claim donations' : 'Claim ownership'}
               </Button>
             </div>
           </Tooltip>

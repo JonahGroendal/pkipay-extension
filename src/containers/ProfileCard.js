@@ -9,7 +9,7 @@ import {
 import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square }) {
+function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square, targetRegistered }) {
   const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
   const [largeFaviconExists, setLargeFaviconExists] = React.useState(false)
   const [totalDonations, setTotalDonations] = React.useState(0)
@@ -128,9 +128,10 @@ function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square }) {
     totalDonations,
     totalDonationsOneMonth,
     faviconUrl,
+    targetRegistered,
     displayName: ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''),
     tooltipName: ensAddress,
-    currencySymbol: currencySymbols[currency],
+    currencySymbol: currencySymbols[currency]
   })
 }
 

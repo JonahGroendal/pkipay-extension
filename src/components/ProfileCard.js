@@ -7,6 +7,8 @@ import Typography from '@material-ui/core/Typography'
 import Tooltip from '@material-ui/core/Tooltip'
 // import getPixels from 'get-pixels'
 import { truncateForDisplay } from '../api/utils'
+import CheckCircleOutlinedIcon from '@material-ui/icons/CheckCircleOutlined';
+import CancelOutlinedIcon from '@material-ui/icons/CancelOutlined';
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -58,6 +60,14 @@ const useStyles = makeStyles(theme => ({
   },
   form: {
     //backgroundColor: theme.palette.grey['A100']
+  },
+  statusText: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  statusIcon: {
+    marginBottom: '3px'
   }
 }));
 
@@ -98,6 +108,17 @@ function ProfileCard(props) {
             </Typography>
           </Tooltip>
           <div>
+            <Typography variant="body2" align="center">
+              <div className={classes.statusText}>
+                {props.targetRegistered
+                  ? <CheckCircleOutlinedIcon className={classes.statusIcon} />
+                  : <CancelOutlinedIcon className={classes.statusIcon} />}
+                &nbsp;
+                {props.targetRegistered
+                  ? 'registered'
+                  : 'unregistered - donations held in escrow'}
+              </div>
+            </Typography>
             <Typography variant="body2" align="center">
               {props.currencySymbol + props.totalDonations.toFixed(2) + ' in total contributions'}
             </Typography>
