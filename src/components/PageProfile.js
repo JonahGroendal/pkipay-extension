@@ -45,9 +45,10 @@ function PageProfile(props) {
   } = props
   const classes = useStyles();
 
-  const showAdminViewOption = (resolvedAddress === address)
-  let [adminViewEnabled, setAdminViewEnabled] = React.useState(true)
-  adminViewEnabled = adminViewEnabled && showAdminViewOption
+  // old - not going into 1.0:
+  // const showAdminViewOption = (resolvedAddress === address)
+  // let [adminViewEnabled, setAdminViewEnabled] = React.useState(true)
+  // adminViewEnabled = adminViewEnabled && showAdminViewOption
 
   const [dnsChalScreenOpen, setDnsChalScreenOpen] = React.useState(false)
 
@@ -66,7 +67,7 @@ function PageProfile(props) {
 
   return (
     <div>
-      {showAdminViewOption && (
+      {/* old - not going into 1.0: showAdminViewOption && (
         <div className={classes.adminViewSwitch} ref={adminViewRef}>
           <Typography>
             Administrative view
@@ -76,7 +77,7 @@ function PageProfile(props) {
             onChange={() => setAdminViewEnabled(prev => !prev)}
           />
         </div>
-      )}
+      )*/}
       <div>
         {/* hack to relatively position a div without affecting the page flow */}
         <div className={classes.profileCardContainerRel}>
@@ -91,11 +92,16 @@ function PageProfile(props) {
         </div>
         <Page height={appConfig.height - NAV_HEIGHT - adminViewRenderHeight}>
           <div style={{ height: profileCardRenderHeight }}></div>
-          {!adminViewEnabled && (
+          {resolvedAddress === address && (
+            <Typography variant="h6" align="center">
+              You own this site
+            </Typography>
+          )}
+          {resolvedAddress !== address && (
             <Donate ensAddress={ensAddress} />
           )}
           <div>
-            {!!ensAddress && !isEnsNode(ensAddress) && (
+            {!!ensAddress && !isEnsNode(ensAddress) && resolvedAddress !== address && (
               <ClaimWebsiteCard
                 alreadyClaimed={!isZero(resolvedAddress)}
                 onClickButton={() => setDnsChalScreenOpen(true)}
