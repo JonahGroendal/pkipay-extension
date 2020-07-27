@@ -28,9 +28,9 @@ import { navigateTo } from '../api/browser'
 import { decrypt } from '../api/symmetricCrypto'
 import PresentationalComponent from '../components/DnsChallengeScreen'
 
-function DnsChallengeScreen({ open, onClose, onOpen, resolvedAddress, pendingWithdrawals, setPendingWithdrawals, ...mapped }) {
+function DnsChallengeScreen({ open, onClose, onOpen, pendingWithdrawals, setPendingWithdrawals, ...mapped }) {
   const initStepIndex = () => {
-    if (mapped.address === resolvedAddress)
+    if (mapped.domainName && !mapped.pemCertChain && !mapped.recordText)
       return 3;
     if (mapped.pemCertChain)
       return 2;
@@ -39,6 +39,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, resolvedAddress, pendingWit
     return 0;
   }
   const [activeStep, setActiveStep] = React.useState(initStepIndex());
+
   const domainName = activeStep === 0 ? mapped.target.split('.').slice(-2).join('.') : mapped.domainName
   // const domainName = (mapped.ongoing || activeStep > 0) ? mapped.domainName : mapped.target.split('.').slice(-2).join('.')
 

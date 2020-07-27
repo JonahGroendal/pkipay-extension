@@ -167,7 +167,7 @@ export default function DnsChallengeScreen(props) {
   }
 
   async function handleNext(stepIndex) {
-    if (numCompletedSteps === stepIndex) {
+    if (numCompletedSteps <= stepIndex) {
       setLoading(true);
       try {
         await handleStepComplete(stepIndex);

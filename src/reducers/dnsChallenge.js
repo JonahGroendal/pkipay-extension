@@ -40,6 +40,7 @@ function dnsChallenge(state=initState, action) {
     case 'COMPLETE_DNS_CHALLENGE':
       return {
         ...initState,
+        ongoing: state.ongoing,
         domainName: state.domainName
       }
     default:

@@ -103,7 +103,6 @@ function PageProfile(props) {
               open={dnsChalScreenOpen}
               onClose={() => setDnsChalScreenOpen(false)}
               onOpen={() => setDnsChalScreenOpen(true)}
-              resolvedAddress={resolvedAddress}
               pendingWithdrawals={pendingWithdrawals}
               setPendingWithdrawals={setPendingWithdrawals}
             />
