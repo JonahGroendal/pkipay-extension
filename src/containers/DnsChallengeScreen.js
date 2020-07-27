@@ -20,7 +20,8 @@ import {
   createTxWithdrawDonationsETH,
   domainNameToEnsName,
   getTokenSymbol,
-  addresses
+  addresses,
+  getBalanceETH
 } from '../api/blockchain'
 import CertificateUploader from 'x509-forest-of-trust'
 import web3js from '../api/web3js'
@@ -53,6 +54,14 @@ function DnsChallengeScreen({ open, onClose, onOpen, pendingWithdrawals, setPend
     if (activeStep === 3 && pendingWithdrawals === null)
       getPendingWithdrawals(domainNameToEnsName(domainName)).then(setPendingWithdrawals)
   }, [activeStep])
+
+  const [ethBalance, setEthBalance] = React.useState(null)
+  React.useEffect(() => {
+    if (open && mapped.address) {
+      getBalanceETH(mapped.address)
+      .then(balance => setEthBalance(balance))
+    }
+  }, [open, mapped.address])
 
   function handleClose() {
     mapped.onCancelChallenge();
@@ -142,6 +151,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, pendingWithdrawals, setPend
     recordText: mapped.recordText,
     domainName: domainName,
     onReset: handleReset,
+    ethBalance,
     escrowBalances: ebETH.toFixed(4).concat(' ETH, ', ebDAI.toFixed(3), ' DAI and ', ebRest.toFixed(3), ' of other tokens')
   })
 }

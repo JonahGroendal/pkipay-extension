@@ -22,6 +22,10 @@ import OpenInBrowserIcon from '@material-ui/icons/OpenInBrowser';
 import Snackbar from '@material-ui/core/Snackbar';
 import IconButton from '@material-ui/core/IconButton';
 import CloseIcon from '@material-ui/icons/Close';
+import Dialog from '@material-ui/core/Dialog'
+import DialogTitle from '@material-ui/core/DialogTitle'
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
 
 const instructions = {
   "Godaddy":   "https://www.godaddy.com/help/add-a-txt-record-19232",
@@ -135,6 +139,7 @@ export default function DnsChallengeScreen(props) {
     onStepComplete: handleStepComplete,
     onClickLink: handleClickLink,
     onCopy: handleCopy,
+    ethBalance
   } = props;
   const classes = useStyles();
   const [numCompletedSteps, setNumCompletedSteps] = React.useState(activeStep);
@@ -248,6 +253,26 @@ export default function DnsChallengeScreen(props) {
       onClose={handleClose}
     >
       <div className={classes.root}>
+        <Dialog
+          open={open && ethBalance !== null && ethBalance < 0.01}
+          maxWidth="md"
+          aria-labelledby="insufficient-funds"
+        >
+          <DialogTitle id="insufficient-funds">Insufficient funds</DialogTitle>
+          <DialogContent>
+            <Typography>
+              {'You need at least 0.01 ETH to complete this action. Your current balance is '.concat(ethBalance !== null ? ethBalance.toFixed(3) : '', ' ETH. Please deposit the required funds into your account.')}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleClose}
+              color="secondary"
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Stepper activeStep={activeStep} orientation="vertical">
           {steps.map((step, stepIndex) => (
             <Step key={step.label} completed={stepIndex < numCompletedSteps}>
