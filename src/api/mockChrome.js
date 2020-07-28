@@ -35,7 +35,7 @@ let mockChrome = {
   },
   tabs: {
     query: function(obj, callback) {
-      let tabs = [{url: "https://www.0x.net/"}]
+      let tabs = [{url: "https://www.pkipay.net/"}]
       callback(tabs);
     },
     onActivated: {

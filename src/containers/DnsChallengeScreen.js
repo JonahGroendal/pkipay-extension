@@ -29,7 +29,7 @@ import { navigateTo } from '../api/browser'
 import { decrypt } from '../api/symmetricCrypto'
 import PresentationalComponent from '../components/DnsChallengeScreen'
 
-function DnsChallengeScreen({ open, onClose, onOpen, pendingWithdrawals, setPendingWithdrawals, ...mapped }) {
+function DnsChallengeScreen({ open, onClose, onOpen, ...mapped }) {
   const initStepIndex = () => {
     if (mapped.domainName && !mapped.pemCertChain && !mapped.recordText)
       return 3;
@@ -49,6 +49,7 @@ function DnsChallengeScreen({ open, onClose, onOpen, pendingWithdrawals, setPend
       onOpen(); // Open self
   }, []);
 
+  const [pendingWithdrawals, setPendingWithdrawals] = React.useState(null)
   // In case app reopens on this step
   React.useEffect(() => {
     if (activeStep === 3 && pendingWithdrawals === null)

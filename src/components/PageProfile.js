@@ -6,6 +6,7 @@ import ProfileCard from '../containers/ProfileCard'
 import DnsChallengeScreen from '../containers/DnsChallengeScreen'
 import Donate from '../containers/Donate'
 import ClaimWebsiteCard from './ClaimWebsiteCard'
+import ClaimDonationsCard from './ClaimDonationsCard'
 import Typography from '@material-ui/core/Typography'
 import Switch from '@material-ui/core/Switch'
 import { isEnsNode } from '../api/utils'
@@ -39,9 +40,10 @@ function PageProfile(props) {
     ensAddress,
     resolvedAddress,
     address,
-    pendingWithdrawals,
-    setPendingWithdrawals,
-    pendingWithdrawalsExist
+    pendingWithdrawalsExist,
+    pendingWithdrawalsETH,
+    pendingWithdrawalsDAI,
+    pendingWithdrawalsRest
   } = props
   const classes = useStyles();
 
@@ -101,18 +103,25 @@ function PageProfile(props) {
             <Donate ensAddress={ensAddress} />
           )}
           <div>
-            {!!ensAddress && !isEnsNode(ensAddress) && resolvedAddress !== address && (
+            {!!ensAddress && !isEnsNode(ensAddress) && resolvedAddress !== address && !pendingWithdrawalsExist && (
               <ClaimWebsiteCard
                 alreadyClaimed={!isZero(resolvedAddress)}
                 onClickButton={() => setDnsChalScreenOpen(true)}
+              />
+            )}
+            {!!ensAddress && !isEnsNode(ensAddress) && resolvedAddress !== address && pendingWithdrawalsExist && (
+              <ClaimDonationsCard
+                onClickButton={() => setDnsChalScreenOpen(true)}
+                pendingWithdrawalsExist={pendingWithdrawalsExist}
+                pendingWithdrawalsETH={pendingWithdrawalsETH}
+                pendingWithdrawalsDAI={pendingWithdrawalsDAI}
+                pendingWithdrawalsRest={pendingWithdrawalsRest}
               />
             )}
             <DnsChallengeScreen
               open={dnsChalScreenOpen}
               onClose={() => setDnsChalScreenOpen(false)}
               onOpen={() => setDnsChalScreenOpen(true)}
-              pendingWithdrawals={pendingWithdrawals}
-              setPendingWithdrawals={setPendingWithdrawals}
             />
           </div>
           {/*pendingWithdrawalsExist && (

@@ -2,11 +2,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/PageProfile'
 import { getUrl, getHostname } from '../api/browser'
-import { domainNameToEnsName, getEnsNodeOwner, resolveAddress, getPendingWithdrawals } from '../api/blockchain'
+import { domainNameToEnsName, getEnsNodeOwner, resolveAddress, getPendingWithdrawals, addresses } from '../api/blockchain'
 import { setTarget } from '../actions'
 import { isDomainName, isEnsName, isEnsNode } from '../api/utils'
 
-function PageProfile({ target, dnsChallengeChanged, address, onChangeTarget }) {
+function PageProfile({ target, address, onChangeTarget }) {
   const hostname = isDomainName(target) ? target : ''
   const ensAddress = isDomainName(target)
     ? domainNameToEnsName(target.split('.').slice(-2).join('.'))
@@ -14,40 +14,49 @@ function PageProfile({ target, dnsChallengeChanged, address, onChangeTarget }) {
       ? target
       : ''
 
-  const [resolvedAddress, setResolvedAddress] = React.useState('0x0000000000000000000000000000000000000000')
-  const [pendingWithdrawals, setPendingWithdrawals] = React.useState(null)
-  const pendingWithdrawalsExist = pendingWithdrawals !== null && Object.keys(pendingWithdrawals).length > 0
-
   React.useEffect(() => {
     getUrl().then(url => onChangeTarget(getHostname(url)))
   }, [])
 
+  const [resolvedAddress, setResolvedAddress] = React.useState('0x0000000000000000000000000000000000000000')
+  const [pendingWithdrawalsExist, setPendingWithdrawalsExist] = React.useState(false)
+  const [pendingWithdrawalsETH, setPendingWithdrawalsETH] = React.useState(0)
+  const [pendingWithdrawalsDAI, setPendingWithdrawalsDAI] = React.useState(0)
+  const [pendingWithdrawalsRest, setPendingWithdrawalsRest] = React.useState(0)
   React.useEffect(() => {
     if (ensAddress) {
       resolveAddress(ensAddress).then(resolvedAddr => {
         setResolvedAddress(resolvedAddr)
-        if (resolvedAddr === address) {
+        if (resolvedAddr === '0x0000000000000000000000000000000000000000') {
           getPendingWithdrawals(ensAddress)
-          .then(setPendingWithdrawals)
+          .then(pws => {
+            setPendingWithdrawalsExist(pws !== null && Object.keys(pws).length > 0)
+            const pwsETH = pws !== null && pws[addresses.ETH] ? pws[addresses.ETH].reduce((a, c) => a + c.balance, 0) : 0
+            const pwsDAI = pws !== null && pws[addresses.DAI] ? pws[addresses.DAI].reduce((a, c) => a + c.balance, 0) : 0
+            const pwsRest = pws !== null ? Object.values(pws).map(pw => pw.reduce((a, c) => a + c.balance, 0)).reduce((a, c) => a + c, 0) - pwsETH - pwsDAI : 0
+            setPendingWithdrawalsETH(pwsETH)
+            setPendingWithdrawalsDAI(pwsDAI)
+            setPendingWithdrawalsRest(pwsRest)
+          })
         }
       })
     }
-  }, [ensAddress, dnsChallengeChanged, address])
+  }, [ensAddress])
 
   return React.createElement(PresentationalComponent, {
     hostname,
     ensAddress,
     resolvedAddress,
     address,
-    pendingWithdrawals,
-    setPendingWithdrawals,
-    pendingWithdrawalsExist
+    pendingWithdrawalsExist,
+    pendingWithdrawalsETH,
+    pendingWithdrawalsDAI,
+    pendingWithdrawalsRest
   })
 }
 
 const mapStateToProps = state => ({
   target: state.target,
-  dnsChallengeChanged: state.dnsChallenge.recordName === '',
   address: state.wallet.addresses[state.wallet.defaultAccount]
 })
 const mapDispatchToProps = dispatch => ({
