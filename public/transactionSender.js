@@ -38,12 +38,15 @@ function sendAll(txs, callback) {
   function loop(i, responses) {
     if (i < txs.length) {
       send(txs[i].rawTransaction, txs[i].txObject.chainId, function (response) {
-        console.log(response)
+        if (parseInt(txs[i].txObject.chainId) !== 1)
+          console.log(response)
         responses.push(JSON.parse(response))
         loop(i+1, responses)
       })
     } else {
-      callback(responses)
+      if (callback) {
+        callback(responses)
+      }
     }
   }
   loop(0, [])
