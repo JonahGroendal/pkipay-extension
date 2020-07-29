@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
   },
   buttonRow: {
     display: 'flex',
-    justifyContent: 'right'
+    justifyContent: 'flex-end'
   }
 }));
 
@@ -39,7 +39,7 @@ function ClaimWebsiteCard(props) {
     <div>
       <Paper className={classes.paper}>
         <Typography variant="h6">
-          Escrowed donations
+          Escrowed Donations
         </Typography>
         <Typography variant="body2">
           This site is unregistered and has donations held in escrow.
@@ -55,16 +55,16 @@ function ClaimWebsiteCard(props) {
             {'Other tokens: '.concat(pwRest.toFixed(3))}
           </Typography>
         </div>
-        <Tooltip title={'Register ownership of this site and claim donations'} enterDelay={300}>
-          <div className={classes.buttonRow}>
+        <div className={classes.buttonRow}>
+          <Tooltip title={'Register ownership of this site and claim donations'} enterDelay={300}>
             <Button
               onClick={onClickButton}
               variant="contained" size="medium" color="primary"
             >
               Claim
             </Button>
-          </div>
-        </Tooltip>
+          </Tooltip>
+        </div>
       </Paper>
     </div>
   )
