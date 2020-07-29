@@ -1,7 +1,7 @@
 import web3js from '../api/web3js'
 import browser, { sendMessage } from '../api/browser'
 import datetimeCalculators from '../api/datetimeCalculators'
-import { /*createTxBuyTokens, */apiContractApproved, createTxApproveApiContract } from '../api/blockchain'
+import { /*createTxBuyTokens, */apiContractApproved, createTxApproveApiContract, addresses, createTxDonate, createTxDonateETH } from '../api/blockchain'
 import AcmeClient from 'acme-easy'
 import { encrypt, decrypt } from '../api/symmetricCrypto'
 
@@ -39,6 +39,37 @@ export const setTabIndex = (index) => ({
 //   if (reschedule)
 //     dispatch(rescheduleSubscriptionsPayments()).catch(console.error)
 // }
+
+export const addDonationSubscription = (address, amount, tokenAddr) => async (dispatch) => {
+  // Rescheduling will require wallet unlock anyway. If the user cancels the unlock,
+  // all scheduled transactions will be deleted without replacement if this isn't here.
+  if (web3js.eth.accounts.wallet.length === 0)
+    await dispatch(unlockWalletRequest())
+
+  dispatch({
+    type: 'ADD_DONATION_SUBSCRIPTION',
+    payload: {
+      address,
+      amount,
+      tokenAddr
+    }
+  })
+  await dispatch(rescheduleDonationSubscriptions()).catch(console.error)
+}
+
+export const removeDonationSubscription = (address, tokenAddr, reschedule=true) => async (dispatch) => {
+  // Rescheduling will require wallet unlock anyway. If the user cancels the unlock,
+  // all scheduled transactions will be deleted without replacement if this isn't here.
+  if (web3js.eth.accounts.wallet.length === 0)
+    await dispatch(unlockWalletRequest())
+
+  dispatch({
+    type: 'REMOVE_DONATION_SUBSCRIPTION',
+    payload: { address, tokenAddr }
+  })
+  if (reschedule)
+    await dispatch(rescheduleDonationSubscriptions()).catch(console.error)
+}
 
 export const changeSetting = (name, value) => ({
   type: 'CHANGE_SETTING',
@@ -205,8 +236,17 @@ export const sendTx = (txObjects) => async (dispatch) => {
     }
     const responses = await sendMessage({ type: 'SEND_TXS', txs })
     let errorIndex = responses.findIndex(r => r.error !== undefined)
+
+    // update nonces of the scheduled transactions
+    const lastValidTxIndex = errorIndex === -1
+      ? txs.length - 1
+      : errorIndex - 1
+    const nextNonce = txs[lastValidTxIndex].txObject.nonce + 1
+    await dispatch(rescheduleDonationSubscriptions(nextNonce))
+
     if (errorIndex !== -1)
       throw new Error(responses[errorIndex].error.message)
+
     dispatch({
       type: 'SEND_TX_SUCCESS',
       payload: {
@@ -270,6 +310,10 @@ export const unscheduleTx = (id) => (dispatch) => {
   })
 }
 
+export const deleteOldScheduledTxs = () => ({
+  type: 'DELETE_OLD_SCHEDULED_TXS'
+})
+
 
 // old
 // TODO: make this donate instead of buy tokens
@@ -289,7 +333,7 @@ export const unscheduleTx = (id) => (dispatch) => {
 //   const address = wallet.addresses[wallet.defaultAccount]
 //   if (nonce === -1)
 //     nonce = await web3js.eth.getTransactionCount(address, 'pending')
-//   const approved = await apiContractApproved(address)
+//   const approved = await apiContractApproved(address, addresses.DAI)
 //   const txObject = createTxBuyTokens(address, addresses, amounts)
 //   const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
 //   let monthIndex = (new Date(now)).getMonth()
@@ -299,7 +343,7 @@ export const unscheduleTx = (id) => (dispatch) => {
 //     when = calcWhen((new Date(year, monthIndex)).valueOf())
 //     const txs = []
 //     if (i === 0 && !approved) {
-//       txs.push({ ...createTxApproveApiContract(address), nonce })
+//       txs.push({ ...createTxApproveApiContract(address, addresses.DAI), nonce })
 //       nonce++
 //     }
 //     txs.push({ ...txObject, nonce })
@@ -312,6 +356,74 @@ export const unscheduleTx = (id) => (dispatch) => {
 //     }
 //   }
 // }
+
+export const rescheduleDonationSubscriptions = (nonce=-1) => async (dispatch, getState) => {
+  console.log('rescheduleDonationSubscriptions')
+
+  // Get data from store
+  let { scheduledTXs, settings, donationSubscriptions, wallet } = getState()
+  const address = wallet.addresses[wallet.defaultAccount]
+
+  const now = Date.now()
+
+  // Delete unsent transactions - `unscheduleTx` will throw an error if you try to unschedule an already-sent transaction
+  let txIds = Object.keys(scheduledTXs).filter(k => scheduledTXs[k].when > now).sort()
+  for (let i=0; i<txIds.length; i++) {
+    await dispatch(unscheduleTx(txIds[i]))
+  }
+  // Then delete old scheduled transactions
+  dispatch(deleteOldScheduledTxs())
+
+  // If there are no subscriptions, dont try to schedule any
+  // Prevents an error that `scheduleTx` will throw if you pass it an empty list of TXs
+  if (donationSubscriptions.length === 0) return;
+
+  // Create the transaction set that is to be schduled every month
+  const txSet = []
+  const subsETH = donationSubscriptions.filter(sub => sub.tokenAddr === addresses.ETH)
+  if (subsETH.length > 0) {
+    txSet.push(createTxDonateETH(address, subsETH.map(sub => sub.address), subsETH.map(sub => sub.amount)))
+  }
+  const subsRest = donationSubscriptions.filter(sub => sub.tokenAddr !== addresses.ETH)
+  const uniqueTokenAddrs = new Set(subsRest.map(sub => sub.tokenAddr))
+  uniqueTokenAddrs.forEach(tokenAddr => {
+    const subs = subsRest.filter(sub => sub.tokenAddr === tokenAddr)
+    txSet.push(createTxDonate(address, tokenAddr, subs.map(sub => sub.address), subs.map(sub => sub.amount)))
+  })
+
+  // Get the current nonce if it's not supplied
+  if (nonce === -1)
+    nonce = await web3js.eth.getTransactionCount(address, 'pending')
+
+  // Schedule the transaction sets
+  const calcWhen = now => datetimeCalculators[settings['Payment schedule']](now).valueOf()
+  let monthIndex = (new Date(now)).getMonth()
+  let year = (new Date(now)).getFullYear()
+  let when
+  for (let i=0; i<6; i++) {
+    const txs = []
+    if (i === 0) {
+      for (const tokenAddr of uniqueTokenAddrs) {
+        // If this is the first time donating this token, `approve` the API contract to `transferFrom` `address`
+        if (!(await apiContractApproved(address, tokenAddr))) {
+          txs.push({ ...createTxApproveApiContract(address, tokenAddr), nonce })
+          nonce++
+        }
+      }
+    }
+    txSet.forEach(txObject => {
+      txs.push({ ...txObject, nonce })
+      nonce++
+    })
+    when = calcWhen((new Date(year, monthIndex)).valueOf())
+    await dispatch(scheduleTx(when, txs))
+    monthIndex++
+    if (monthIndex === 12) {
+      year++
+      monthIndex = 0
+    }
+  }
+}
 
 // export const updateScheduledTxs = (nonce=-1) => async (dispatch, getState) => {
 //   console.log('updateScheduledTxs')

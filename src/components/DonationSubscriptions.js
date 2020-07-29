@@ -10,6 +10,7 @@ import KeyboardArrowLeftIcon from '@material-ui/icons/KeyboardArrowLeft'
 import Tooltip from '@material-ui/core/Tooltip'
 import classNames from 'classnames'
 import { truncateForDisplay } from '../api/utils'
+import { addresses } from '../api/blockchain'
 
 const useStyles = makeStyles(theme => ({
   amount: {
@@ -28,12 +29,14 @@ const useStyles = makeStyles(theme => ({
 
 const headerCells = [
   {label: '', width: '16%', sortable: false, cellProps: {key: 'toProfile', numeric: false}},
-  {label: 'Site', width: '47%', sortable: true, cellProps: {key: 'name', numeric: false}},
-  {label: 'Amount', width: '22%', sortable: true, cellProps: {key: 'amount', numeric: true}},
+  {label: 'Site', width: '40%', sortable: true, cellProps: {key: 'name', numeric: false}},
+  {label: 'Amount', width: '29%', sortable: true, cellProps: {key: 'amount', numeric: true}},
   {label: '', width: '15%', sortable: false, cellProps: {key: 'unsubscribe', numeric: false}},
 ]
 
-function Subscriptions(props) {
+const getTokenSymbol = tokenAddr => Object.entries(addresses).find(([symbol, addr]) => addr === tokenAddr)[0]
+
+function DonationSubscriptions(props) {
   const {
     subscriptions,
     onUnsubscribe,
@@ -48,7 +51,7 @@ function Subscriptions(props) {
   return (
     <Table
       title="Monthly Subscriptions"
-      subtitle={"next token purchase on " + nextPayment.toLocaleDateString()}
+      subtitle={"next payout on " + nextPayment.toLocaleDateString()}
       headerCells={headerCells}
       rowsData={subscriptions}
       rowsPerPage={4}
@@ -83,7 +86,7 @@ function Subscriptions(props) {
             <Tooltip title={subscription.amount.toFixed(2)+' '+currency+' per month'} enterDelay={500}>
               <div className={classes.amount}>
                 <Typography variant="subtitle1">
-                  {currencySymbol + subscription.amount.toFixed(2)}
+                  {subscription.amount.toFixed(3).concat(' ', getTokenSymbol(subscription.tokenAddr))}
                 </Typography>
               </div>
             </Tooltip>
@@ -91,7 +94,7 @@ function Subscriptions(props) {
           <TableCell >
             {!subscription.permanent && <Tooltip title="Unsubscribe" enterDelay={500}>
               <Button className={classes.button}
-                onClick={() => onUnsubscribe(subscription.address)}
+                onClick={() => onUnsubscribe(subscription.address, subscription.tokenAddr)}
                 size="small" aria-label="Launch">
                 <DeleteOutlinedIcon />
               </Button>
@@ -103,4 +106,4 @@ function Subscriptions(props) {
   )
 }
 
-export default Subscriptions
+export default DonationSubscriptions

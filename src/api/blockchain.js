@@ -78,15 +78,14 @@ export const addresses = {
 export async function apiContractApproved(from, tokenAddr) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('apiContractApproved')
-  if (!tokenAddr) tokenAddr = addresses.DAI
-  const allowance = await dai.methods.allowance(from, tokenAddr).call()
+  const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+  const allowance = await token.methods.allowance(from, donationsAPI.options.address).call()
   return parseInt(allowance.toString()) > 10**36
 }
 
 export function createTxApproveApiContract(from, tokenAddr) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxApproveApiContract')
-  if (!tokenAddr) tokenAddr = addresses.DAI
   const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
   return {
@@ -107,11 +106,14 @@ export function createTxDonate(from, tokenAddr, ensAddresses, amounts) {
   const ensNodes = ensAddresses.map(toEnsNode)
   const values = amounts.map(amount => web3js.utils.toWei(amount.toString()))
 
+  console.log('dai', dai.options.address)
+  console.log('tokenAddr', tokenAddr)
+
   return {
     from,
     to: donationsAPI.options.address,
     gas: 150000 + (32000 * ensNodes.length),  // Exact calculation: 97731 + (30282 * length)
-    data: donationsAPI.methods.multiDonate(dai.options.address, ensNodes, values).encodeABI() // escrow.methods.donate(tokenAddr, ensNode, value).encodeABI()
+    data: donationsAPI.methods.multiDonate(tokenAddr, ensNodes, values).encodeABI() // escrow.methods.donate(tokenAddr, ensNode, value).encodeABI()
   }
 }
 

@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import Paper from '@material-ui/core/Paper'
 import Button from '@material-ui/core/Button'
+import CircularProgress from '@material-ui/core/CircularProgress'
 import Tooltip from '@material-ui/core/Tooltip'
 import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -32,6 +33,9 @@ const useStyles = makeStyles(theme => ({
   scheduleField: {
     marginLeft: theme.spacing(1),
     width: theme.spacing(10) + 4
+  },
+  buttonProgress: {
+    position: 'absolute',
   }
 }));
 
@@ -49,6 +53,7 @@ function Donate(props) {
     onClickButton,
     buttonText,
     buttonDisabled,
+    buttonLoading,
     tooltip
   } = props
   const classes = useStyles()
@@ -93,10 +98,11 @@ function Donate(props) {
           <div className={classes.button}>
             <Button
               onClick={onClickButton}
-              disabled={buttonDisabled}
+              disabled={buttonDisabled || buttonLoading}
               variant="contained" size="medium" color="primary"
             >
               {buttonText}
+              {buttonLoading && <CircularProgress size={24} className={classes.buttonProgress}/>}
             </Button>
           </div>
         </Tooltip>

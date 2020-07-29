@@ -180,9 +180,9 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = (dispatch) => ({
   onBuy: async (from, ensAddress, daiValue, amount) => {
     const txs = []
-    const approved = await apiContractApproved(from)
+    const approved = await apiContractApproved(from, addresses.DAI)
     if (!approved)
-      txs.push(createTxApproveApiContract(from))
+      txs.push(createTxApproveApiContract(from, addresses.DAI))
     txs.push(createTxBuyTokens(from, ensAddress, daiValue))
     dispatch(addToken(ensAddress))
     dispatch(reviewTx(txs, [ensAddress], [{ 'DAI': daiValue*-1, 'tokens': amount }]))

@@ -12,6 +12,15 @@ function scheduledTXs(state={}, action) {
       let newState = { ...state }
       delete newState[action.payload.id];
       return newState;
+    case 'DELETE_OLD_SCHEDULED_TXS':
+      const now = Date.now()
+      let newState2 = {}
+      Object.keys(state).forEach(id => {
+        if (state[id].when > now) {
+          newState2[id] = state[id]
+        }
+      })
+      return newState2
     default:
       return state;
   }

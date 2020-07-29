@@ -35,7 +35,7 @@ let mockChrome = {
   },
   tabs: {
     query: function(obj, callback) {
-      let tabs = [{url: "https://www.pkipay.net/"}]
+      let tabs = [{url: "https://www.etherscan.io/"}]
       callback(tabs);
     },
     onActivated: {

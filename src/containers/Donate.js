@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Donate'
-import { reviewTx, setTabIndex, addCounterparty } from '../actions'
+import { reviewTx, setTabIndex, addCounterparty, addDonationSubscription, removeDonationSubscription } from '../actions'
 import {
   apiContractApproved,
   createTxApproveApiContract,
@@ -42,6 +42,8 @@ function Donate({ ensAddress, ...mapped }) {
   const [token, setToken] = React.useState(tokenOptions[0])
   const [schedule, setSchedule] = React.useState(scheduleOptions[0])
 
+  const [buttonLoading, setButtonLoading] = React.useState(false);
+
   function handleChangeAmount(amount) {
     if (amount === '.' || !isNaN(amount))
       setAmount(amount)
@@ -61,7 +63,18 @@ function Donate({ ensAddress, ...mapped }) {
           mapped.onDonate(mapped.address, ensAddress, parsedAmount, addresses[token], token)
       }
       else if (schedule === 'Monthly') {
-        // TODO
+        if (!addresses[token]) {
+          throw new Error('Unknown token')
+        }
+        setButtonLoading(true)
+        mapped.onSubscribe(ensAddress, parsedAmount, addresses[token])
+        .then(() => {
+          mapped.onChangeTab(1)
+          setAmount('')
+          setToken(tokenOptions[0])
+          setSchedule(scheduleOptions[0])
+        })
+        .finally(() => setButtonLoading(false))
       }
     }
   }
@@ -70,9 +83,9 @@ function Donate({ ensAddress, ...mapped }) {
     if (!ensAddress)
       return ''
     else if (schedule === 'Monthly')
-      return "Feature coming soon"
+      return "Donate ".concat(parsedAmount.toFixed(3), " ", token, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), ' once per month')
     else
-      return "Donate ".concat(parsedAmount.toFixed(2), " ", token, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''))
+      return "Donate ".concat(parsedAmount.toFixed(3), " ", token, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''))
   }
 
   return React.createElement(PresentationalComponent, {
@@ -87,7 +100,8 @@ function Donate({ ensAddress, ...mapped }) {
     onChangeSchedule: setSchedule,
     onClickButton: handleClickButton,
     buttonText: buttonText[schedule],
-    buttonDisabled: (schedule === 'Monthly') || !ensAddress/* old - not in 1.0: || (token === 'tokens' && tokenAddress === ZERO_ADDRESS)*/,
+    buttonDisabled: !ensAddress/* old - not in 1.0: || (token === 'tokens' && tokenAddress === ZERO_ADDRESS)*/,
+    buttonLoading,
     tooltip: tooltip(),
   })
 }
@@ -140,6 +154,10 @@ const mapDispatchToProps = (dispatch) => ({
     dispatch(addCounterparty(ensAddress))
     const tx = createTxDonateETH(from, ensAddress, amount)
     dispatch(reviewTx([tx], [ensAddress], [{ 'ETH': amount*-1 }]))
+  },
+  onSubscribe: async (ensAddress, amount, tokenAddr) => {
+    await dispatch(removeDonationSubscription(ensAddress, tokenAddr, false))
+    await dispatch(addDonationSubscription(ensAddress, amount, tokenAddr))
   },
   onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
 })
