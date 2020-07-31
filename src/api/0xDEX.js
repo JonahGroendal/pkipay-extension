@@ -9,9 +9,19 @@ import * as qs from 'qs'
  * }
  * returns a web3 tx object
  */
-export async function createTxSwap(params) {
+export async function createTxSwap(params, options={ chainId: 1 }) {
+  let baseUrl
+  if (options.chainId === 1) {
+    baseUrl = 'https://api.0x.org/'
+  }
+  else if (options.chainId === 42) {
+    baseUrl = 'https://kovan.api.0x.org/'
+  }
+  else {
+    throw new Error(`Chain ID "${options.chainId}" not supported`)
+  }
   const response = await fetch(
-      `https://api.0x.org/swap/v0/quote?${qs.stringify(params)}`
+      `${baseUrl}swap/v0/quote?${qs.stringify(params)}`
   );
 
   return await response.json()

@@ -14,6 +14,7 @@
     "eject": "react-scripts eject"
   },
   "dependencies": {
+    "@0x/contract-addresses": "^4.11.0",
     "@ensdomains/ens": "github:JonahGroendal/ens",
     "@ensdomains/resolver": "^0.2.4",
     "@material-ui/core": "^4.9.7",

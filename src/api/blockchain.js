@@ -18,6 +18,7 @@ import ENSResolverMock from 'ens-donation-escrow/build/contracts/ResolverMock.js
 import ERC20 from 'pkipay-eth/build/contracts/ERC20.json'
 import ERC20DetailedString from 'pkipay-eth/build/contracts/ERC20DetailedString.json'
 import ERC20DetailedBytes32 from 'pkipay-eth/build/contracts/ERC20DetailedBytes32.json'
+import WETH from 'pkipay-eth/build/contracts/WETH.json'
 
 // old contracts:
 // import TokenSale from 'pkipay-blockchain/build/contracts/TokenSale.json'
@@ -48,6 +49,10 @@ const contractAddrs = {
       1: '0xDaaF96c344f63131acadD0Ea35170E7892d3dfBA',
       42: ENSResolverMock.networks[42].address
     }
+  },
+  weth: {
+    1: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+    42: '0xd0A1E359811322d97991E03f863a0C30C2cF029C'
   }
 }
 
@@ -60,6 +65,7 @@ const donationsAPI = new web3js.eth.Contract(DonationsAPI.abi, DonationsAPI.netw
 const escrow = new web3js.eth.Contract(ENSDonationEscrow.abi, ENSDonationEscrow.networks[chainId].address);
 const ens = new web3js.eth.Contract(ENSRegistry.abi, contractAddrs.ens.registry[chainId]);
 const dai = new web3js.eth.Contract(ERC20.abi, contractAddrs.dai[chainId]);
+const weth = new web3js.eth.Contract(WETH.abi, contractAddrs.weth[chainId]);
 // const medianizer = new web3js.eth.Contract(IMedianizer.abi, contractAddrs.medianizer[chainId])
 
 // old:
@@ -72,7 +78,22 @@ const dnsRootEnsAddress = process.env.REACT_APP_ACTUAL_ENV === 'production'
 
 export const addresses = {
   'ETH': '0x0000000000000000000000000000000000000000',
-  'DAI': dai.options.address
+  'DAI': dai.options.address,
+  'WETH': weth.options.address
+}
+
+const MAX_UINT = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
+
+// Not yet tested:
+export async function createTxExchangeWethForEth(from, amountInWei) {
+  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+    console.log('exchangeAllWethForEth')
+  return {
+    to: weth.options.address,
+    from,
+    gas: 100000,
+    data: weth.methods.withdraw(amountInWei).encodeABI()
+  }
 }
 
 export async function apiContractApproved(from, tokenAddr) {
@@ -86,13 +107,32 @@ export async function apiContractApproved(from, tokenAddr) {
 export function createTxApproveApiContract(from, tokenAddr) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxApproveApiContract')
-  const maxUint = "115792089237316195423570985008687907853269984665640564039457584007913129639935"
   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
   return {
     to: tokenAddr,
     from,
     gas: 50000,
-    data: token.methods.approve(donationsAPI.options.address, maxUint).encodeABI()
+    data: token.methods.approve(donationsAPI.options.address, MAX_UINT).encodeABI()
+  }
+}
+
+export async function addressApproved(from, tokenAddr, address) {
+  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+    console.log('addressApproved')
+  const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+  const allowance = await token.methods.allowance(from, address).call()
+  return parseInt(allowance.toString()) > 10**36
+}
+
+export function createTxApproveAddress(from, tokenAddr, address) {
+  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+    console.log('createTxApproveAddress')
+  const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
+  return {
+    to: tokenAddr,
+    from,
+    gas: 50000,
+    data: token.methods.approve(address, MAX_UINT).encodeABI()
   }
 }
 

@@ -108,7 +108,7 @@ function useGasValues(txObjects) {
       let isApprox = false
       Promise.all(txObjects.map(txObject => web3js.eth.estimateGas(txObject).catch(() => {
         isApprox = true;
-        return Number(txObject.gas)
+        return Number(txObject.estimatedGas ? txObject.estimatedGas : txObject.gas)
       })))
       .then(gasEstimates => {
         // cryptoCompare.setApiKey('ef0e18b0c977b89105af46b14aaf52ec25310df3d95fd7c971d4c5ee4fcf1b25')
