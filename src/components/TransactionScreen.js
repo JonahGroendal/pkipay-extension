@@ -171,7 +171,7 @@ function TransactionScreen(props) {
                     </div>
                     <div className={classes.listItemRight}>
                       <Tooltip title={to} enterDelay={300}>
-                        <Typography align="center">{truncateForDisplay(to.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), 50)}</Typography>
+                        <Typography align="center">{truncateForDisplay(to.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), to.slice(0, 2) === '0x' ? 15 : 50)}</Typography>
                       </Tooltip>
                     </div>
                   </ListItem>

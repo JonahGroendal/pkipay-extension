@@ -5,6 +5,7 @@ import DonationSubscriptions from '../containers/DonationSubscriptions'
 import Page from './Page'
 import Balances from '../containers/Balances'
 import PendingDonations from '../containers/PendingDonations'
+import Transfer from '../containers/Transfer'
 
 const NAV_HEIGHT = 104
 
@@ -13,6 +14,7 @@ const PageManage = ({ subscription, onChangeIndex }) => (
     {/* old - not going into 1.0: <Subscriptions onChangeIndex={onChangeIndex}/>*/}
     <DonationSubscriptions onChangeIndex={onChangeIndex}/>
     <Balances onChangeIndex={onChangeIndex}/>
+    <Transfer />
     <PendingDonations />
   </Page>
 )

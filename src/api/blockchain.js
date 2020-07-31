@@ -303,32 +303,30 @@ export function createTxWithdrawDonationsETH(from, ensAddress, donors) {
   }
 }
 
-export async function createTxTransfer(from, toEnsName, tokenAddr, amount) {
+export function createTxTransfer(from, toAddress, tokenAddr, amount) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
-    console.log('createTxTransferTokens')
+    console.log('createTxTransfer')
+  if (toAddress === '0x0000000000000000000000000000000000000000')
+    throw new Error('Transferring to the zero address')
   const weiAmount = web3js.utils.toWei(amount.toString())
-  const to = await resolveAddress(toEnsName)
-  if (to === '0x0000000000000000000000000000000000000000')
-    throw new Error('"'.concat(toEnsName, '" resolves to the zero address'))
   const token = new web3js.eth.Contract(ERC20.abi, tokenAddr)
   return {
     from,
     to: tokenAddr,
     gas: 70000,
-    data: token.methods.transfer(to, weiAmount).encodeABI()
+    data: token.methods.transfer(toAddress, weiAmount).encodeABI()
   }
 }
 
-export async function createTxTransferETH(from, toEnsName, amount) {
+export function createTxTransferETH(from, toAddress, amount) {
   if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
     console.log('createTxTransferETH')
   const weiAmount = web3js.utils.toWei(amount.toString())
-  const to = await resolveAddress(toEnsName)
-  if (to === '0x0000000000000000000000000000000000000000')
-    throw new Error('"'.concat(toEnsName, '" resolves to the zero address'))
+  if (toAddress === '0x0000000000000000000000000000000000000000')
+    throw new Error('Transferring to the zero address')
   return {
     from,
-    to,
+    to: toAddress,
     value: weiAmount,
     gas: 24000
   }
