@@ -1,6 +1,5 @@
 import React from 'react'
 import { makeStyles } from '@material-ui/styles'
-import QRCodeScreen from '../containers/QRCodeScreen'
 import DEXSwapScreen from '../containers/DEXSwapScreen'
 import Table from './Table'
 import TableRow from '@material-ui/core/TableRow'
@@ -33,11 +32,15 @@ const headerCells = [
 ]
 
 
-function Balances({ balances, onClickBalance, onClickExchange, dexScreenOpen, onCloseDexScreen }) {
+function Balances({ balances, onClickBalance, onClickExchange, dexScreenOpen, onCloseDexScreen, onClickAddFunds }) {
   const classes = useStyles()
+
+
+
   return (
     <React.Fragment>
       <DEXSwapScreen open={dexScreenOpen} onClose={onCloseDexScreen} />
+
       <Table
         title="Balances"
         className={classes.table}
@@ -58,7 +61,13 @@ function Balances({ balances, onClickBalance, onClickExchange, dexScreenOpen, on
               DAI
             </Button>
           </Tooltip>,
-          <QRCodeScreen />
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={onClickAddFunds}
+          >
+            Add funds
+          </Button>
         ]}
       >
         {(holding, index) => (

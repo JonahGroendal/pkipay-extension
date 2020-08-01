@@ -8,6 +8,7 @@ import namehash from 'eth-ens-namehash'
 
 function Balances(props) {
   const {
+    onClickAddFunds,
     onChangeIndex,
     address,
     tokens,
@@ -54,6 +55,7 @@ function Balances(props) {
   // }, [target, tokens])
 
   return React.createElement(PresentationalComponent, {
+    onClickAddFunds,
     balances: [ethBalance, daiBalance/*, old - not going into 1.0: ...tokenBalances*/],
     onClickBalance: name => {
       if (name === 'Ether' || name === "Dai Stablecoin") {

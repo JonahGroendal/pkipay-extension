@@ -24,8 +24,12 @@ const useStyles = makeStyles(theme => ({
   },
   profileCardContainerAbs: {
     position: 'absolute',
-    zIndex: -1,
+    // zIndex: -1,
     width: appConfig.width
+  },
+  card: {
+    position: 'relative',
+    zIndex: 1
   },
   adminViewSwitch: {
     display: 'flex',
@@ -95,14 +99,18 @@ function PageProfile(props) {
         <Page height={appConfig.height - NAV_HEIGHT - adminViewRenderHeight}>
           <div style={{ height: profileCardRenderHeight }}></div>
           {resolvedAddress === address && (
-            <Typography variant="h6" align="center">
-              You own this site
-            </Typography>
+            <div className={classes.card}>
+              <Typography variant="h6" align="center">
+                You own this site
+              </Typography>
+            </div>
           )}
           {resolvedAddress !== address && (
-            <Donate ensAddress={ensAddress} />
+            <div className={classes.card}>
+              <Donate ensAddress={ensAddress} />
+            </div>
           )}
-          <div>
+          <div className={classes.card}>
             {!!ensAddress && !isEnsNode(ensAddress) && resolvedAddress !== address && !pendingWithdrawalsExist && (
               <ClaimWebsiteCard
                 alreadyClaimed={!isZero(resolvedAddress)}

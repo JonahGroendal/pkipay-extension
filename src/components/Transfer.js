@@ -6,6 +6,7 @@ import CircularProgress from '@material-ui/core/CircularProgress'
 import Tooltip from '@material-ui/core/Tooltip'
 import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
+import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles(theme => ({
   paper: {
@@ -39,6 +40,7 @@ const useStyles = makeStyles(theme => ({
 
 function Transfer(props) {
   const {
+    firstInputRef,
     toAddress,
     amount,
     onChangeToAddress,
@@ -56,10 +58,14 @@ function Transfer(props) {
 
   return (
     <Paper className={classes.paper}>
+      <Typography variant="h6">
+        Transfer Tokens
+      </Typography>
       <div className={classes.inputRow}>
         <TextField
+          inputRef={firstInputRef}
           className={classes.addressField}
-          label={"To"}
+          label={"Recipient address"}
           onChange={event => onChangeToAddress(event.target.value)}
           value={toAddress}
           error={toAddressError}
@@ -93,7 +99,7 @@ function Transfer(props) {
               onClick={onClickButton}
               variant="contained" size="medium" color="primary"
             >
-              {buttonText}
+              Review
             </Button>
           </div>
         </Tooltip>

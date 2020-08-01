@@ -10,8 +10,7 @@ import IconButton from '@material-ui/core/IconButton'
 import CloseIcon from '@material-ui/icons/Close'
 import Slide from '@material-ui/core/Slide'
 
-function QRCodeScreen({ address, onCopy: handleCopy }) {
-  const [isOpen, setIsOpen] = React.useState(false)
+function QRCodeScreen({ open, onClose, address, onCopy: handleCopy }) {
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
 
   function handleCloseSnackbar(event, reason) {
@@ -26,16 +25,9 @@ function QRCodeScreen({ address, onCopy: handleCopy }) {
 
   return (
     <div>
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        Add funds
-      </Button>
       <Dialog
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
+        open={open}
+        onClose={onClose}
         maxWidth="md"
       >
         <DialogTitle>Account Address</DialogTitle>
@@ -49,7 +41,7 @@ function QRCodeScreen({ address, onCopy: handleCopy }) {
             Copy
           </Button>
           <Button
-            onClick={() => setIsOpen(false)}
+            onClick={onClose}
           >
             Close
           </Button>

@@ -14,7 +14,7 @@ import web3js from '../api/web3js'
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-function Transfer({ ensAddress, ...mapped }) {
+function Transfer({ ensAddress, firstInputRef, ...mapped }) {
   const [amount, setAmount] = React.useState('')
   const [amountError, setAmountError] = React.useState(false);
   const parsedAmount = isNaN(amount)
@@ -85,6 +85,7 @@ function Transfer({ ensAddress, ...mapped }) {
     onClickButton: handleClickButton,
     buttonText: "Transfer",
     tooltip: tooltip(),
+    firstInputRef
   })
 }
 
