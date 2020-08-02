@@ -36,7 +36,6 @@ export async function getUsdExchangeRate(currency, options={ useCached: true }) 
   }
   else {
     await getRates()
-    console.log('rates', rates)
     retVal = rates[currency]
   }
   if (!retVal) {

@@ -24,7 +24,8 @@ function App({ darkMode }) {
       }
     }
   })
-  console.log('theme:', theme)
+  if (process.env.REACT_APP_ACTUAL_ENV !== 'production')
+    console.log('theme:', theme)
 
   return (
     <ThemeProvider theme={theme}>
