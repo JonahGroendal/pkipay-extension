@@ -1,35 +1,28 @@
 import React from 'react'
 import PresentationalComponent from '../components/ProfileCard'
 import { connect } from 'react-redux'
-import {
-  getTotalContributions,
-  getPriceOfETHInUSD,
-  addresses
-} from '../api/blockchain'
+import { getTotalContributions, addresses } from '../api/blockchain'
 import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
 
-function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square, targetRegistered }) {
+function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square, targetRegistered, priceOfETHInUSD }) {
   const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
   const [largeFaviconExists, setLargeFaviconExists] = React.useState(false)
   const [totalDonations, setTotalDonations] = React.useState(0)
   const [totalDonationsOneMonth, setTotalDonationsOneMonth] = React.useState(0)
 
   React.useEffect(() => {
-    if (ensAddress) {
+    if (ensAddress && priceOfETHInUSD) {
       if (!txScreenOpen) {
-        Promise.all([
-          getTotalContributions(ensAddress),
-          getPriceOfETHInUSD()
-        ])
-        .then(([contribs, ethPrice]) => {
+        getTotalContributions(ensAddress)
+        .then(contribs => {
           let usdValue = 0
           if (contribs.all[addresses.DAI]) usdValue += contribs.all[addresses.DAI]
-          if (contribs.all[addresses.ETH]) usdValue += contribs.all[addresses.ETH] * ethPrice
+          if (contribs.all[addresses.ETH]) usdValue += contribs.all[addresses.ETH] * priceOfETHInUSD
           setTotalDonations(convertFromUSD(currency, usdValue))
           usdValue = 0
           if (contribs.lastMonth[addresses.DAI]) usdValue += contribs.lastMonth[addresses.DAI]
-          if (contribs.lastMonth[addresses.ETH]) usdValue += contribs.lastMonth[addresses.ETH] * ethPrice
+          if (contribs.lastMonth[addresses.ETH]) usdValue += contribs.lastMonth[addresses.ETH] * priceOfETHInUSD
           setTotalDonationsOneMonth(convertFromUSD(currency, usdValue))
         })
         let xhr = new XMLHttpRequest()
@@ -47,7 +40,7 @@ function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square, tar
       setTotalDonationsOneMonth(0)
       setLargeFaviconExists(false)
     }
-  }, [hostname, currency, txScreenOpen])
+  }, [hostname, ensAddress, priceOfETHInUSD, currency, txScreenOpen])
 
   // const [avatarColor, setAvatarColor] = React.useState('')
   // React.useEffect(updateState, [subscription, currency])

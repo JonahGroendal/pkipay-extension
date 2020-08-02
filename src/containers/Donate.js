@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Donate'
-import { reviewTx, setTabIndex, addCounterparty, addDonationSubscription, removeDonationSubscription } from '../actions'
+import { reviewTx, addCounterparty, addDonationSubscription, removeDonationSubscription } from '../actions'
 import {
   apiContractApproved,
   createTxApproveApiContract,
@@ -21,7 +21,7 @@ const buttonText = {
   'Monthly': 'Subscribe'
 }
 
-function Donate({ ensAddress, ...mapped }) {
+function Donate({ ensAddress, onChangeTab, ...mapped }) {
   const [amount, setAmount] = React.useState('')
   const [error, setError] = React.useState(false);
   const parsedAmount = isNaN(amount)
@@ -69,7 +69,7 @@ function Donate({ ensAddress, ...mapped }) {
         setButtonLoading(true)
         mapped.onSubscribe(ensAddress, parsedAmount, addresses[token])
         .then(() => {
-          mapped.onChangeTab(1)
+          onChangeTab(1)
           setAmount('')
           setToken(tokenOptions[0])
           setSchedule(scheduleOptions[0])
@@ -158,8 +158,7 @@ const mapDispatchToProps = (dispatch) => ({
   onSubscribe: async (ensAddress, amount, tokenAddr) => {
     await dispatch(removeDonationSubscription(ensAddress, tokenAddr, false))
     await dispatch(addDonationSubscription(ensAddress, amount, tokenAddr))
-  },
-  onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex))
+  }
 })
 
 export default connect(

@@ -1,30 +1,31 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
-import { getTokenBalance, getBalanceETH, getBalanceDAI, getTokenName, getTokenSymbol, /* old - not going into 1.0: resolveToken, scanForTokens, */domainNameToEnsName } from '../api/blockchain'
+import { getTokenBalance, getBalanceDAI, getTokenName, getTokenSymbol, /* old - not going into 1.0: resolveToken, scanForTokens, */domainNameToEnsName } from '../api/blockchain'
 import { setTarget, addToken, removeToken, completeTokenScan } from '../actions'
 import { isDomainName, isEnsName, isEnsNode } from '../api/utils'
 import namehash from 'eth-ens-namehash'
 
 function Balances(props) {
   const {
+    ethBalance,
     onClickAddFunds,
-    onChangeIndex,
+    onChangeTab,
     address,
     tokens,
     addToken,
     tokenScanComplete,
     completeTokenScan,
     txScreenOpen,
-    tabIndex,
+    inView,
     target,
     setTarget
   } = props
 
   // old - not going into 1.0
-  // const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, tabIndex)
-  const ethBalance = useEthBalance(address, txScreenOpen, tabIndex)
-  const daiBalance = useDaiBalance(address, txScreenOpen, tabIndex)
+  // const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, inView)
+  const ethBalanceObj = useEthBalance(ethBalance)
+  const daiBalanceObj = useDaiBalance(address, txScreenOpen, inView)
 
   const [dexScreenOpen, setDexScreenOpen] = React.useState(false)
 
@@ -56,14 +57,14 @@ function Balances(props) {
 
   return React.createElement(PresentationalComponent, {
     onClickAddFunds,
-    balances: [ethBalance, daiBalance/*, old - not going into 1.0: ...tokenBalances*/],
+    balances: [ethBalanceObj, daiBalanceObj/*, old - not going into 1.0: ...tokenBalances*/],
     onClickBalance: name => {
       if (name === 'Ether' || name === "Dai Stablecoin") {
         setDexScreenOpen(true)
       }
       else if (isEnsName(name) || isEnsNode(name)) {
         setTarget(name.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''))
-        onChangeIndex(0)
+        onChangeTab(0)
       }
     },
     onClickExchange: () => setDexScreenOpen(true),
@@ -77,7 +78,6 @@ const mapStateToProps = state => ({
   tokens: state.wallet.tokens,
   tokenScanComplete: state.wallet.tokenScanComplete,
   txScreenOpen: state.transactionScreen.isOpen,
-  tabIndex: state.pages.tabIndex,
   target: state.target
 })
 
@@ -94,10 +94,10 @@ export default connect(
 )(Balances)
 
 // old - not going into 1.0
-// function useTokenBalances(address, tokens, txScreenOpen, tabIndex) {
+// function useTokenBalances(address, tokens, txScreenOpen, inView) {
 //   const [tokenBalances, setTokenBalances] = React.useState([])
 //   React.useEffect(() => {
-//     if (!txScreenOpen && address && tabIndex === 1) {
+//     if (!txScreenOpen && address && inView) {
 //       Promise.all(tokens.map(ensAddress => resolveToken(ensAddress, { usePublicResolver: true })))
 //       .then(tokenAddrs => {
 //         return Promise.all(tokenAddrs.map(tokenAddr => (
@@ -137,39 +137,35 @@ export default connect(
 //         setTokenBalances(tokenDetailsObjs)
 //       })
 //     }
-//   }, [txScreenOpen, address, tabIndex, tokens])
+//   }, [txScreenOpen, address, inView, tokens])
 //
 //   return tokenBalances
 // }
 
-function useEthBalance(address, txScreenOpen, tabIndex) {
-  const [ethBalance, setEthBalance] = React.useState({
+function useEthBalance(ethBalance) {
+  return {
     name: 'Ether',
     symbol: 'ETH',
-    balance: 0
-  })
-
-  React.useEffect(() => {
-    if (!txScreenOpen && address && tabIndex === 1)
-      getBalanceETH(address)
-      .then(balance => setEthBalance(prev => ({ ...prev, balance })))
-  }, [txScreenOpen, address, tabIndex])
-
-  return ethBalance
+    balance: ethBalance
+  }
 }
 
-function useDaiBalance(address, txScreenOpen, tabIndex) {
-  const [daiBalance, setDaiBalance] = React.useState({
-    name: 'Dai Stablecoin',
-    symbol: 'DAI',
-    balance: 0
-  })
+function useDaiBalance(address, txScreenOpen, inView) {
+  const [daiBalance, setDaiBalance] = React.useState(0)
 
   React.useEffect(() => {
-    if (!txScreenOpen && address && tabIndex === 1)
-      getBalanceDAI(address)
-      .then(balance => setDaiBalance(prev => ({ ...prev, balance })))
-  }, [txScreenOpen, address, tabIndex])
+    if (!daiBalance && address && inView)
+      getBalanceDAI(address).then(setDaiBalance)
+  }, [address, inView])
 
-  return daiBalance
+  React.useEffect(() => {
+    if (daiBalance && !txScreenOpen)
+      getBalanceDAI(address).then(setDaiBalance)
+  }, [txScreenOpen])
+
+  return {
+    name: 'Dai Stablecoin',
+    symbol: 'DAI',
+    balance: daiBalance
+  }
 }

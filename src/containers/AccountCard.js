@@ -4,25 +4,12 @@ import PresentationalComponent from '../components/AccountCard'
 import { navigateTo } from '../api/browser'
 import currencySymbols from '../api/currencySymbols'
 import { convertFromUSD } from '../api/ECBForexRates'
-import { getBalanceETH, getPriceOfETHInUSD } from '../api/blockchain'
 
-const toQueryParams = paramsObj => Object.entries(paramsObj).map(([key, val]) => key.concat('=', val)).join('&');
+const toQueryParams = paramsObj => (
+  Object.entries(paramsObj).map(([key, val]) => key.concat('=', val)).join('&')
+)
 
-function AccountCard({ onClickSend, onClickAccount, ...mapped }) {
-  const [priceOfETHInUSD, setPriceOfETHInUSD] = React.useState(0)
-  const [ethBalance, setEthBalance] = React.useState(0)
-
-  React.useEffect(() => {
-    if (mapped.tabIndex === 1 && priceOfETHInUSD === 0) {
-      getPriceOfETHInUSD().then(setPriceOfETHInUSD)
-    }
-  }, [mapped.tabIndex])
-
-  React.useEffect(() => {
-    if (!mapped.txScreenOpen && mapped.address && mapped.tabIndex === 1)
-      getBalanceETH(mapped.address).then(setEthBalance)
-  }, [mapped.txScreenOpen, mapped.address, mapped.tabIndex])
-
+function AccountCard({ onClickSend, onClickAccount, priceOfETHInUSD, ethBalance, ...mapped }) {
   const handleClickBuy = async () => {
     if (mapped.address) {
       const queryParams = toQueryParams({
@@ -52,7 +39,6 @@ function AccountCard({ onClickSend, onClickAccount, ...mapped }) {
 const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount],
   currency: state.settings['Currency'],
-  tabIndex: state.pages.tabIndex,
   txScreenOpen: state.transactionScreen.isOpen
 })
 

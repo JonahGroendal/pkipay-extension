@@ -2,11 +2,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/PageProfile'
 import { getUrl, getHostname } from '../api/browser'
-import { domainNameToEnsName, getEnsNodeOwner, resolveAddress, getPendingWithdrawals, addresses } from '../api/blockchain'
+import { domainNameToEnsName, resolveAddress, getPendingWithdrawals, addresses } from '../api/blockchain'
 import { setTarget } from '../actions'
 import { isDomainName, isEnsName, isEnsNode } from '../api/utils'
 
-function PageProfile({ target, address, onChangeTarget }) {
+function PageProfile({ target, address, onChangeTarget, priceOfETHInUSD, onChangeTab }) {
   const hostname = isDomainName(target) ? target : ''
   const ensAddress = isDomainName(target)
     ? domainNameToEnsName(target.split('.').slice(-2).join('.'))
@@ -51,7 +51,9 @@ function PageProfile({ target, address, onChangeTarget }) {
     pendingWithdrawalsExist,
     pendingWithdrawalsETH,
     pendingWithdrawalsDAI,
-    pendingWithdrawalsRest
+    pendingWithdrawalsRest,
+    priceOfETHInUSD,
+    onChangeTab
   })
 }
 

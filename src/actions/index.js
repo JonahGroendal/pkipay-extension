@@ -10,11 +10,6 @@ export const setTarget = (target) => ({
   target
 })
 
-export const setTabIndex = (index) => ({
-  type: 'SET_TAB_INDEX',
-  tabIndex: index
-})
-
 // old - not going into 1.0:
 // export const addSubscription = (address, amount) => async (dispatch) => {
 //   if (web3js.eth.accounts.wallet.length === 0)

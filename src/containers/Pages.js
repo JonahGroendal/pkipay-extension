@@ -1,22 +1,23 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Pages'
-import { setTabIndex } from '../actions'
+import { getPriceOfETHInUSD } from '../api/blockchain'
 
-function Pages({ tabIndex, onChangeTab }) {
+function Pages() {
+  const [tabIndex, setTabIndex] = React.useState(0)
+  const [priceOfETHInUSD, setPriceOfETHInUSD] = React.useState(0)
+
+  React.useEffect(() => {
+    getPriceOfETHInUSD().then(setPriceOfETHInUSD)
+  }, [])
+
+  const handleChangeTab = tabIndex => setTabIndex(tabIndex)
+
   return React.createElement(PresentationalComponent, {
     tabIndex,
-    onChangeTab
+    onChangeTab: handleChangeTab,
+    priceOfETHInUSD
   })
 }
 
-const mapStateToProps = state => ({
-  tabIndex: state.pages.tabIndex
-})
-const mapDispatchToProps = dispatch => ({
-  onChangeTab: i => dispatch(setTabIndex(i))
-})
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(Pages)
+export default Pages

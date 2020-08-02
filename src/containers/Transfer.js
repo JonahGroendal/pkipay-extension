@@ -83,7 +83,6 @@ function Transfer({ ensAddress, firstInputRef, ...mapped }) {
     onChangeToAddress: setToAddress,
     onChangeToken: setToken,
     onClickButton: handleClickButton,
-    buttonText: "Transfer",
     tooltip: tooltip(),
     firstInputRef
   })

@@ -47,7 +47,9 @@ function PageProfile(props) {
     pendingWithdrawalsExist,
     pendingWithdrawalsETH,
     pendingWithdrawalsDAI,
-    pendingWithdrawalsRest
+    pendingWithdrawalsRest,
+    priceOfETHInUSD,
+    onChangeTab
   } = props
   const classes = useStyles();
 
@@ -93,6 +95,7 @@ function PageProfile(props) {
               hostname={hostname}
               square={true}
               targetRegistered={resolvedAddress !== '0x0000000000000000000000000000000000000000'}
+              priceOfETHInUSD={priceOfETHInUSD}
             />
           </div>
         </div>
@@ -107,7 +110,7 @@ function PageProfile(props) {
           )}
           {resolvedAddress !== address && (
             <div className={classes.card}>
-              <Donate ensAddress={ensAddress} />
+              <Donate ensAddress={ensAddress} onChangeTab={onChangeTab} />
             </div>
           )}
           <div className={classes.card}>
@@ -135,7 +138,7 @@ function PageProfile(props) {
           {/*pendingWithdrawalsExist && (
             TODO: card for withdrawing in case there are pending withdrawals even tho this ENS address resolves to an eth address (not sure how but maybe it could happen)
           )*/}
-          {/*old - not going into 1.0: <Token ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>*/}
+          {/*old - not going into 1.0: <Token onChangeTab={onChangeTab} ensAddress={ensAddress} adminViewEnabled={adminViewEnabled}/>*/}
         </Page>
       </div>
     </div>

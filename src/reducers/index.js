@@ -7,7 +7,6 @@ import unlockWalletScreen from './unlockWalletScreen'
 import transactionScreen from './transactionScreen'
 import scheduledTXs from './scheduledTXs'
 import wallet from './wallet'
-import pages from './pages'
 import dnsChallenge from './dnsChallenge'
 
 export default combineReducers({
@@ -19,6 +18,5 @@ export default combineReducers({
   transactionScreen,
   wallet,
   scheduledTXs,
-  pages,
   dnsChallenge
 })

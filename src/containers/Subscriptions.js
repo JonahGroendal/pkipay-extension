@@ -13,7 +13,8 @@ function Subscriptions(props) {
     paymentSchedule,
     onUnsubscribe,
     setTarget,
-    onChangeIndex,
+    inView,
+    onChangeTab,
   } = props
   const [newRowIndex, setNewRowIndex] = React.useState(-1)
 
@@ -26,7 +27,7 @@ function Subscriptions(props) {
     subscriptions: subscriptions.map(sub => ({ ...sub, amount: convertFromUSD(currency, sub.amount)})),
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
-    onClickSubscription: sub => {setTarget(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeIndex(0)},
+    onClickSubscription: sub => {setTarget(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeTab(0)},
     currency,
     currencySymbol: currencySymbols[currency],
     nextPayment: datetimeCalculators[paymentSchedule](Date.now())
@@ -34,13 +35,12 @@ function Subscriptions(props) {
 }
 
 // Update component only when tabIndex == 1
-const notInView = (prevProps, nextProps) => nextProps.tabIndex !== 1
+const notInView = (prevProps, nextProps) => !nextProps.inView
 
 const mapStateToProps = state => ({
   subscriptions: state.subscriptions,
   currency: state.settings['Currency'],
-  paymentSchedule: state.settings['Payment schedule'],
-  tabIndex: state.pages.tabIndex
+  paymentSchedule: state.settings['Payment schedule']
 });
 const mapDispatchToProps = dispatch => ({
   onUnsubscribe: address => dispatch(removeSubscription(address)),

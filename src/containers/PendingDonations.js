@@ -6,8 +6,8 @@ import { addCounterparty, removeCounterparty } from '../actions'
 import namehash from 'eth-ens-namehash'
 import { isDomainName } from '../api/utils'
 
-function PendingDonations({ ...mapped }) {
-  const pendingDonations = useDonationEscrowBalances(mapped.address, mapped.txScreenOpen, mapped.tabIndex, mapped.counterparties)
+function PendingDonations({ inView=true, ...mapped }) {
+  const pendingDonations = useDonationEscrowBalances(mapped.address, mapped.txScreenOpen, inView, mapped.counterparties)
 
   // If donees are found that don't exist in the `counterparties` array, add them
   React.useEffect(() => {
@@ -40,7 +40,6 @@ function PendingDonations({ ...mapped }) {
 const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount],
   txScreenOpen: state.transactionScreen.isOpen,
-  tabIndex: state.pages.tabIndex,
   counterparties: state.wallet.counterparties,
   target: state.target
 })
@@ -55,38 +54,52 @@ export default connect(
   mapDispatchToProps
 )(PendingDonations)
 
-function useDonationEscrowBalances(from, txScreenOpen, tabIndex, ensDomains) {
+function useDonationEscrowBalances(from, txScreenOpen, inView, ensDomains) {
   const [balances, setBalances] = React.useState([])
   const [tokenSymbols, setTokenSymbols] = React.useState({})
-  React.useEffect(() => {
-    if (from && !txScreenOpen && tabIndex === 1) {
-      const ensNodes = {}
-      ensDomains.forEach(token => {
-        ensNodes[namehash.hash(token)] = token
-      })
-      getPendingDonations(from)
-      .then(pendingDonations => {
-        const tempTokenSymbols = { ...tokenSymbols }
-        Promise.all(pendingDonations.map(pd => {
-          if(!Object.keys(tempTokenSymbols).includes(pd.token))
-            tempTokenSymbols[pd.token] = getTokenSymbol(pd.token)
-          return tempTokenSymbols[pd.token]
+  const [initialized, setInitialized] = React.useState(false)
+
+  const doAllTheStuff = async () => {
+    const ensNodes = {}
+    ensDomains.forEach(token => {
+      ensNodes[namehash.hash(token)] = token
+    })
+    return getPendingDonations(from)
+    .then(pendingDonations => {
+      const tempTokenSymbols = { ...tokenSymbols }
+      return Promise.all(pendingDonations.map(pd => {
+        if(!Object.keys(tempTokenSymbols).includes(pd.token))
+          tempTokenSymbols[pd.token] = getTokenSymbol(pd.token)
+        return tempTokenSymbols[pd.token]
+      }))
+      .then((tokenSymbols, index) => {
+        setBalances(pendingDonations.map((pd, i) => {
+          if (tokenSymbols[i] !== undefined)
+            pd.tokenSymbol = tokenSymbols[i]
+          else if (pd.token === '0x0000000000000000000000000000000000000000')
+            pd.tokenSymbol = 'ETH'
+          else
+            pd.tokenSymbol = pd.token
+          pd.doneeName = ensNodes[pd.donee] ? ensNodes[pd.donee] : pd.donee
+          return pd
         }))
-        .then((tokenSymbols, index) => {
-          setBalances(pendingDonations.map((pd, i) => {
-            if (tokenSymbols[i] !== undefined)
-              pd.tokenSymbol = tokenSymbols[i]
-            else if (pd.token === '0x0000000000000000000000000000000000000000')
-              pd.tokenSymbol = 'ETH'
-            else
-              pd.tokenSymbol = pd.token
-            pd.doneeName = ensNodes[pd.donee] ? ensNodes[pd.donee] : pd.donee
-            return pd
-          }))
-          setTokenSymbols(tempTokenSymbols)
-        })
+        setTokenSymbols(tempTokenSymbols)
       })
+    })
+  }
+
+  React.useEffect(() => {
+    if (!initialized && from && inView) {
+      doAllTheStuff()
+      .then(() => setInitialized(true))
     }
-  }, [from, txScreenOpen, tabIndex])
+  }, [from, inView])
+
+  React.useEffect(() => {
+    if (initialized && from && !txScreenOpen) {
+      doAllTheStuff()
+    }
+  }, [from, txScreenOpen])
+
   return balances
 }

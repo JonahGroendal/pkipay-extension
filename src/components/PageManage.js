@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const PageManage = ({ subscription, onChangeIndex }) => {
+const PageManage = ({ priceOfETHInUSD, onChangeTab, ethBalance, inView }) => {
   const classes = useStyles();
 
   const [qrCodeScreenOpen, setQrCodeScreenOpen] = React.useState(false)
@@ -66,6 +66,8 @@ const PageManage = ({ subscription, onChangeIndex }) => {
       <div className={classes.accountCardContainerRel}>
         <div ref={accountCardRef} className={classes.accountCardContainerAbs}>
           <AccountCard
+            priceOfETHInUSD={priceOfETHInUSD}
+            ethBalance={ethBalance}
             onClickSend={handleClickSend}
             onClickAccount={handleOpenQrCodeScreen}
           />
@@ -73,18 +75,26 @@ const PageManage = ({ subscription, onChangeIndex }) => {
       </div>
       <Page height={appConfig.height - NAV_HEIGHT}>
         <div style={{ height: accountCardRenderHeight }}></div>
-        {/* old - not going into 1.0: <Subscriptions onChangeIndex={onChangeIndex}/>*/}
+        {/* old - not going into 1.0: <Subscriptions inView={inView} onChangeTab={onChangeTab}/>*/}
         <div className={classes.card}>
-          <DonationSubscriptions onChangeIndex={onChangeIndex} />
+          <DonationSubscriptions
+            inView={inView}
+            onChangeTab={onChangeTab}
+          />
         </div>
         <div className={classes.card}>
-          <Balances onChangeIndex={onChangeIndex} onClickAddFunds={handleOpenQrCodeScreen} />
+          <Balances
+            onChangeTab={onChangeTab}
+            onClickAddFunds={handleOpenQrCodeScreen}
+            ethBalance={ethBalance}
+            inView={inView}
+          />
         </div>
         <div className={classes.card} ref={transferContainerElem}>
           <Transfer firstInputRef={transferInputElem} />
         </div>
         <div className={classes.card}>
-          <PendingDonations />
+          <PendingDonations inView={inView}/>
         </div>
       </Page>
     </div>

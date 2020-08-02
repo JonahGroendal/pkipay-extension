@@ -21,7 +21,7 @@ const tokenOptions = ['DAI', 'ETH']
 const orderTypeOptions = ['Buy', 'Sell', 'Subscribe (Buy Monthly)']
 
 function Token(props) {
-  const { ensAddress, adminViewEnabled, ...mapped } = props;
+  const { ensAddress, adminViewEnabled, onChangeTab, ...mapped } = props;
 
   const [amount, setAmount] = React.useState('');
   const parsedAmount = isNaN(amount) ? 0 : Number(amount);
@@ -65,7 +65,7 @@ function Token(props) {
           await mapped.onUnsubscribe(ensAddress, false)
         await mapped.onSubscribe(ensAddress, numTokens * buyPrice);
         setSubmitOrderButtonLoading(false);
-        mapped.onChangeTab(1);
+        onChangeTab(1);
         setAmount('');
         setOrderType(orderTypeOptions[0]);
         break;
@@ -195,7 +195,6 @@ const mapDispatchToProps = (dispatch) => ({
   },
   onSubscribe: (ensAddress, amount) => dispatch(addSubscription(ensAddress, amount)),
   onUnsubscribe: (ensAddress, reschedule) => dispatch(removeSubscription(ensAddress, reschedule)),
-  onChangeTab: tabIndex => dispatch(setTabIndex(tabIndex)),
   onWithdraw: async (from, ensAddress, tokenAddr, amount, tokenSymbol) => {
     const tx = await createTxWithdraw(from, tokenAddr, ensAddress, amount)
     dispatch(reviewTx([tx], [ensAddress], [{ [tokenSymbol]: amount }]))

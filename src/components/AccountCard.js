@@ -4,11 +4,8 @@ import { makeStyles } from '@material-ui/styles'
 // import Paper from '@material-ui/core/Paper'
 import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
-import Tooltip from '@material-ui/core/Tooltip'
 // import getPixels from 'get-pixels'
 import { truncateForDisplay } from '../api/utils'
-import CheckCircleOutlinedIcon from '@material-ui/icons/CheckCircleOutlined';
-import CancelOutlinedIcon from '@material-ui/icons/CancelOutlined';
 
 const useStyles = makeStyles(theme => ({
   rows: {

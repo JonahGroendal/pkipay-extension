@@ -2,7 +2,6 @@ import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import Paper from '@material-ui/core/Paper'
 import Button from '@material-ui/core/Button'
-import CircularProgress from '@material-ui/core/CircularProgress'
 import Tooltip from '@material-ui/core/Tooltip'
 import TextField from '@material-ui/core/TextField'
 import MenuItem from '@material-ui/core/MenuItem'
@@ -51,7 +50,6 @@ function Transfer(props) {
     tokenOptions,
     onChangeToken,
     onClickButton,
-    buttonText,
     tooltip
   } = props
   const classes = useStyles()
