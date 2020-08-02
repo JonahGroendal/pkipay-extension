@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import PresentationalComponent from '../components/TransactionScreen'
 import { sendTx, cancelTx, closeTx, openTx, txConfirmed, txReverted } from '../actions'
 import { getPriceOfETHInUSD } from '../api/blockchain'
-import { convertFromUSD } from '../api/ECBForexRates'
+import { getUsdExchangeRate } from '../api/ECBForexRates'
 // import cryptoCompare from 'cryptocompare'
 import web3js from '../api/web3js'
 import currencySymbols from '../api/currencySymbols'
@@ -46,11 +46,18 @@ function TransactionScreen(props) {
     }
   }, [isOpen, txConfirmed, txReverted, txHashes])
 
+  const [usdExchangeRate, setUsdExchangeRate] = React.useState(0)
+  React.useEffect(() => {
+    if (currency) {
+      getUsdExchangeRate(currency).then(setUsdExchangeRate)
+    }
+  }, [currency])
+
   return React.createElement(PresentationalComponent, {
     isOpen,
     counterparties,
     values,
-    gasValue: convertFromUSD(currency, gasValues.USD),
+    gasValue: usdExchangeRate * gasValues.USD,
     gasValueETH: gasValues.ETH,
     gasValueIsApproximation: gasValues.isApproximation,
     txSent: (txHashes !== null || txError !== null),

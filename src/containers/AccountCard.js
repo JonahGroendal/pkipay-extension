@@ -3,13 +3,20 @@ import { connect } from 'react-redux'
 import PresentationalComponent from '../components/AccountCard'
 import { navigateTo } from '../api/browser'
 import currencySymbols from '../api/currencySymbols'
-import { convertFromUSD } from '../api/ECBForexRates'
+import { getUsdExchangeRate } from '../api/ECBForexRates'
 
 const toQueryParams = paramsObj => (
   Object.entries(paramsObj).map(([key, val]) => key.concat('=', val)).join('&')
 )
 
 function AccountCard({ onClickSend, onClickAccount, priceOfETHInUSD, ethBalance, ...mapped }) {
+  const [usdExchangeRate, setUsdExchangeRate] = React.useState(0)
+  React.useEffect(() => {
+    if (mapped.currency) {
+      getUsdExchangeRate(mapped.currency).then(setUsdExchangeRate)
+    }
+  }, [mapped.currency])
+
   const handleClickBuy = async () => {
     if (mapped.address) {
       const queryParams = toQueryParams({
@@ -31,7 +38,7 @@ function AccountCard({ onClickSend, onClickAccount, priceOfETHInUSD, ethBalance,
     onClickAccount,
     onClickBuy: handleClickBuy,
     address: mapped.address ? mapped.address : '',
-    ethBalanceInCurrency: convertFromUSD(mapped.currency, priceOfETHInUSD * ethBalance),
+    ethBalanceInCurrency: usdExchangeRate * (priceOfETHInUSD * ethBalance),
     currencySymbol: currencySymbols[mapped.currency],
   })
 }

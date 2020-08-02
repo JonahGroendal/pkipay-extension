@@ -3,7 +3,7 @@ import PresentationalComponent from '../components/ProfileCard'
 import { connect } from 'react-redux'
 import { getTotalContributions, addresses } from '../api/blockchain'
 import currencySymbols from '../api/currencySymbols'
-import { convertFromUSD } from '../api/ECBForexRates'
+import { getUsdExchangeRate } from '../api/ECBForexRates'
 
 function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square, targetRegistered, priceOfETHInUSD }) {
   const faviconUrl = 'https://' + hostname + '/apple-touch-icon.png'
@@ -14,16 +14,19 @@ function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square, tar
   React.useEffect(() => {
     if (ensAddress && priceOfETHInUSD) {
       if (!txScreenOpen) {
-        getTotalContributions(ensAddress)
-        .then(contribs => {
+        Promise.all([
+          getTotalContributions(ensAddress),
+          getUsdExchangeRate(currency)
+        ])
+        .then(([contribs, usdExchangeRate]) => {
           let usdValue = 0
           if (contribs.all[addresses.DAI]) usdValue += contribs.all[addresses.DAI]
           if (contribs.all[addresses.ETH]) usdValue += contribs.all[addresses.ETH] * priceOfETHInUSD
-          setTotalDonations(convertFromUSD(currency, usdValue))
+          setTotalDonations(usdExchangeRate * usdValue)
           usdValue = 0
           if (contribs.lastMonth[addresses.DAI]) usdValue += contribs.lastMonth[addresses.DAI]
           if (contribs.lastMonth[addresses.ETH]) usdValue += contribs.lastMonth[addresses.ETH] * priceOfETHInUSD
-          setTotalDonationsOneMonth(convertFromUSD(currency, usdValue))
+          setTotalDonationsOneMonth(usdExchangeRate * usdValue)
         })
         let xhr = new XMLHttpRequest()
         xhr.open("GET", faviconUrl, true)
@@ -51,10 +54,11 @@ function ProfileCard({ hostname, ensAddress, currency, txScreenOpen, square, tar
   //     setTotalDonationsOneMonth(0)
   //     Promise.all([
   //       getTotalDonations(hostname),
-  //       getTotalDonationsFromOneMonth(hostname)
-  //     ]).then(([totalDonations, totalDonationsOneMonth]) => {
-  //       setTotalDonations(convertFromUSD(currency, totalDonations))
-  //       setTotalDonationsOneMonth(convertFromUSD(currency, totalDonationsOneMonth))
+  //       getTotalDonationsFromOneMonth(hostname),
+  //       getUsdExchangeRate()
+  //     ]).then(([totalDonations, totalDonationsOneMonth, usdExchangeRate]) => {
+  //       setTotalDonations(usdExchangeRate * totalDonations)
+  //       setTotalDonationsOneMonth(usdExchangeRate * totalDonationsOneMonth)
   //     })
   //   }
   //   if (hostname.includes('#')){

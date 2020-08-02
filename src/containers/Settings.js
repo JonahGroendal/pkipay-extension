@@ -1,13 +1,13 @@
 import React from 'react'
 import PresentationalComponent from '../components/Settings'
 import datetimeCalculators from '../api/datetimeCalculators.js'
-import { supportedCurrencies } from '../api/ECBForexRates.js'
 import browser from '../api/browser'
 import { connect } from 'react-redux';
 import { changeSetting } from '../actions'
+import currencySymbols from '../api/currencySymbols'
 
 const settingsOptions = {
-  'Currency': supportedCurrencies,
+  'Currency': Object.keys(currencySymbols),
   'Payment schedule': Object.keys(datetimeCalculators)
 }
 

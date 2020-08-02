@@ -4,7 +4,7 @@ import PresentationalComponent from '../components/DonationSubscriptions'
 import currencySymbols from '../api/currencySymbols'
 import datetimeCalculators from '../api/datetimeCalculators'
 import { removeDonationSubscription, setTarget } from '../actions'
-import { convertFromUSD } from '../api/ECBForexRates'
+import { getUsdExchangeRate } from '../api/ECBForexRates'
 
 function DonationSubscriptions(props) {
   const {
@@ -16,15 +16,23 @@ function DonationSubscriptions(props) {
     onChangeTab,
     inView
   } = props
+
   const [newRowIndex, setNewRowIndex] = React.useState(-1)
+  const [usdExchangeRate, setUsdExchangeRate] = React.useState(0)
 
   React.useEffect(() => {
     if (newRowIndex !== subscriptions.length - 1)
       setNewRowIndex(subscriptions.length - 1)
   }, [subscriptions])
 
+  React.useEffect(() => {
+    if (currency) {
+      getUsdExchangeRate(currency).then(setUsdExchangeRate)
+    }
+  }, [currency])
+
   return React.createElement(PresentationalComponent, {
-    subscriptions: subscriptions.map(sub => ({ ...sub, amount: convertFromUSD(currency, sub.amount)})),
+    subscriptions: subscriptions.map(sub => ({ ...sub, amount: usdExchangeRate * sub.amount })),
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
     onClickSubscription: sub => {setTarget(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeTab(0)},

@@ -1,32 +1,46 @@
-import {CurrencyConverter} from 'ecb-currency-converter';
+let rates = {}
 
-var converter = new CurrencyConverter();
+const getRates = async () => {
+  return fetch('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml')
+  .then(response => response.text())
+  .then(str => (new window.DOMParser()).parseFromString(str, "text/xml"))
+  .then(data => {
+    const ratesArray = Array.from(data.getElementsByTagName('Cube'))
+    .filter(elem => (
+      Array.from(elem.attributes).some(elem => elem.nodeName === 'currency') &&
+      Array.from(elem.attributes).some(elem => elem.nodeName === 'rate')
+    ))
+    .map(elem => ({
+      currency: Array.from(elem.attributes).find(elem => elem.nodeName === 'currency').nodeValue,
+      rate: parseFloat(Array.from(elem.attributes).find(elem => elem.nodeName === 'rate').nodeValue)
+    }))
 
-const rates = {
-  'USD': 1.0,
-  'EUR': 0.0,
-  'GBP': 0.0,
-  'JPY': 0.0,
-  'CAD': 0.0
+    ratesArray.push({ currency: 'EUR', rate: 1.0 })
+
+    const usdRate = ratesArray.find(rate => rate.currency === 'USD').rate
+
+    ratesArray.forEach(rate => {
+      rate.rate = rate.rate / usdRate
+    })
+
+    rates = ratesArray.reduce((acc, cur) => ({ ...acc, [cur.currency]: cur.rate }), {})
+
+    return rates
+  })
 }
-Promise.all([
-  converter.convert({from: 'USD', to: 'EUR', quantity: 1.0}),
-  converter.convert({from: 'USD', to: 'GBP', quantity: 1.0}),
-  converter.convert({from: 'USD', to: 'JPY', quantity: 1.0}),
-  converter.convert({from: 'USD', to: 'CAD', quantity: 1.0}),
-]).then(([EUR, GBP, JPY, CAD]) => {
-  rates['EUR'] = EUR.quantity
-  rates['GBP'] = GBP.quantity
-  rates['JPY'] = JPY.quantity
-  rates['CAD'] = CAD.quantity
-})
 
-export function convertFromUSD(to, value) {
-  return value * rates[to]
+export async function getUsdExchangeRate(currency, options={ useCached: true }) {
+  let retVal
+  if (options.useCached && rates[currency]) {
+    retVal = rates[currency]
+  }
+  else {
+    await getRates()
+    console.log('rates', rates)
+    retVal = rates[currency]
+  }
+  if (!retVal) {
+    throw new Error('Unsupported currency: '.concat(currency))
+  }
+  return retVal
 }
-
-export function convertToUSD(from, value) {
-  return value / rates[from]
-}
-
-export const supportedCurrencies = Object.keys(rates)

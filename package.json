@@ -24,7 +24,6 @@
     "chart.js": "^2.9.3",
     "classnames": "^2.2.6",
     "dns-over-ens": "github:JonahGroendal/dns-over-ens",
-    "ecb-currency-converter": "^1.0.0",
     "ens-donation-escrow": "github:JonahGroendal/ens-donation-escrow",
     "eth-ens-namehash": "^2.0.8",
     "lodash": "^4.17.15",
