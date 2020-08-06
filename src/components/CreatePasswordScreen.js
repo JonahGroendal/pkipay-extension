@@ -77,7 +77,7 @@ function CreatePasswordScreen(props) {
         <Button
           onClick={onClickCreate}
           fullWidth={true}
-          variant="contained" color="secondary"
+          variant="contained" color="primary"
         >
           Create Account
         </Button>

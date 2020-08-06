@@ -2,8 +2,8 @@ import React from 'react'
 import { ThemeProvider } from '@material-ui/styles'
 import { createMuiTheme } from '@material-ui/core/styles'
 import appConfig from '../api/appConfig'
-import blueGrey from '@material-ui/core/colors/blueGrey'
-import amber from '@material-ui/core/colors/amber'
+// import blueGrey from '@material-ui/core/colors/blueGrey'
+// import amber from '@material-ui/core/colors/amber'
 import CreatePasswordScreen from '../containers/CreatePasswordScreen'
 import UnlockWalletScreen from '../containers/UnlockWalletScreen'
 import Pages from '../containers/Pages'
@@ -13,8 +13,8 @@ function App({ darkMode }) {
   const theme = createMuiTheme({
     palette: {
       type: darkMode ? 'dark' : 'light',
-      primary: amber,
-      secondary: blueGrey
+      primary: { main: '#2069df'},
+      secondary: { main: '#20df29' }
     },
     overrides: {
       MuiTooltip: {
