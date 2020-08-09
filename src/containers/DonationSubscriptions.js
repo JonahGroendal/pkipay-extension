@@ -19,21 +19,14 @@ function DonationSubscriptions(props) {
   } = props
 
   const [newRowIndex, setNewRowIndex] = React.useState(-1)
-  const [usdExchangeRate, setUsdExchangeRate] = React.useState(0)
 
   React.useEffect(() => {
     if (newRowIndex !== subscriptions.length - 1)
       setNewRowIndex(subscriptions.length - 1)
   }, [subscriptions])
 
-  React.useEffect(() => {
-    if (currency) {
-      getUsdExchangeRate(currency).then(setUsdExchangeRate)
-    }
-  }, [currency])
-
   return React.createElement(PresentationalComponent, {
-    subscriptions: subscriptions.map(sub => ({ ...sub, amount: usdExchangeRate * sub.amount })),
+    subscriptions,
     highlightedRowIndex: newRowIndex,
     onUnsubscribe,
     onClickSubscription: sub => {setTarget(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeTab(0)},
