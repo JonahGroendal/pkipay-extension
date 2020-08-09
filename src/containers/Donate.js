@@ -29,14 +29,30 @@ function Donate({ ensAddress, onChangeTab, ...mapped }) {
     : Number(amount)
   // const address = useEnsResolver(domainName)
 
-  const tokenOptions = [...Object.keys(addresses)]
-
+  // const tokenOptions = [
+  //   ...Object.keys(addresses).filter(symbol => symbol !== 'WETH'),
+  //   ...(mapped.addedTokens ? mapped.addedTokens.map(token => token.symbol) : {})
+  // ]
+  // const tokenAddresses = {
+  //   ...addresses,
+  //   ...(mapped.addedTokens ? mapped.addedTokens.reduce((acc, cur) => ({ ...acc, [cur.symbol]: cur.address }), {}) : {})
+  // }
+  const tokenOptions = [
+    ...(
+      Object.keys(addresses)
+      .filter(symbol => symbol !== 'WETH')
+      .map(symbol => ({
+        symbol,
+        address: addresses[symbol]
+      }))
+    ),
+    ...(mapped.addedTokens ? mapped.addedTokens : [])
+  ]
   // old - not going into 1.0
   // const tokenAddress = useEnsTokenResolver(ensAddress)
   // const tokenAddresses = { ...addresses }
   // if (tokenAddress !== ZERO_ADDRESS) {
-  //   tokenOptions.push('tokens')
-  //   tokenAddresses['tokens'] = tokenAddress
+  //   tokenOptions.push({ symbol: 'tokens', address: tokenAddress })
   // }
 
   const [token, setToken] = React.useState(tokenOptions[0])
@@ -57,17 +73,14 @@ function Donate({ ensAddress, onChangeTab, ...mapped }) {
     }
     else {
       if (schedule === 'Once') {
-        if (token === 'ETH')
+        if (token.address === addresses['ETH'])
           mapped.onDonateETH(mapped.address, ensAddress, parsedAmount)
         else
-          mapped.onDonate(mapped.address, ensAddress, parsedAmount, addresses[token], token)
+          mapped.onDonate(mapped.address, ensAddress, parsedAmount, token.address, token.symbol)
       }
       else if (schedule === 'Monthly') {
-        if (!addresses[token]) {
-          throw new Error('Unknown token')
-        }
         setButtonLoading(true)
-        mapped.onSubscribe(ensAddress, parsedAmount, addresses[token])
+        mapped.onSubscribe(ensAddress, parsedAmount, token.address)
         .then(() => {
           onChangeTab(1)
           setAmount('')
@@ -83,9 +96,9 @@ function Donate({ ensAddress, onChangeTab, ...mapped }) {
     if (!ensAddress)
       return ''
     else if (schedule === 'Monthly')
-      return "Donate ".concat(parsedAmount.toFixed(3), " ", token, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), ' once per month')
+      return "Donate ".concat(parsedAmount.toFixed(3), " ", token.symbol, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''), ' once per month')
     else
-      return "Donate ".concat(parsedAmount.toFixed(3), " ", token, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''))
+      return "Donate ".concat(parsedAmount.toFixed(3), " ", token.symbol, " to ", ensAddress.replace('.dnsroot.eth', '').replace('.dnsroot.test', ''))
   }
 
   return React.createElement(PresentationalComponent, {
@@ -100,7 +113,7 @@ function Donate({ ensAddress, onChangeTab, ...mapped }) {
     onChangeSchedule: setSchedule,
     onClickButton: handleClickButton,
     buttonText: buttonText[schedule],
-    buttonDisabled: !ensAddress/* old - not in 1.0: || (token === 'tokens' && tokenAddress === ZERO_ADDRESS)*/,
+    buttonDisabled: !ensAddress/* old - not in 1.0: || (token.symbol === 'tokens' && tokenAddress === ZERO_ADDRESS)*/,
     buttonLoading,
     tooltip: tooltip(),
   })
@@ -138,7 +151,8 @@ function Donate({ ensAddress, onChangeTab, ...mapped }) {
 
 const mapStateToProps = state => ({
   currency: state.settings['Currency'],
-  address: state.wallet.addresses[state.wallet.defaultAccount]
+  address: state.wallet.addresses[state.wallet.defaultAccount],
+  addedTokens: state.wallet.addedTokens
 })
 const mapDispatchToProps = (dispatch) => ({
   onDonate: async (from, ensAddress, amount, tokenAddr, tokenSymbol) => {

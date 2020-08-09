@@ -1,6 +1,7 @@
 const initialState = {
   addresses: [],
-  tokens: [],
+  // old - not going into 1.0: tokens: [],
+  addedTokens: [],
   counterparties: [],
   keystore: [],
   defaultAccount: -1,
@@ -30,18 +31,36 @@ function wallet(state=initialState, action) {
         ...state,
         defaultAccount: action.payload.defaultAccount
       }
+    // old - not going into 1.0
+    // case 'ADD_TOKEN':
+    //   if (state.tokens.includes(action.payload.address))
+    //     return { ...state }
+    //   else
+    //     return {
+    //       ...state,
+    //       tokens: [...state.tokens, action.payload.address]
+    //     }
+    // case 'REMOVE_TOKEN':
+    //   return {
+    //     ...state,
+    //     tokens: state.tokens.filter(address => address !== action.payload.address)
+    //   }
     case 'ADD_TOKEN':
-      if (state.tokens.includes(action.payload.address))
-        return { ...state }
-      else
-        return {
-          ...state,
-          tokens: [...state.tokens, action.payload.address]
-        }
+      return {
+        ...state,
+        addedTokens: [
+          ...state.addedTokens,
+          {
+            name: action.payload.name,
+            symbol: action.payload.symbol,
+            address: action.payload.address
+          }
+        ]
+      }
     case 'REMOVE_TOKEN':
       return {
         ...state,
-        tokens: state.tokens.filter(address => address !== action.payload.address)
+        addedTokens: state.addedTokens.filter(token => token.address !== action.payload.address)
       }
     case 'ADD_COUNTERPARTY':
       if (state.counterparties.includes(action.payload.address))

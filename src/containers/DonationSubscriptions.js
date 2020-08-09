@@ -14,7 +14,8 @@ function DonationSubscriptions(props) {
     onUnsubscribe,
     setTarget,
     onChangeTab,
-    inView
+    inView,
+    addedTokens
   } = props
 
   const [newRowIndex, setNewRowIndex] = React.useState(-1)
@@ -38,7 +39,8 @@ function DonationSubscriptions(props) {
     onClickSubscription: sub => {setTarget(sub.address.replace('.dnsroot.eth', '').replace('.dnsroot.test', '')); onChangeTab(0)},
     currency,
     currencySymbol: currencySymbols[currency],
-    nextPayment: datetimeCalculators[paymentSchedule](Date.now())
+    nextPayment: datetimeCalculators[paymentSchedule](Date.now()),
+    addedTokens
   })
 }
 
@@ -49,6 +51,7 @@ const mapStateToProps = state => ({
   subscriptions: state.donationSubscriptions,
   currency: state.settings['Currency'],
   paymentSchedule: state.settings['Payment schedule'],
+  addedTokens: state.wallet.addedTokens
 });
 const mapDispatchToProps = dispatch => ({
   onUnsubscribe: (ensAddress, tokenAddr) => dispatch(removeDonationSubscription(ensAddress, tokenAddr)),

@@ -87,6 +87,7 @@ function Table(props) {
     headerCells,
     rowsData,
     fixedIndices=[],
+    lastRow,
     rowsPerPage=4,
     highlightedRowIndex,
     titleComponents=[],
@@ -119,6 +120,8 @@ function Table(props) {
   }
 
   const rows = rowsDataSorted.map(children) //`children` is a render prop
+  if (lastRow)
+    rows.push(lastRow)
   const classCellDefault = classes.tableCell
   const classCellLast = classNames(classes.tableCell, classes.tableCellLast)
   const classCellNumeric = classNames(classes.tableCell, classes.tableCellNumeric)

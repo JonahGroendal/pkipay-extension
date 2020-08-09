@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import PresentationalComponent from '../components/Balances'
-import { getTokenBalance, getBalanceDAI, getTokenName, getTokenSymbol, /* old - not going into 1.0: resolveToken, scanForTokens, */domainNameToEnsName } from '../api/blockchain'
+import { getBalanceERC20, getBalanceDAI, getTokenName, getTokenSymbol, domainNameToEnsName /* old - not going into 1.0: , resolveToken, scanForTokens, getTokenBalance*/} from '../api/blockchain'
 import { setTarget, addToken, removeToken, completeTokenScan } from '../actions'
 import { isDomainName, isEnsName, isEnsNode } from '../api/utils'
 import namehash from 'eth-ens-namehash'
@@ -12,8 +12,10 @@ function Balances(props) {
     onClickAddFunds,
     onChangeTab,
     address,
-    tokens,
-    addToken,
+    // old - not going into 1.0: tokens,
+    // old - not going into 1.0: addToken,
+    addedTokens,
+    removeToken,
     tokenScanComplete,
     completeTokenScan,
     txScreenOpen,
@@ -24,10 +26,16 @@ function Balances(props) {
 
   // old - not going into 1.0
   // const tokenBalances = useTokenBalances(address, tokens, txScreenOpen, inView)
+
   const ethBalanceObj = useEthBalance(ethBalance)
   const daiBalanceObj = useDaiBalance(address, txScreenOpen, inView)
+  const addedTokenObjBalances = useAddedTokenBalances(address, addedTokens, txScreenOpen, inView)
 
   const [dexScreenOpen, setDexScreenOpen] = React.useState(false)
+
+  const handleClickRemoveToken = tokenAddr => {
+    removeToken(tokenAddr)
+  }
 
   // old - not going into 1.0 - note: if you remove this code in the future, be sure to remove its vestigaes as well like `addToken`and `tokenScanComplete`. I didn't bother commenting them out
   // // If the app's data get's wiped, this will run once to look for tokens
@@ -57,7 +65,8 @@ function Balances(props) {
 
   return React.createElement(PresentationalComponent, {
     onClickAddFunds,
-    balances: [ethBalanceObj, daiBalanceObj/*, old - not going into 1.0: ...tokenBalances*/],
+    onClickRemoveToken: handleClickRemoveToken,
+    balances: [ethBalanceObj, daiBalanceObj, ...addedTokenObjBalances/*, old - not going into 1.0: ...tokenBalances*/],
     onClickBalance: name => {
       if (name === 'Ether' || name === "Dai Stablecoin") {
         setDexScreenOpen(true)
@@ -75,16 +84,18 @@ function Balances(props) {
 
 const mapStateToProps = state => ({
   address: state.wallet.addresses[state.wallet.defaultAccount],
-  tokens: state.wallet.tokens,
-  tokenScanComplete: state.wallet.tokenScanComplete,
+  // old - not going into 1.0: tokens: state.wallet.tokens,
+  // old - not going into 1.0: tokenScanComplete: state.wallet.tokenScanComplete,
+  addedTokens: state.wallet.addedTokens,
   txScreenOpen: state.transactionScreen.isOpen,
   target: state.target
 })
 
 const mapDispatchToProps = dispatch => ({
   setTarget: target => dispatch(setTarget(target)),
-  addToken: tokenAddr => dispatch(addToken(tokenAddr)),
-  removeToken: tokenAddr => dispatch(removeToken(tokenAddr)),
+  removeToken: address => dispatch(removeToken(address)),
+  // old - not going into 1.0: addToken: tokenAddr => dispatch(addToken(tokenAddr)),
+  // old - not going into 1.0: removeToken: tokenAddr => dispatch(removeToken(tokenAddr)),
   completeTokenScan: () => dispatch(completeTokenScan())
 })
 
@@ -92,6 +103,39 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(Balances)
+
+function useAddedTokenBalances(address, tokens, txScreenOpen, inView) {
+  const [tokenBalances, setTokenBalances] = React.useState([])
+  const [initialized, setInitialized] = React.useState(false)
+
+  const getAndSetBalances = tokens => {
+    Promise.all(tokens.map(token => getBalanceERC20(address, token.address)))
+    .then(balances => {
+      setTokenBalances(
+        balances.map((balance, i) => ({
+          name: tokens[i].name,
+          symbol: tokens[i].symbol,
+          address: tokens[i].address,
+          balance
+        }))
+      )
+    })
+  }
+
+  React.useEffect(() => {
+    if (!initialized && address && inView) {
+      getAndSetBalances(tokens)
+      setInitialized(true)
+    }
+  }, [address, inView])
+
+  React.useEffect(() => {
+    if (initialized && !txScreenOpen)
+      getAndSetBalances(tokens)
+  }, [tokens, txScreenOpen])
+
+  return tokenBalances
+}
 
 // old - not going into 1.0
 // function useTokenBalances(address, tokens, txScreenOpen, inView) {

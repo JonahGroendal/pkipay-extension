@@ -34,7 +34,14 @@ const headerCells = [
   {label: '', width: '15%', sortable: false, cellProps: {key: 'unsubscribe', numeric: false}},
 ]
 
-const getTokenSymbol = tokenAddr => Object.entries(addresses).find(([symbol, addr]) => addr === tokenAddr)[0]
+const getTokenSymbol = (tokenAddr, addedTokens) => {
+  return [
+    ...Object.keys(addresses).map(symbol => ({ symbol, address: addresses[symbol] })),
+    ...addedTokens
+  ]
+  .find(token => token.address === tokenAddr).symbol
+}
+
 
 function DonationSubscriptions(props) {
   const {
@@ -45,8 +52,11 @@ function DonationSubscriptions(props) {
     currencySymbol,
     nextPayment,
     highlightedRowIndex,
+    addedTokens
   } = props
   const classes = useStyles()
+
+  console.log('subscriptions', subscriptions)
 
   return (
     <Table
@@ -86,7 +96,7 @@ function DonationSubscriptions(props) {
             <Tooltip title={subscription.amount.toFixed(2)+' '+currency+' per month'} enterDelay={500}>
               <div className={classes.amount}>
                 <Typography variant="subtitle1">
-                  {subscription.amount.toFixed(3).concat(' ', getTokenSymbol(subscription.tokenAddr))}
+                  {subscription.amount.toFixed(3).concat(' ', getTokenSymbol(subscription.tokenAddr, addedTokens))}
                 </Typography>
               </div>
             </Tooltip>

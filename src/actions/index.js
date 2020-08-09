@@ -138,17 +138,34 @@ export const addAccount = (privateKey, password) => {
   }
 }
 
-export const setDefaultAccount = (accountIndex) => ({
-  type: 'SET_DEFAULT_ACCOUNT',
-  payload: {
-    defaultAccount: accountIndex
-  }
-})
+// old - not going into 1.0
+// export const setDefaultAccount = (accountIndex) => ({
+//   type: 'SET_DEFAULT_ACCOUNT',
+//   payload: {
+//     defaultAccount: accountIndex
+//   }
+// })
+//
+// export const addToken = (address) => ({
+//   type: 'ADD_TOKEN',
+//   payload: {
+//     address
+//   }
+// })
+//
+// export const removeToken = (address) => ({
+//   type: 'REMOVE_TOKEN',
+//   payload: {
+//     address
+//   }
+// })
 
-export const addToken = (address) => ({
+export const addToken = (address, symbol, name) => ({
   type: 'ADD_TOKEN',
   payload: {
-    address
+    address,
+    symbol,
+    name
   }
 })
 

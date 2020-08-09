@@ -57,7 +57,7 @@ function Donate(props) {
     tooltip
   } = props
   const classes = useStyles()
-
+  console.log('token', token)
   return (
     <Paper className={classes.paper}>
       <div className={classes.container}>
@@ -72,12 +72,12 @@ function Donate(props) {
           <TextField
             className={classes.selectField}
             select
-            value={token}
-            onChange={event => onChangeToken(event.target.value)}
+            value={token.symbol}
+            onChange={event => onChangeToken(tokenOptions.find(token => token.symbol === event.target.value))}
           >
-            {tokenOptions.map((symbol, i) => (
-              <MenuItem key={i} value={symbol}>
-                {symbol}
+            {tokenOptions.map((token, i) => (
+              <MenuItem key={i} value={token.symbol}>
+                {token.symbol}
               </MenuItem>
             ))}
           </TextField>
