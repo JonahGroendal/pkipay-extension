@@ -2,6 +2,7 @@ import React from 'react'
 import { makeStyles } from '@material-ui/styles'
 import Settings from '../containers/Settings'
 import TransactionScreen from '../containers/TransactionScreen'
+import ReportIssue from '../components/ReportIssue'
 import Typography from '@material-ui/core/Typography'
 
 const useStyles = makeStyles(theme => ({
@@ -32,6 +33,7 @@ function Nav({ tabIndex, children, onChangeTab }) {
             <img src="titleEmojis.png" alt="" />
           </div>
           <div className={classes.titleColumn}>
+            <ReportIssue />
             <TransactionScreen />
             <Settings />
           </div>
