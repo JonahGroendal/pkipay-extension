@@ -27,7 +27,6 @@
     "ens-donation-escrow": "github:JonahGroendal/ens-donation-escrow",
     "eth-ens-namehash": "^2.0.8",
     "lodash": "^4.17.15",
-    "pkipay-blockchain": "github:JonahGroendal/pkipay-blockchain",
     "pkipay-eth": "github:JonahGroendal/pkipay-eth",
     "qrcode": "^1.4.4",
     "react": "^16.13.1",
@@ -40,8 +39,7 @@
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "typeface-roboto": "0.0.54",
-    "web3": "^1.2.6",
-    "x509-forest-of-trust": "github:JonahGroendal/x509-forest-of-trust"
+    "web3": "^1.2.6"
   },
   "devDependencies": {
     "cra-build-watch": "^2.0.1",
