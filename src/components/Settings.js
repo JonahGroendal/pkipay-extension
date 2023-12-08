@@ -21,9 +21,10 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function Settings({ settingsOptions, currentSettings, onChangeSetting, onClickDownloadWallet }) {
+function Settings({ settingsOptions, currentSettings, onChangeSetting, onChangeSettingRequiringMorePermissions, onClickDownloadWallet }) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false);
+
   return (
     <div>
       <IconButton
@@ -42,25 +43,44 @@ function Settings({ settingsOptions, currentSettings, onChangeSetting, onClickDo
       >
         <div className={classes.contentRoot}>
           <List style={{ paddingTop: 0 }}>
-            {Object.entries(currentSettings).map((setting, index) => (
-              <ListItem key={index} style={{paddingLeft: 0}}>
-                <ListItemText primary={setting[0].concat(':')} />
-                <ListItemSecondaryAction>
-                  {(typeof setting[1] === 'boolean') && <Switch
-                    checked={setting[1]}
-                    onChange={event => onChangeSetting(setting[0], event.target.checked)}
-                  />}
-                  {(typeof setting[1] === 'string') && <Select
-                    value={setting[1]}
-                    onChange={event => onChangeSetting(setting[0], event.target.value)}
-                  >
-                    {settingsOptions[setting[0]].map((key, index) => (
-                      <MenuItem key={index} value={key}>{key}</MenuItem>
-                    ))}
-                  </Select>}
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))}
+            {Object.entries(currentSettings).map((setting, index) => {
+
+              const selectEl = React.useRef(null)
+              React.useEffect(() => {
+                const eventListener = function(event) {
+                  console.log('requesting permissions')
+                  onChangeSettingRequiringMorePermissions(setting[0], event.target.value)
+                }
+                if (selectEl.current !== null) {
+                  console.log('adding event lisener', selectEl)
+                  selectEl.current.addEventListener('click', eventListener)
+                  return () => {
+                    selectEl.current.removeEventListener('click', eventListener)
+                  }
+                }
+              })
+
+              return (
+                <ListItem key={index} style={{paddingLeft: 0}}>
+                  <ListItemText primary={setting[0].concat(':')} />
+                  <ListItemSecondaryAction>
+                    {(typeof setting[1] === 'boolean') && <Switch
+                      checked={setting[1]}
+                      onChange={event => onChangeSetting(setting[0], event.target.checked)}
+                    />}
+                    {(typeof setting[1] === 'string') && <Select
+                      value={setting[1]}
+                      onChange={event => onChangeSetting(setting[0], event.target.value)}
+                      ref={selectEl}
+                    >
+                      {settingsOptions[setting[0]].map((key, index) => (
+                        <MenuItem key={index} value={key}>{key}</MenuItem>
+                      ))}
+                    </Select>}
+                  </ListItemSecondaryAction>
+                </ListItem>
+              )
+            })}
             <ListItem style={{paddingLeft: 0}}>
               <ListItemText primary="&nbsp;" />
               <ListItemSecondaryAction>

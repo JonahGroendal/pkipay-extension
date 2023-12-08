@@ -54,6 +54,28 @@ export async function saveState(state) {
   console.log('saveState() took '.concat((performance.now() - t0).toString()).concat('ms'))
 }
 
+export async function requestPermissions(permissions) {
+  return new Promise(function(resolve, reject) {
+    api.permissions.request(permissions, (granted) => {
+      if (granted)
+        resolve()
+      else
+        reject(api.lastError)
+    })
+  })
+}
+
+export async function containsPermissions(permissions) {
+  return new Promise(function(resolve, reject) {
+    api.permissions.contains(permissions, (result) => {
+      if (!api.lastError)
+        resolve(result)
+      else
+        reject(api.lastError)
+    })
+  })
+}
+
 export function getUrl() {
   return new Promise(function(resolve, reject) {
     api.tabs.query({ 'active': true, 'lastFocusedWindow': true }, (tabs) => {

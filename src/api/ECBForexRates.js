@@ -1,4 +1,6 @@
-let rates = {}
+let rates = {
+  'USD': 1.0
+}
 
 const getRates = async () => {
   return fetch('https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml')

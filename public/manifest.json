@@ -23,7 +23,9 @@
     "activeTab",
     "notifications",
     "downloads",
-    "storage",
+    "storage"
+  ],
+  "optional_permissions": [
     "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
   ],
   "browser_specific_settings": {
