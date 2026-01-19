@@ -33,7 +33,7 @@
     "react-chartjs-2": "^2.9.0",
     "react-dom": "^16.13.1",
     "react-redux": "^6.0.1",
-    "react-scripts": "^2.1.8",
+    "react-scripts": "^5.0.1",
     "react-swipeable-views": "^0.12.18",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
