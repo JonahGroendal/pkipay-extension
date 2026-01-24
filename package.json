@@ -26,7 +26,7 @@
     "dns-over-ens": "github:JonahGroendal/dns-over-ens",
     "ens-donation-escrow": "github:JonahGroendal/ens-donation-escrow",
     "eth-ens-namehash": "^2.0.8",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.23",
     "pkipay-eth": "github:JonahGroendal/pkipay-eth",
     "qrcode": "^1.4.4",
     "react": "^16.13.1",
