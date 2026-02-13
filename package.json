@@ -33,19 +33,19 @@
     "react-chartjs-2": "^2.9.0",
     "react-dom": "^16.13.1",
     "react-redux": "^6.0.1",
-    "react-scripts": "^2.1.8",
+    "react-scripts": "^5.0.1",
     "react-swipeable-views": "^0.12.18",
     "redux": "^4.0.5",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.3.0",
     "typeface-roboto": "0.0.54",
-    "web3": "^1.2.6"
+    "web3": "^4.16.0"
   },
   "devDependencies": {
     "cra-build-watch": "^2.0.1",
     "fetch-mock": "^7.7.3",
     "redux-mock-store": "^1.5.4",
-    "web-ext": "^3.2.1"
+    "web-ext": "^9.3.0"
   },
   "browserslist": [
     ">0.2%",
